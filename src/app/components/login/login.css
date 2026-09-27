@@ -71,12 +71,38 @@ input {
   font-size: 15px;
   background: #fafbfb;
   transition: border-color 0.15s ease;
+}
 
-  &:focus {
-    outline: none;
-    border-color: var(--teal);
-    background: #fff;
-  }
+input:focus {
+  outline: none;
+  border-color: var(--teal);
+  background: #fff;
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  padding-right: 44px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+.toggle-password:hover {
+  color: var(--teal);
 }
 
 .error {
@@ -97,15 +123,15 @@ input {
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s ease;
+}
 
-  &:hover:not(:disabled) {
-    background: var(--teal-dark);
-  }
+.login-btn:hover:not(:disabled) {
+  background: var(--teal-dark);
+}
 
-  &:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
+.login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .forgot-link {
@@ -115,8 +141,8 @@ input {
   font-size: 14px;
   color: var(--teal);
   text-decoration: none;
+}
 
-  &:hover {
-    text-decoration: underline;
-  }
+.forgot-link:hover {
+  text-decoration: underline;
 }

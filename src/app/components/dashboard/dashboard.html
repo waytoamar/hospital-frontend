@@ -27,8 +27,7 @@
     </nav>
 
     <div class="navbar-user">
-      <!-- <span class="user-avatar">DR</span> -->
-      <span class="user-name">{{ username }}</span>
+      <span class="user-name" [title]="username || ''">{{ username }}</span>
       <button class="logout-btn" (click)="logout()" title="Logout">
         <svg
           class="logout-icon"
@@ -53,7 +52,6 @@
   <main class="page">
     <!-- ================= VISIT BOARD VIEW ================= -->
     <ng-container *ngIf="activeView === 'board'">
-      <!-- Page Heading -->
       <div class="page-head">
         <div>
           <p class="eyebrow">Clinical workspace · Visit board</p>
@@ -206,6 +204,28 @@
             </p>
           </div>
 
+          <!-- Laboratory Investigations -->
+          <div class="field">
+            <label>Laboratory Investigations</label>
+            <textarea
+              [(ngModel)]="labInvestigations"
+              name="labInvestigations"
+              rows="2"
+              placeholder="e.g. CBC, Blood Sugar, X-Ray, ECG..."
+            ></textarea>
+          </div>
+
+          <!-- Comments -->
+          <div class="field">
+            <label>Comments</label>
+            <textarea
+              [(ngModel)]="comments"
+              name="comments"
+              rows="2"
+              placeholder="Any additional notes..."
+            ></textarea>
+          </div>
+
           <div class="panel-actions">
             <button class="btn-save" (click)="saveVisit()">
               {{ editingId ? 'Update visit' : 'Save visit' }}
@@ -232,13 +252,25 @@
             Visit records <span class="count-chip">{{ visits.length }} records</span>
           </h2>
           <div class="filter-inline">
+            <label class="filter-label">From</label>
             <input
               type="date"
-              [(ngModel)]="filterDate"
-              name="filterDate"
+              [(ngModel)]="filterStartDate"
+              name="filterStartDate"
               (change)="onFilterChange()"
             />
-            <button *ngIf="filterDate" class="btn-clear-filter" (click)="clearFilter()">
+            <label class="filter-label">To</label>
+            <input
+              type="date"
+              [(ngModel)]="filterEndDate"
+              name="filterEndDate"
+              (change)="onFilterChange()"
+            />
+            <button
+              *ngIf="filterStartDate || filterEndDate"
+              class="btn-clear-filter"
+              (click)="clearFilter()"
+            >
               Clear
             </button>
           </div>
@@ -261,6 +293,10 @@
                 <p><strong>Disease:</strong> {{ visit.disease || '-' }}</p>
                 <p><strong>Diagnosis:</strong> {{ visit.diagnosis || '-' }}</p>
                 <p><strong>Medicines:</strong> {{ visit.medicines.length }} added</p>
+                <p *ngIf="visit.labInvestigations">
+                  <strong>Lab Investigations:</strong> {{ visit.labInvestigations }}
+                </p>
+                <p *ngIf="visit.comments"><strong>Comments:</strong> {{ visit.comments }}</p>
                 <p class="visit-date">{{ visit.visitDate | date: 'fullDate' }}</p>
               </div>
               <div class="visit-actions">

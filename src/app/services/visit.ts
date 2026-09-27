@@ -15,6 +15,8 @@ export interface Visit {
   disease: string;
   symptoms: string;
   diagnosis: string;
+  labInvestigations?: string;
+  comments?: string;
   medicines: Medicine[];
   visitDate?: string;
 }
@@ -26,10 +28,10 @@ export class VisitService {
 
   constructor(private http: HttpClient) {}
 
-  getVisits(date?: string) {
-    const params = date
-      ? new HttpParams().set('date', date)
-      : new HttpParams();
+  getVisits(startDate?: string, endDate?: string) {
+    let params = new HttpParams();
+    if (startDate) params = params.set('startDate', startDate);
+    if (endDate) params = params.set('endDate', endDate);
 
     return this.http.get<Visit[]>(this.url, {
       ...this.options,

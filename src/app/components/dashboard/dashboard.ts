@@ -19,23 +19,24 @@ export class Dashboard implements OnInit {
   disease = '';
   symptoms = '';
   diagnosis = '';
+  labInvestigations = '';
+  comments = '';
   medicines: Medicine[] = [];
 
-  // Dosage మరియు Timing dropdown ఆప్షన్స్
   dosageOptions: string[] = ['1-0-0', '0-1-0', '0-0-1', '1-1-1', '1-0-1'];
   timingOptions: string[] = ['Before Food (B/F)', 'After Food (A/F)', 'Empty Stomach'];
 
   editingId: string | null = null;
 
-    activeView: 'board' | 'records' = 'board';
+  activeView: 'board' | 'records' = 'board';
 
   switchView(view: 'board' | 'records'): void {
     this.activeView = view;
   }
-  
 
   visits: Visit[] = [];
-  filterDate: string = '';
+  filterStartDate: string = '';
+  filterEndDate: string = '';
 
   constructor(
     private authService: AuthService,
@@ -62,17 +63,16 @@ export class Dashboard implements OnInit {
     ).length;
   }
 
-    get totalMedicinesCount(): number {
+  get totalMedicinesCount(): number {
     return this.visits.reduce((sum, v) => sum + (v.medicines?.length || 0), 0);
   }
 
-logout(): void {
-  this.authService.logout().subscribe({
-    next: () => this.router.navigate(['/login']),
-    error: () => this.router.navigate(['/login']),
-  });
-}
-
+  logout(): void {
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: () => this.router.navigate(['/login']),
+    });
+  }
 
   addMedicineRow(): void {
     this.medicines.push({ name: '', dosage: '', timing: '' });
@@ -82,17 +82,18 @@ logout(): void {
     this.medicines.splice(index, 1);
   }
 
-    resetForm(): void {
+  resetForm(): void {
     this.patientName = '';
     this.age = '';
     this.gender = '';
     this.disease = '';
     this.symptoms = '';
     this.diagnosis = '';
+    this.labInvestigations = '';
+    this.comments = '';
     this.medicines = [];
     this.editingId = null;
 
-    // Board view లో ఉండేలా చేసి, ఫారమ్ దగ్గరికి scroll చేయడం
     this.activeView = 'board';
     setTimeout(() => {
       const nameInput = document.getElementById('patientNameInput');
@@ -103,28 +104,30 @@ logout(): void {
     }, 50);
   }
 
-loadVisits(): void {
-  this.visitService.getVisits(this.filterDate || undefined).subscribe({
-    next: (visits) => {
-      this.visits = visits;
-    },
-    error: (error) => {
-      if (error.status === 401) {
-        this.router.navigate(['/login']);
-      } else {
-        alert('Visits could not be loaded. Please try again.');
-      }
-    },
-  });
-}
-
+  loadVisits(): void {
+    this.visitService
+      .getVisits(this.filterStartDate || undefined, this.filterEndDate || undefined)
+      .subscribe({
+        next: (visits) => {
+          this.visits = visits;
+        },
+        error: (error) => {
+          if (error.status === 401) {
+            this.router.navigate(['/login']);
+          } else {
+            alert('Visits could not be loaded. Please try again.');
+          }
+        },
+      });
+  }
 
   onFilterChange(): void {
     this.loadVisits();
   }
 
   clearFilter(): void {
-    this.filterDate = '';
+    this.filterStartDate = '';
+    this.filterEndDate = '';
     this.loadVisits();
   }
 
@@ -141,6 +144,8 @@ loadVisits(): void {
       disease: this.disease,
       symptoms: this.symptoms,
       diagnosis: this.diagnosis,
+      labInvestigations: this.labInvestigations,
+      comments: this.comments,
       medicines: this.medicines,
     };
 
@@ -165,6 +170,8 @@ loadVisits(): void {
     this.disease = visit.disease;
     this.symptoms = visit.symptoms;
     this.diagnosis = visit.diagnosis;
+    this.labInvestigations = visit.labInvestigations || '';
+    this.comments = visit.comments || '';
     this.medicines = JSON.parse(JSON.stringify(visit.medicines || []));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -223,6 +230,9 @@ loadVisits(): void {
           <thead><tr><th>#</th><th>Name</th><th>Dosage</th><th>Timing</th></tr></thead>
           <tbody>${medRows || '<tr><td colspan="4" style="padding:6px;border:1px solid #ccc;">No medicines</td></tr>'}</tbody>
         </table>
+        <hr />
+        <div class="row"><span class="label">Lab Investigations:</span><span>${visit.labInvestigations || '-'}</span></div>
+        <div class="row"><span class="label">Comments:</span><span>${visit.comments || '-'}</span></div>
       </body>
       </html>
     `;

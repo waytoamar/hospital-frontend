@@ -22,6 +22,7 @@ export class LoginComponent implements OnInit {
   form: FormGroup;
   errorMessage = '';
   loading = false;
+  showPassword = false;
 
   doctorPhoto = 'assets/doctor.jpg';
   doctorName = '';
@@ -47,6 +48,10 @@ export class LoginComponent implements OnInit {
       },
       error: () => {},
     });
+  }
+
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
   }
 
   submit(): void {
