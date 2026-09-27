@@ -21,7 +21,7 @@ export interface Visit {
 
 @Injectable({ providedIn: 'root' })
 export class VisitService {
-  private readonly url = 'http://localhost:5000/api/visits';
+  private readonly url = 'https://hospital-backend-yxe9.onrender.com/api/visits';
   private readonly options = { withCredentials: true };
 
   constructor(private http: HttpClient) {}

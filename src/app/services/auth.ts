@@ -12,7 +12,7 @@ export interface Doctor {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly url = 'http://localhost:5000/api/auth';
+  private readonly url = 'https://hospital-backend-yxe9.onrender.com/api/auth';
   private doctor: Doctor | null = null;
 
   constructor(private http: HttpClient) {}
