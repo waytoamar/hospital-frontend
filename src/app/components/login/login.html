@@ -1,0 +1,29 @@
+<div class="login-page">
+  <div class="login-card">
+    <img class="doctor-photo" [src]="'doctorImage.jpeg'" [alt]="'Doctor'" />
+
+    <h1 class="title">Hospital Login</h1>
+    <p class="subtitle">Doctor access only</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label class="field-label" for="username">Username</label>
+      <input id="username" type="text" formControlName="username" autocomplete="username" />
+
+      <label class="field-label" for="password">Password</label>
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+        autocomplete="current-password"
+      />
+
+      <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+      <button type="submit" class="login-btn" [disabled]="loading">
+        {{ loading ? 'Logging in…' : 'Login' }}
+      </button>
+
+      <a class="forgot-link" routerLink="/forgot-password">Forgot password?</a>
+    </form>
+  </div>
+</div>

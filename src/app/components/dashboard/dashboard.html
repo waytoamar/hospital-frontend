@@ -1,0 +1,279 @@
+<div class="app-shell">
+  <!-- Top Navbar -->
+  <header class="navbar">
+    <div class="navbar-brand">
+      <span class="brand-mark">✚</span>
+      <div class="brand-text">
+        <span class="brand-name">Hospital</span>
+        <span class="brand-sub">VISIT CONSOLE</span>
+      </div>
+    </div>
+
+    <nav class="navbar-tabs">
+      <button
+        class="tab-pill"
+        [class.active]="activeView === 'board'"
+        (click)="switchView('board')"
+      >
+        Visit board
+      </button>
+      <button
+        class="tab-pill"
+        [class.active]="activeView === 'records'"
+        (click)="switchView('records')"
+      >
+        Records
+      </button>
+    </nav>
+
+    <div class="navbar-user">
+      <!-- <span class="user-avatar">DR</span> -->
+      <span class="user-name">{{ username }}</span>
+      <button class="logout-btn" (click)="logout()" title="Logout">
+        <svg
+          class="logout-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        <span>Logout</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="page">
+    <!-- ================= VISIT BOARD VIEW ================= -->
+    <ng-container *ngIf="activeView === 'board'">
+      <!-- Page Heading -->
+      <div class="page-head">
+        <div>
+          <p class="eyebrow">Clinical workspace · Visit board</p>
+          <h1 class="page-title">Today's Visits</h1>
+          <p class="page-subtitle">Patient records at a glance.</p>
+        </div>
+        <button class="btn-new-visit" (click)="resetForm()">+ New visit</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-tile">
+          <span class="stat-label">Today's Patients</span>
+          <span class="stat-value">{{ todayVisitsCount }}</span>
+          <span class="stat-caption">Visits dated today</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-label">Total Visits</span>
+          <span class="stat-value">{{ totalVisitsCount }}</span>
+          <span class="stat-caption">All time</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-label">Records Shown</span>
+          <span class="stat-value">{{ visits.length }}</span>
+          <span class="stat-caption">All visit records</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-label">Medicines</span>
+          <span class="stat-value">{{ totalMedicinesCount }}</span>
+          <span class="stat-caption">Across all visits</span>
+        </div>
+      </div>
+
+      <!-- Patient Visit Form -->
+      <section class="panel">
+        <div class="panel-head">
+          <span class="panel-icon">📄</span>
+          <div>
+            <h2 class="panel-title">
+              {{ editingId ? 'Edit patient visit' : 'New patient visit' }}
+              <span class="badge-new" *ngIf="!editingId">NEW RECORD</span>
+            </h2>
+            <p class="panel-subtitle">Patient details & clinical notes</p>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="field">
+            <label>Patient Name *</label>
+            <input
+              type="text"
+              id="patientNameInput"
+              [(ngModel)]="patientName"
+              name="patientName"
+              placeholder="Enter patient name"
+            />
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Age *</label>
+              <input type="text" [(ngModel)]="age" name="age" placeholder="Years" />
+            </div>
+            <div class="field">
+              <label>Gender *</label>
+              <select [(ngModel)]="gender" name="gender">
+                <option value="">Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Disease</label>
+            <input
+              type="text"
+              [(ngModel)]="disease"
+              name="disease"
+              placeholder="e.g. Viral fever"
+            />
+          </div>
+
+          <div class="field">
+            <label>Symptoms</label>
+            <textarea
+              [(ngModel)]="symptoms"
+              name="symptoms"
+              rows="3"
+              placeholder="Record symptoms..."
+            ></textarea>
+          </div>
+
+          <div class="field">
+            <label>Diagnosis</label>
+            <textarea
+              [(ngModel)]="diagnosis"
+              name="diagnosis"
+              rows="3"
+              placeholder="Record diagnosis..."
+            ></textarea>
+          </div>
+
+          <!-- Medicines -->
+          <div class="medicines-block">
+            <div class="medicines-head">
+              <h3>Medicines</h3>
+              <button type="button" class="btn-add-link" (click)="addMedicineRow()">+ Add</button>
+            </div>
+
+            <table class="med-table" *ngIf="medicines.length > 0">
+              <thead>
+                <tr>
+                  <th>Medicine</th>
+                  <th>Dosage</th>
+                  <th>Timing</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let med of medicines; let i = index">
+                  <td>
+                    <input
+                      type="text"
+                      [(ngModel)]="med.name"
+                      [name]="'medName' + i"
+                      placeholder="Name"
+                    />
+                  </td>
+                  <td>
+                    <select [(ngModel)]="med.dosage" [name]="'medDosage' + i">
+                      <option value="" disabled selected>Select</option>
+                      <option *ngFor="let d of dosageOptions" [value]="d">{{ d }}</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select [(ngModel)]="med.timing" [name]="'medTiming' + i">
+                      <option value="" disabled selected>Select</option>
+                      <option *ngFor="let t of timingOptions" [value]="t">{{ t }}</option>
+                    </select>
+                  </td>
+                  <td><button class="btn-remove-med" (click)="removeMedicineRow(i)">✕</button></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p *ngIf="medicines.length === 0" class="no-medicines">
+              No medicines added to this visit.
+            </p>
+          </div>
+
+          <div class="panel-actions">
+            <button class="btn-save" (click)="saveVisit()">
+              {{ editingId ? 'Update visit' : 'Save visit' }}
+            </button>
+            <button *ngIf="editingId" class="btn-cancel" (click)="resetForm()">Cancel</button>
+          </div>
+        </div>
+      </section>
+    </ng-container>
+
+    <!-- ================= RECORDS VIEW ================= -->
+    <ng-container *ngIf="activeView === 'records'">
+      <div class="page-head">
+        <div>
+          <p class="eyebrow">Clinical workspace · Records</p>
+          <h1 class="page-title">Visit Records</h1>
+          <p class="page-subtitle">Every saved patient visit.</p>
+        </div>
+      </div>
+
+      <section class="panel">
+        <div class="panel-head simple">
+          <h2 class="panel-title">
+            Visit records <span class="count-chip">{{ visits.length }} records</span>
+          </h2>
+          <div class="filter-inline">
+            <input
+              type="date"
+              [(ngModel)]="filterDate"
+              name="filterDate"
+              (change)="onFilterChange()"
+            />
+            <button *ngIf="filterDate" class="btn-clear-filter" (click)="clearFilter()">
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <div class="panel-body no-top-pad">
+          <div *ngIf="visits.length === 0" class="empty-state">
+            <span class="empty-icon">📄</span>
+            <h4>No visits yet</h4>
+            <p>Saved visits will appear here.</p>
+          </div>
+
+          <div class="visit-list" *ngIf="visits.length > 0">
+            <div *ngFor="let visit of visits" class="visit-row">
+              <div class="visit-main">
+                <h4>
+                  {{ visit.patientName }}
+                  <span class="visit-meta">({{ visit.age }}, {{ visit.gender }})</span>
+                </h4>
+                <p><strong>Disease:</strong> {{ visit.disease || '-' }}</p>
+                <p><strong>Diagnosis:</strong> {{ visit.diagnosis || '-' }}</p>
+                <p><strong>Medicines:</strong> {{ visit.medicines.length }} added</p>
+                <p class="visit-date">{{ visit.visitDate | date: 'fullDate' }}</p>
+              </div>
+              <div class="visit-actions">
+                <button class="btn-edit" (click)="editVisit(visit); switchView('board')">
+                  Edit
+                </button>
+                <button class="btn-delete" (click)="deleteVisit(visit._id)">Delete</button>
+                <button class="btn-print" (click)="printVisit(visit)">Print</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </ng-container>
+  </main>
+</div>
