@@ -493,6 +493,22 @@
   font-size: 12px;
 }
 
+.btn-export {
+  background: #16a34a;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.btn-export:hover {
+  background: #15803d;
+}
+
 /* ===== Empty State ===== */
 .empty-state {
   text-align: center;
