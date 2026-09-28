@@ -28,9 +28,12 @@
     "@angular/forms": "^20.3.0",
     "@angular/platform-browser": "^20.3.0",
     "@angular/router": "^20.3.0",
+    "file-saver": "^2.0.5",
     "nodemailer": "^10.0.10",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
+    "xlsx": "^0.18.5",
+    "xlsx-js-style": "^1.2.0",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {

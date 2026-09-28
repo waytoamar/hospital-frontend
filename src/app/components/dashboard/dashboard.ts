@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { VisitService, Visit, Medicine } from '../../services/visit';
+import { ExcelExportService } from '../../excel-export.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -41,6 +42,7 @@ export class Dashboard implements OnInit {
   constructor(
     private authService: AuthService,
     private visitService: VisitService,
+    private excelExport: ExcelExportService,
     private router: Router
   ) {}
 
@@ -196,60 +198,15 @@ export class Dashboard implements OnInit {
     });
   }
 
-  // ప్రస్తుతం స్క్రీన్‌లో కనిపిస్తున్న విజిట్స్‌ను Excel లో తెరుచుకునే CSV ఫైల్‌గా డౌన్‌లోడ్ చేయడం
+  // ప్రస్తుతం స్క్రీన్‌లో కనిపిస్తున్న విజిట్స్‌ను .xlsx ఫైల్‌గా డౌన్‌లోడ్ చేయడం
+  // (ప్రతి మెడిసిన్ ఒకే సెల్‌లో కొత్త లైన్‌లో వస్తుంది)
   exportToExcel(): void {
     if (this.visits.length === 0) {
       alert('No records to export');
       return;
     }
 
-    const headers = [
-      'Visit Date',
-      'Patient Name',
-      'Age',
-      'Gender',
-      'Disease',
-      'Symptoms',
-      'Diagnosis',
-      'Medicines',
-      'Lab Investigations',
-      'Comments',
-    ];
-
-    const cell = (value: unknown): string => {
-      let text = String(value ?? '');
-      // Excel లో ఫార్ములాగా అర్థం చేసుకోకుండా జాగ్రత్త
-      if (/^[=+\-@]/.test(text)) {
-        text = "'" + text;
-      }
-      return '"' + text.replace(/"/g, '""') + '"';
-    };
-
-    const rows = this.visits.map((v) => [
-      v.visitDate ? new Date(v.visitDate).toLocaleDateString('en-GB') : '',
-      v.patientName,
-      v.age,
-      v.gender,
-      v.disease,
-      v.symptoms,
-      v.diagnosis,
-      (v.medicines || [])
-        .map((m) => [m.name, m.dosage, m.timing].filter(Boolean).join(' - '))
-        .join('; '),
-      v.labInvestigations || '',
-      v.comments || '',
-    ]);
-
-    const csv = [headers, ...rows].map((row) => row.map(cell).join(',')).join('\r\n');
-
-    // \uFEFF (BOM) ఉంటేనే Excel లో తెలుగు అక్షరాలు సరిగ్గా కనిపిస్తాయి
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `visits-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    this.excelExport.exportVisits(this.visits);
   }
 
   printVisit(visit: Visit): void {
