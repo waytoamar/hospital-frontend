@@ -309,23 +309,30 @@
 }
 
 .field label {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  font-weight: 700;
-  color: #6b7280;
+  font-weight: 800;
+  color: #1f2937;
 }
 
 .field input,
 .field select,
 .field textarea {
-  border: 1px solid #e5e7eb;
+  border: 1px solid #d1d5db;
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 14px;
   font-family: inherit;
+  font-weight: 500;
   color: #111827;
   background: #fbfcfc;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
 }
 
 .field input:focus,
@@ -379,10 +386,11 @@
 
 .med-table th {
   text-align: left;
-  font-size: 11px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #9ca3af;
+  font-weight: 800;
+  color: #374151;
   padding: 8px;
   border-bottom: 1px solid #f0f2f2;
 }
@@ -396,9 +404,11 @@
 .med-table select {
   width: 100%;
   padding: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 13px;
+  font-weight: 500;
+  color: #111827;
   background: white;
 }
 

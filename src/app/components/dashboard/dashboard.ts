@@ -21,7 +21,7 @@ export class Dashboard implements OnInit {
   diagnosis = '';
   labInvestigations = '';
   comments = '';
-  medicines: Medicine[] = [];
+  medicines: Medicine[] = [{ name: '', dosage: '', timing: '' }];
 
   dosageOptions: string[] = ['1-0-0', '0-1-0', '0-0-1', '1-1-1', '1-0-1'];
   timingOptions: string[] = ['Before Food (B/F)', 'After Food (A/F)', 'Empty Stomach'];
@@ -91,7 +91,7 @@ export class Dashboard implements OnInit {
     this.diagnosis = '';
     this.labInvestigations = '';
     this.comments = '';
-    this.medicines = [];
+    this.medicines = [{ name: '', dosage: '', timing: '' }];
     this.editingId = null;
 
     this.activeView = 'board';
@@ -137,6 +137,15 @@ export class Dashboard implements OnInit {
       return;
     }
 
+    // ఖాళీగా వదిలేసిన మెడిసిన్ రోలను తీసేయడం
+    const filledMedicines = this.medicines.filter(
+      (m) => m.name.trim() || m.dosage || m.timing
+    );
+    if (filledMedicines.some((m) => !m.name.trim())) {
+      alert('Please enter the medicine name, or remove the empty row');
+      return;
+    }
+
     const data: Visit = {
       patientName: this.patientName,
       age: this.age,
@@ -146,7 +155,7 @@ export class Dashboard implements OnInit {
       diagnosis: this.diagnosis,
       labInvestigations: this.labInvestigations,
       comments: this.comments,
-      medicines: this.medicines,
+      medicines: filledMedicines,
     };
 
     if (this.editingId) {
@@ -173,6 +182,9 @@ export class Dashboard implements OnInit {
     this.labInvestigations = visit.labInvestigations || '';
     this.comments = visit.comments || '';
     this.medicines = JSON.parse(JSON.stringify(visit.medicines || []));
+    if (this.medicines.length === 0) {
+      this.medicines.push({ name: '', dosage: '', timing: '' });
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
