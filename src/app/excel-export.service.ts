@@ -1,59 +1,137 @@
 import { Injectable } from '@angular/core';
 import * as XLSX from 'xlsx-js-style';
-import { Visit, Medicine } from './services/visit';
+import { Visit } from './services/visit';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class ExcelExportService {
-
-  // Medicines ni okati okati line lo pettadaniki
-  private formatMedicines(medicines: Medicine[]): string {
-    return (medicines || [])
-      .map(m => `${m.name} - ${m.dosage} - ${m.timing}`)
-      .join('\n');
-  }
-
-  exportVisits(visits: Visit[], fileName = 'visits.xlsx') {
+  exportVisits(
+    visits: Visit[],
+    fileName = 'visits.xlsx'
+  ): void {
     const headers = [
-      'Patient Name', 'Age', 'Gender', 'Disease', 'Symptoms',
-      'Diagnosis', 'Lab Investigations', 'Medicines', 'Comments', 'Visit Date',
+      'Patient ID',
+      'Patient Name',
+      'Phone',
+      'Age',
+      'Gender',
+      'Disease',
+      'Symptoms',
+      'Diagnosis',
+      'Allergies',
+      'BP',
+      'Temperature',
+      'Weight',
+      'Blood Sugar',
+      'Lab Investigations',
+      'Medicines',
+      'Follow-up',
+      'Status',
+      'Comments',
+      'Visit Date',
     ];
 
-    const rows = visits.map(v => [
-      v.patientName,
-      v.age,
-      v.gender,
-      v.disease,
-      v.symptoms,
-      v.diagnosis,
-      v.labInvestigations ?? '',
-      this.formatMedicines(v.medicines),
-      v.comments ?? '',
-      v.visitDate ? new Date(v.visitDate).toLocaleDateString('en-IN') : '',
+    const rows = visits.map((visit) => [
+      visit.patientId || '',
+      visit.patientName,
+      visit.phone,
+      visit.age,
+      visit.gender,
+      visit.disease,
+      visit.symptoms,
+      visit.diagnosis,
+      visit.allergies,
+      visit.vitals?.bloodPressure || '',
+      visit.vitals?.temperature || '',
+      visit.vitals?.weight || '',
+      visit.vitals?.bloodSugar || '',
+      visit.labInvestigations || '',
+      (visit.medicines || [])
+        .map(
+          (medicine) =>
+            `${medicine.name} | ${medicine.dosage} | ` +
+            `${medicine.frequency} | ${medicine.duration} | ` +
+            `${medicine.timing}`
+        )
+        .join('\n'),
+      visit.followUpDate || '',
+      visit.status,
+      visit.comments || '',
+      visit.visitDate
+        ? new Date(visit.visitDate).toLocaleDateString('en-IN')
+        : '',
     ]);
 
-    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    const worksheet =
+      XLSX.utils.aoa_to_sheet([headers, ...rows]);
 
-    // Column widths
-    ws['!cols'] = [
-      { wch: 20 }, { wch: 6 }, { wch: 8 }, { wch: 18 }, { wch: 25 },
-      { wch: 25 }, { wch: 25 }, { wch: 45 }, { wch: 25 }, { wch: 14 },
+    const widths = [
+      14, 20, 14, 6, 9, 18, 24, 24, 20, 12,
+      12, 10, 12, 24, 48, 14, 18, 25, 14,
     ];
 
-    // Anni cells ki wrap text + top align, header ki bold
-    const range = XLSX.utils.decode_range(ws['!ref']!);
-    for (let r = range.s.r; r <= range.e.r; r++) {
-      for (let c = range.s.c; c <= range.e.c; c++) {
-        const addr = XLSX.utils.encode_cell({ r, c });
-        if (!ws[addr]) continue;
-        ws[addr].s = {
-          alignment: { wrapText: true, vertical: 'top' },
-          ...(r === 0 ? { font: { bold: true } } : {}),
+    worksheet['!cols'] = widths.map((width) => ({
+      wch: width,
+    }));
+
+    const range = XLSX.utils.decode_range(
+      worksheet['!ref'] || 'A1'
+    );
+
+    for (
+      let row = range.s.r;
+      row <= range.e.r;
+      row++
+    ) {
+      for (
+        let column = range.s.c;
+        column <= range.e.c;
+        column++
+      ) {
+        const address = XLSX.utils.encode_cell({
+          r: row,
+          c: column,
+        });
+
+        const cell = worksheet[address];
+
+        if (!cell) {
+          continue;
+        }
+
+        cell.s = {
+          alignment: {
+            wrapText: true,
+            vertical: 'top',
+          },
+          ...(row === 0
+            ? {
+                font: {
+                  bold: true,
+                  color: {
+                    rgb: 'FFFFFF',
+                  },
+                },
+                fill: {
+                  fgColor: {
+                    rgb: '287A4B',
+                  },
+                },
+              }
+            : {}),
         };
       }
     }
 
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Visits');
-    XLSX.writeFile(wb, fileName);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      'Visits'
+    );
+
+    XLSX.writeFile(workbook, fileName);
   }
 }
