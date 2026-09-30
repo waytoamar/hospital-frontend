@@ -672,12 +672,13 @@ export class Dashboard implements OnInit, OnDestroy {
     this.selectedPatientKey = '';
   }
 
+
   logout(): void {
-    this.authService.logout().subscribe({
-      next: () => this.router.navigate(['/login']),
-      error: () => this.router.navigate(['/login']),
-    });
-  }
+  this.authService.logout();
+  this.router.navigate(['/login']);
+}
+
+
 
   loadNextPatientId(): void {
     this.visitService.getNextPatientId().subscribe({
@@ -1018,7 +1019,7 @@ export class Dashboard implements OnInit, OnDestroy {
     // ---- Letterhead text (edit here if anything changes) ----
     const clinic = {
       name: 'CHEST ALLERGY CLINIC',
-      doctor: 'Dr. Mahesh',
+      doctor: 'Dr. Mahesh C.',
       qualification: 'MBBS, DNB (PULMONOLOGY)',
       lines: [
         'FELLOWSHIP IN RESPIRATORY ICU',
@@ -1028,7 +1029,7 @@ export class Dashboard implements OnInit, OnDestroy {
         'EX. CONSULTANT WCL HOSPITAL BARKUHI)',
       ],
       phones: '8109838316, 8817483758',
-      doctorHindi: 'डॉ. महेश',
+      doctorHindi: 'डॉ. महेश सी.',
       conditionsHindi:
         'अस्थमा, दमा. सी.ओ.पी.डी.. आई.एल.डी.. निमोनिया, ट्यूबरक्लोसिस (टी.बी.) खासी. एलर्जी, ब्लडप्रेशर रोग, शुगर, थायराइड, हृदय रोग, लकवा. मिर्गी, नींद की बिमारी एवं छाती के संपूर्ण रोग',
       special: 'Critical Care (Icu) Ventilator Specialist, Bronchoscopy Specialist',

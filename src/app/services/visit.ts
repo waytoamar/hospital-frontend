@@ -74,6 +74,8 @@ export interface Visit {
   followUpDate?: string;
   status: VisitStatus;
   visitDate?: string;
+  token?: string;
+  visitDay?: string;
 }
 
 @Injectable({
