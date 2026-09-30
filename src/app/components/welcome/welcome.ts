@@ -10,7 +10,7 @@ import { AuthService, Role, homeFor } from '../../services/auth';
   styleUrl: '../staff-shared.css',
   template: `
     <div class="center-page">
-      <div class="logo big">⚕</div>
+      <img class="logo-img big" src="lungs.jpg" alt="Chest & Allergy Clinic" />
       <h1 class="hero">Chest &amp; Allergy Clinic</h1>
       <p class="sub">Who is signing in?</p>
 

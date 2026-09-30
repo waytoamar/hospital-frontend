@@ -11,7 +11,7 @@ import { AuthService, homeFor } from '../../services/auth';
   template: `
     <div class="center-page">
       <div class="pin-card">
-        <div class="logo">{{ role === 'receptionist' ? '📋' : '💊' }}</div>
+        <img class="logo-img" src="lungs.jpg" alt="Chest & Allergy Clinic" />
         <h1 class="title">{{ role === 'receptionist' ? 'Receptionist' : 'Pharmacist' }}</h1>
         <p class="sub">Enter your 4-digit PIN</p>
 

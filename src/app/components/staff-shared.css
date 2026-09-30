@@ -123,3 +123,8 @@ label input, label select { margin-top: 5px; font-weight: 400; }
 .visit-modal > footer { display: flex; justify-content: space-between; padding: 14px 24px; border-top: 1px solid var(--line); background: #fff; }
 .tabs .primary-btn { margin-left: 12px; }
 @media (max-width: 560px) { .form-grid.three { grid-template-columns: 1fr 1fr; } .lookup-row { flex-direction: column; align-items: stretch; } }
+
+/* clinic logo (lungs.jpg from /public) */
+.logo-img { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); background: #eef2f2; display: block; margin: 0 auto 12px; }
+.logo-img.big { width: 104px; height: 104px; }
+.logo-img.sm { width: 40px; height: 40px; border-width: 2px; margin: 0; }

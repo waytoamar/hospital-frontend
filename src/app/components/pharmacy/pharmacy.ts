@@ -15,7 +15,7 @@ import { printPrescription } from '../../services/prescription-print';
   template: `
     <header class="topbar">
       <div class="brand">
-        <span class="logo">C</span>
+        <img class="logo-img" src="lungs.jpg" alt="" />
         <div><b>Chest &amp; Allergy Clinic</b><small>Pharmacy Desk</small></div>
       </div>
 

@@ -36,7 +36,7 @@ const emptyForm = (): VisitForm => ({
   styleUrl: '../staff-shared.css',
   template: `
     <header class="topbar">
-      <div class="brand"><span class="logo sm">⚕</span>
+      <div class="brand"><img class="logo-img sm" src="lungs.jpg" alt="" />
         <div><b>Chest &amp; Allergy Clinic</b><small>Reception</small></div></div>
       <div class="who">{{ name }} <button class="ghost" (click)="logout()">Logout</button></div>
     </header>
