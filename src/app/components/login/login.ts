@@ -30,7 +30,7 @@ export class LoginComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
   ) {
     this.form = this.fb.group({
       username: ['', Validators.required],
@@ -65,11 +65,7 @@ export class LoginComponent implements OnInit {
     const { username, password } = this.form.value;
 
     this.http
-      .post(
-        `${API_BASE}/auth/login`,
-        { username, password },
-        { withCredentials: true }
-      )
+      .post(`${API_BASE}/auth/login`, { username, password }, { withCredentials: true })
       .subscribe({
         next: () => {
           this.loading = false;
@@ -77,8 +73,7 @@ export class LoginComponent implements OnInit {
         },
         error: (err) => {
           this.loading = false;
-          this.errorMessage =
-            err?.error?.message || 'Login failed. Please try again.';
+          this.errorMessage = err?.error?.message || 'Login failed. Please try again.';
         },
       });
   }

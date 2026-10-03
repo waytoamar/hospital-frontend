@@ -25,7 +25,12 @@ interface VisitForm {
 }
 
 const emptyVitals = (): DeskVitals => ({
-  bloodPressure: '', spo2: '', temperature: '', bloodSugar: '', weight: '', heartRate: '',
+  bloodPressure: '',
+  spo2: '',
+  temperature: '',
+  bloodSugar: '',
+  weight: '',
+  heartRate: '',
 });
 
 const emptyForm = (): VisitForm => ({
@@ -42,23 +47,111 @@ const emptyForm = (): VisitForm => ({
   standalone: true,
   imports: [CommonModule, FormsModule],
   styleUrls: ['../staff-shared.css'],
-  styles: [`
-    .ticket-info { flex: 1; min-width: 0; }
-    .edit-btn { border: 1px solid var(--line); background: #fff; color: var(--muted); border-radius: 8px; padding: 5px 10px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-    .edit-btn:hover { border-color: var(--primary); color: var(--primary-dark); }
-    .at-lab { margin-top: 16px; background: #fff; border: 1px solid var(--line); border-top: 5px solid #7b61c9; border-radius: 14px; padding: 12px 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-    .at-lab h4 { margin: 0 6px 0 0; font-size: 15px; }
-    .lab-chip { display: inline-flex; align-items: center; gap: 8px; background: #ece6fa; color: #3f2f7a; border-radius: 999px; padding: 6px 12px; font-size: 13px; }
-    .reports-badge { display: block; width: fit-content; max-width: 100%; margin: 4px 0 2px; padding: 2px 8px; font-size: 11px; font-weight: 600; color: #0f7a3d; background: #e3f6ea; border: 1px solid #9ad6b0; border-radius: 999px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box; }
-    .voice-btn { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 8px 14px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
-    .voice-btn.on { background: #e3f6ea; border-color: #9ad6b0; color: #0f7a3d; }
-    .voice-banner { display: block; width: 100%; margin: 0 0 16px; padding: 14px 18px; border: 2px dashed #e0a100; background: #fff8e1; color: #7a5200; border-radius: 14px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
-    .voice-banner:hover { background: #fff1c2; }
-  `],
+  styles: [
+    `
+      .ticket-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .edit-btn {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--muted);
+        border-radius: 8px;
+        padding: 5px 10px;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .edit-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary-dark);
+      }
+      .at-lab {
+        margin-top: 16px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-top: 5px solid #7b61c9;
+        border-radius: 14px;
+        padding: 12px 14px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+      }
+      .at-lab h4 {
+        margin: 0 6px 0 0;
+        font-size: 15px;
+      }
+      .lab-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #ece6fa;
+        color: #3f2f7a;
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+      .reports-badge {
+        display: block;
+        width: fit-content;
+        max-width: 100%;
+        margin: 4px 0 2px;
+        padding: 2px 8px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #0f7a3d;
+        background: #e3f6ea;
+        border: 1px solid #9ad6b0;
+        border-radius: 999px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        box-sizing: border-box;
+      }
+      .voice-btn {
+        border: 1px solid var(--line);
+        background: #fff;
+        border-radius: 999px;
+        padding: 8px 14px;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .voice-btn.on {
+        background: #e3f6ea;
+        border-color: #9ad6b0;
+        color: #0f7a3d;
+      }
+      .voice-banner {
+        display: block;
+        width: 100%;
+        margin: 0 0 16px;
+        padding: 14px 18px;
+        border: 2px dashed #e0a100;
+        background: #fff8e1;
+        color: #7a5200;
+        border-radius: 14px;
+        font: inherit;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .voice-banner:hover {
+        background: #fff1c2;
+      }
+    `,
+  ],
   template: `
     <header class="topbar">
-      <div class="brand"><img class="logo-img sm" src="lungs.jpg" alt="" />
-        <div><b>Chest &amp; Allergy Clinic</b><small>Reception</small></div></div>
+      <div class="brand">
+        <img class="logo-img sm" src="lungs.jpg" alt="" />
+        <div><b>Chest &amp; Allergy Clinic</b><small>Reception</small></div>
+      </div>
       <div class="who">{{ name }} <button class="ghost" (click)="logout()">Logout</button></div>
     </header>
 
@@ -76,7 +169,9 @@ const emptyForm = (): VisitForm => ({
       <nav class="tabs">
         <button [class.active]="tab === 'board'" (click)="tab = 'board'">Board</button>
         <button [class.active]="tab === 'patients'" (click)="tab = 'patients'">Patients</button>
-        <span class="refresh" *ngIf="updated">Updated {{ updated | date: 'shortTime' }} · auto-refresh 5s</span>
+        <span class="refresh" *ngIf="updated"
+          >Updated {{ updated | date: 'shortTime' }} · auto-refresh 5s</span
+        >
         <button class="voice-btn" [class.on]="voiceEnabled" (click)="toggleVoice()">
           {{ voiceEnabled ? '🔊 Voice on' : '🔇 Enable voice' }}
         </button>
@@ -90,7 +185,9 @@ const emptyForm = (): VisitForm => ({
         <p class="error" *ngIf="loadError">{{ loadError }}</p>
         <div class="cols">
           <div class="col" *ngFor="let col of columns" [attr.data-tone]="col.tone">
-            <h3>{{ col.label }} <span class="count">{{ col.items.length }}</span></h3>
+            <h3>
+              {{ col.label }} <span class="count">{{ col.items.length }}</span>
+            </h3>
             <div class="ticket" *ngFor="let v of col.items; trackBy: trackById">
               <span class="tok">{{ v.token }}</span>
               <div class="ticket-info">
@@ -98,14 +195,18 @@ const emptyForm = (): VisitForm => ({
                 <span class="reports-badge" *ngIf="isReportsReady(v)">🧪 Reports ready</span>
                 <small>{{ v.age }} · {{ v.gender }} · {{ v.phone }}</small>
               </div>
-              <button class="edit-btn" (click)="openEdit(v)" aria-label="Edit patient details">✎ Edit</button>
+              <button class="edit-btn" (click)="openEdit(v)" aria-label="Edit patient details">
+                ✎ Edit
+              </button>
             </div>
             <p class="empty" *ngIf="!col.items.length">Nobody here</p>
           </div>
         </div>
 
         <div class="at-lab" *ngIf="atLab.length">
-          <h4>🧪 At lab <span class="count">{{ atLab.length }}</span></h4>
+          <h4>
+            🧪 At lab <span class="count">{{ atLab.length }}</span>
+          </h4>
           <span class="lab-chip" *ngFor="let v of atLab; trackBy: trackById">
             <b>{{ v.token }}</b> {{ v.patientName }}
           </span>
@@ -115,15 +216,27 @@ const emptyForm = (): VisitForm => ({
       <!-- PATIENTS -->
       <section *ngIf="tab === 'patients'" class="card">
         <h2>Find old patient</h2>
-        <input placeholder="Name, phone or PT-ID" [(ngModel)]="search" (ngModelChange)="onSearch()" />
+        <input
+          placeholder="Name, phone or PT-ID"
+          [(ngModel)]="search"
+          (ngModelChange)="onSearch()"
+        />
         <p class="error" *ngIf="phoneError">{{ phoneError }}</p>
         <p class="empty" *ngIf="searched && !hits.length">No patient found</p>
         <div class="hit" *ngFor="let p of hits">
           <div class="hit-info">
             <b>{{ p.patientName }}</b>
-            <small>{{ p.patientId }} · {{ p.age }} · {{ p.gender }} · last visit {{ p.lastVisit | date: 'dd/MM/yyyy' }}</small>
+            <small
+              >{{ p.patientId }} · {{ p.age }} · {{ p.gender }} · last visit
+              {{ p.lastVisit | date: 'dd/MM/yyyy' }}</small
+            >
             <ng-container *ngIf="phoneEdit?.id !== p.patientId; else editing">
-              <small>📞 {{ p.phone }} <a class="link" (click)="phoneEdit = { id: p.patientId, value: p.phone }">Fix number</a></small>
+              <small
+                >📞 {{ p.phone }}
+                <a class="link" (click)="phoneEdit = { id: p.patientId, value: p.phone }"
+                  >Fix number</a
+                ></small
+              >
             </ng-container>
             <ng-template #editing>
               <div class="inline">
@@ -152,15 +265,27 @@ const emptyForm = (): VisitForm => ({
       <div class="modal-body">
         <div class="form-section">
           <div class="lookup-row" *ngIf="!editingId; else phoneOnly">
-            <label>Phone number *
-              <input [(ngModel)]="form.phone" (ngModelChange)="onPhoneTyped()" maxlength="10"
-                     inputmode="numeric" placeholder="10-digit mobile" />
+            <label
+              >Phone number *
+              <input
+                [(ngModel)]="form.phone"
+                (ngModelChange)="onPhoneTyped()"
+                maxlength="10"
+                inputmode="numeric"
+                placeholder="10-digit mobile"
+              />
             </label>
             <button class="outline-btn" (click)="findPatient()">Find patient</button>
           </div>
           <ng-template #phoneOnly>
-            <label>Phone number *
-              <input [(ngModel)]="form.phone" maxlength="10" inputmode="numeric" placeholder="10-digit mobile" />
+            <label
+              >Phone number *
+              <input
+                [(ngModel)]="form.phone"
+                maxlength="10"
+                inputmode="numeric"
+                placeholder="10-digit mobile"
+              />
             </label>
           </ng-template>
 
@@ -171,17 +296,23 @@ const emptyForm = (): VisitForm => ({
             </button>
           </div>
 
-          <label>Patient name *
+          <label
+            >Patient name *
             <input [(ngModel)]="form.patientName" placeholder="Full name" />
           </label>
 
           <div class="form-grid">
-            <label>Age *
+            <label
+              >Age *
               <input [(ngModel)]="form.age" inputmode="numeric" maxlength="3" placeholder="Years" />
             </label>
-            <label>Gender *
+            <label
+              >Gender *
               <select [(ngModel)]="form.gender">
-                <option value="">Select</option><option>Male</option><option>Female</option><option>Other</option>
+                <option value="">Select</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
               </select>
             </label>
           </div>
@@ -190,7 +321,9 @@ const emptyForm = (): VisitForm => ({
           <div class="form-grid three">
             <label>BP<input [(ngModel)]="form.vitals.bloodPressure" placeholder="120/80" /></label>
             <label>SpO2<input [(ngModel)]="form.vitals.spo2" placeholder="%" /></label>
-            <label>Temperature<input [(ngModel)]="form.vitals.temperature" placeholder="98.6 °F" /></label>
+            <label
+              >Temperature<input [(ngModel)]="form.vitals.temperature" placeholder="98.6 °F"
+            /></label>
             <label>RBS<input [(ngModel)]="form.vitals.bloodSugar" placeholder="mg/dL" /></label>
             <label>Weight<input [(ngModel)]="form.vitals.weight" placeholder="kg" /></label>
             <label>Heart rate<input [(ngModel)]="form.vitals.heartRate" placeholder="bpm" /></label>
@@ -203,7 +336,7 @@ const emptyForm = (): VisitForm => ({
       <footer>
         <button class="outline-btn" (click)="closeForm()">Cancel</button>
         <button class="primary-btn" [disabled]="saving" (click)="submit()">
-          {{ saving ? 'Saving…' : (editingId ? 'Save changes' : 'Register & get token') }}
+          {{ saving ? 'Saving…' : editingId ? 'Save changes' : 'Register & get token' }}
         </button>
       </footer>
     </section>
@@ -293,7 +426,10 @@ export class Reception implements OnInit, OnDestroy {
 
     if (!this.voiceEnabled) return;
 
-    const spokenToken = String(this.calling.token).replace(/[^A-Za-z0-9]/g, '').split('').join(' ');
+    const spokenToken = String(this.calling.token)
+      .replace(/[^A-Za-z0-9]/g, '')
+      .split('')
+      .join(' ');
     this.speech.speak(
       `Calling token ${spokenToken}, ${this.calling.patientName}. Please go to the doctor.`,
     );
@@ -401,10 +537,15 @@ export class Reception implements OnInit, OnDestroy {
     });
   }
 
-    submit(): void {
+  submit(): void {
     const f = this.form;
 
-    if (!f.patientName.trim() || !/^\d{1,3}$/.test(f.age) || !f.gender || !/^\d{10}$/.test(f.phone)) {
+    if (
+      !f.patientName.trim() ||
+      !/^\d{1,3}$/.test(f.age) ||
+      !f.gender ||
+      !/^\d{10}$/.test(f.phone)
+    ) {
       this.formError = 'Enter name, age, gender and a 10-digit phone number';
       return;
     }
@@ -479,8 +620,14 @@ export class Reception implements OnInit, OnDestroy {
     }
     this.searchTimer = setTimeout(() => {
       this.api.patients(term).subscribe({
-        next: (hits) => { this.hits = hits; this.searched = true; },
-        error: () => { this.hits = []; this.searched = true; },
+        next: (hits) => {
+          this.hits = hits;
+          this.searched = true;
+        },
+        error: () => {
+          this.hits = [];
+          this.searched = true;
+        },
       });
     }, 300);
   }

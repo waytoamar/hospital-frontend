@@ -48,15 +48,11 @@ export class PinLogin {
   constructor(
     route: ActivatedRoute,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
   ) {
     const roleParam = route.snapshot.paramMap.get('role');
     // 2. Route Params తనిఖీలో 'lab' ని చేర్చాం
-    if (
-      roleParam === 'receptionist' ||
-      roleParam === 'pharmacist' ||
-      roleParam === 'lab'
-    ) {
+    if (roleParam === 'receptionist' || roleParam === 'pharmacist' || roleParam === 'lab') {
       this.role = roleParam;
     } else {
       this.router.navigate(['/welcome']);
@@ -96,8 +92,7 @@ export class PinLogin {
       error: (err) => {
         this.busy = false;
         this.pin = '';
-        this.error =
-          err?.error?.message || 'Could not sign in. Please try again.';
+        this.error = err?.error?.message || 'Could not sign in. Please try again.';
       },
     });
   }

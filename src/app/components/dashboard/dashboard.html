@@ -719,7 +719,10 @@
               (blur)="closeSuggestions()"
             />
 
-            <span class="suggestion-menu" *ngIf="activeSuggestionField === 'surgicalComplicationsNote'">
+            <span
+              class="suggestion-menu"
+              *ngIf="activeSuggestionField === 'surgicalComplicationsNote'"
+            >
               <button
                 type="button"
                 *ngFor="let suggestion of filteredSuggestions('surgicalComplicationsNote')"

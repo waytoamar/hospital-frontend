@@ -40,8 +40,13 @@ interface LabCard {
       <div class="head">
         <div>
           <p class="date">{{ now | date: 'EEEE, d MMMM' }}</p>
-          <h1>Lab Investigations <span class="count">{{ cards.length }}</span></h1>
-          <p class="lead">Patients sent by the doctor for tests. Enter results, add report photos, then press "Reports ready".</p>
+          <h1>
+            Lab Investigations <span class="count">{{ cards.length }}</span>
+          </h1>
+          <p class="lead">
+            Patients sent by the doctor for tests. Enter results, add report photos, then press
+            "Reports ready".
+          </p>
         </div>
       </div>
 
@@ -67,13 +72,19 @@ interface LabCard {
               <b>{{ v.patientName }}</b>
               <small>{{ v.age }} · {{ v.gender }} · {{ v.phone }}</small>
             </div>
-            <span class="since ok">✓ Reports ready{{ v.labReadyAt ? ' · ' + (v.labReadyAt | date: 'shortTime') : '' }}</span>
+            <span class="since ok"
+              >✓ Reports ready{{
+                v.labReadyAt ? ' · ' + (v.labReadyAt | date: 'shortTime') : ''
+              }}</span
+            >
           </div>
 
           <p class="ordered"><b>Doctor ordered:</b> {{ v.labInvestigations || '—' }}</p>
 
           <div class="res" *ngIf="v.labResults?.length">
-            <div class="r-head"><span>Test</span><span>Result</span><span>Normal range</span><span>Status</span></div>
+            <div class="r-head">
+              <span>Test</span><span>Result</span><span>Normal range</span><span>Status</span>
+            </div>
             <div class="r-row" *ngFor="let r of v.labResults">
               <span>{{ r.name }}</span>
               <span [class.bad]="abnormal(r)">{{ r.result || '—' }}</span>
@@ -91,55 +102,79 @@ interface LabCard {
       </ng-container>
 
       <!-- PENDING -->
-      <p class="empty" *ngIf="tab === 'pending' && !cards.length && !loading">No patients waiting for tests 🎉</p>
+      <p class="empty" *ngIf="tab === 'pending' && !cards.length && !loading">
+        No patients waiting for tests 🎉
+      </p>
 
       <ng-container *ngIf="tab === 'pending'">
-      <section class="card" *ngFor="let c of cards; trackBy: trackById">
-        <div class="card-head">
-          <span class="tok">{{ c.visit.token || '—' }}</span>
-          <div class="who-pt">
-            <b>{{ c.visit.patientName }}</b>
-            <small>{{ c.visit.age }} · {{ c.visit.gender }} · {{ c.visit.phone }}</small>
+        <section class="card" *ngFor="let c of cards; trackBy: trackById">
+          <div class="card-head">
+            <span class="tok">{{ c.visit.token || '—' }}</span>
+            <div class="who-pt">
+              <b>{{ c.visit.patientName }}</b>
+              <small>{{ c.visit.age }} · {{ c.visit.gender }} · {{ c.visit.phone }}</small>
+            </div>
+            <span class="since" [class.late]="minutes(c.visit) >= 45"
+              >⏱ Sent to lab {{ ago(c.visit) }}</span
+            >
           </div>
-          <span class="since" [class.late]="minutes(c.visit) >= 45">⏱ Sent to lab {{ ago(c.visit) }}</span>
-        </div>
 
-        <p class="ordered"><b>Doctor ordered:</b> {{ c.visit.labInvestigations || '—' }}</p>
+          <p class="ordered"><b>Doctor ordered:</b> {{ c.visit.labInvestigations || '—' }}</p>
 
-        <div class="tests">
-          <div class="t-head"><span>Test</span><span>Result</span><span>Normal range</span><span>Status</span><span></span></div>
-          <div class="t-row" *ngFor="let r of c.results; let i = index">
-            <input [(ngModel)]="r.name" (ngModelChange)="touch(c)" placeholder="Test name" />
-            <input [(ngModel)]="r.result" (ngModelChange)="touch(c)" placeholder="Result"
-                   [class.bad]="abnormal(r)" />
-            <input [(ngModel)]="r.range" (ngModelChange)="touch(c)" placeholder="e.g. 4-11" />
-            <button class="chip" [class.done]="r.done" (click)="r.done = !r.done; touch(c)">
-              {{ r.done ? '✓ Done' : '… Pending' }}
+          <div class="tests">
+            <div class="t-head">
+              <span>Test</span><span>Result</span><span>Normal range</span><span>Status</span
+              ><span></span>
+            </div>
+            <div class="t-row" *ngFor="let r of c.results; let i = index">
+              <input [(ngModel)]="r.name" (ngModelChange)="touch(c)" placeholder="Test name" />
+              <input
+                [(ngModel)]="r.result"
+                (ngModelChange)="touch(c)"
+                placeholder="Result"
+                [class.bad]="abnormal(r)"
+              />
+              <input [(ngModel)]="r.range" (ngModelChange)="touch(c)" placeholder="e.g. 4-11" />
+              <button class="chip" [class.done]="r.done" (click)="r.done = !r.done; touch(c)">
+                {{ r.done ? '✓ Done' : '… Pending' }}
+              </button>
+              <button class="x" (click)="c.results.splice(i, 1); touch(c)" aria-label="Remove test">
+                ✕
+              </button>
+            </div>
+            <button
+              class="add"
+              (click)="c.results.push({ name: '', result: '', range: '', done: false }); touch(c)"
+            >
+              ＋ Add test
             </button>
-            <button class="x" (click)="c.results.splice(i, 1); touch(c)" aria-label="Remove test">✕</button>
           </div>
-          <button class="add" (click)="c.results.push({ name: '', result: '', range: '', done: false }); touch(c)">＋ Add test</button>
-        </div>
 
-        <div class="photos">
-          <div class="ph" *ngFor="let p of c.visit.labPhotos || []">
-            <img [src]="p.data" alt="Report photo" (click)="view = p.data" />
-            <button class="x" (click)="deletePhoto(c, p._id)" aria-label="Delete photo">✕</button>
+          <div class="photos">
+            <div class="ph" *ngFor="let p of c.visit.labPhotos || []">
+              <img [src]="p.data" alt="Report photo" (click)="view = p.data" />
+              <button class="x" (click)="deletePhoto(c, p._id)" aria-label="Delete photo">✕</button>
+            </div>
+            <label class="ph add-ph" *ngIf="(c.visit.labPhotos?.length || 0) < 8">
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                multiple
+                hidden
+                (change)="addPhotos(c, $event)"
+              />
+              <span>📷<br />Add report photo</span>
+            </label>
           </div>
-          <label class="ph add-ph" *ngIf="(c.visit.labPhotos?.length || 0) < 8">
-            <input type="file" accept="image/*" capture="environment" multiple hidden
-                   (change)="addPhotos(c, $event)" />
-            <span>📷<br />Add report photo</span>
-          </label>
-        </div>
 
-        <footer>
-          <span class="msg" [class.err]="c.message.startsWith('⚠')">{{ c.message }}</span>
-          <span class="progress">{{ doneCount(c) }}/{{ c.results.length }} done</span>
-          <button class="ghost" [disabled]="c.busy" (click)="save(c)">Save</button>
-          <button class="go" [disabled]="c.busy" (click)="ready(c)">✓ Reports ready</button>
-        </footer>
-      </section>
+          <footer>
+            <span class="msg" [class.err]="c.message.startsWith('⚠')">{{ c.message }}</span>
+            <span class="progress">{{ doneCount(c) }}/{{ c.results.length }} done</span>
+            <button class="ghost" [disabled]="c.busy" (click)="save(c)">Save</button>
+            <button class="go" [disabled]="c.busy" (click)="ready(c)">✓ Reports ready</button>
+          </footer>
+        </section>
       </ng-container>
     </main>
 
@@ -204,7 +239,12 @@ export class Lab implements OnInit, OnDestroy {
 
   private startResults(v: Visit): LabResult[] {
     if (v.labResults?.length) return v.labResults.map((r) => ({ ...r }));
-    return splitTests(v.labInvestigations).map((name) => ({ name, result: '', range: '', done: false }));
+    return splitTests(v.labInvestigations).map((name) => ({
+      name,
+      result: '',
+      range: '',
+      done: false,
+    }));
   }
 
   private loadCompleted(): void {
@@ -230,7 +270,13 @@ export class Lab implements OnInit, OnDestroy {
             kept.visit = v; // keep typed-but-unsaved results
             return kept;
           }
-          return { visit: v, results: this.startResults(v), dirty: false, busy: false, message: kept?.message || '' };
+          return {
+            visit: v,
+            results: this.startResults(v),
+            dirty: false,
+            busy: false,
+            message: kept?.message || '',
+          };
         });
       },
       error: (err) => {
@@ -264,7 +310,11 @@ export class Lab implements OnInit, OnDestroy {
 
   ready(c: LabCard): void {
     const pending = c.results.filter((r) => r.name.trim() && !r.done).length;
-    if (pending && !confirm(`${pending} test(s) are still pending. Send back to the doctor anyway?`)) return;
+    if (
+      pending &&
+      !confirm(`${pending} test(s) are still pending. Send back to the doctor anyway?`)
+    )
+      return;
     c.busy = true;
     this.api.ready(c.visit._id!, this.clean(c)).subscribe({
       next: () => {

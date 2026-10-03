@@ -1,11 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
-export type VisitStatus =
-  | 'Waiting'
-  | 'In consultation'
-  | 'Lab investigation'
-  | 'Completed';
+export type VisitStatus = 'Waiting' | 'In consultation' | 'Lab investigation' | 'Completed';
 
 export interface Medicine {
   name: string;
@@ -99,10 +95,10 @@ export class VisitService {
 
   constructor(private http: HttpClient) {}
 
-    pulse() {
+  pulse() {
     return this.http.get<{ latest: string | null; count: number }>(
       `${this.url}/pulse`,
-      this.options
+      this.options,
     );
   }
 
@@ -128,10 +124,7 @@ export class VisitService {
   }
 
   getNextPatientId() {
-    return this.http.get<{ patientId: string }>(
-      `${this.url}/next-id`,
-      this.options
-    );
+    return this.http.get<{ patientId: string }>(`${this.url}/next-id`, this.options);
   }
 
   addVisit(visit: Visit) {
@@ -143,22 +136,18 @@ export class VisitService {
   }
 
   updateStatus(id: string, status: VisitStatus) {
-    return this.http.patch<Visit>(
-      `${this.url}/${id}/status`,
-      { status },
-      this.options
-    );
+    return this.http.patch<Visit>(`${this.url}/${id}/status`, { status }, this.options);
   }
 
   // Receptionist: fix name / age / gender / phone / vitals of a visit (page 1 only)
   updateReceptionVisit(
     id: string,
-    data: Pick<Visit, 'patientName' | 'age' | 'gender' | 'phone' | 'vitals'>
+    data: Pick<Visit, 'patientName' | 'age' | 'gender' | 'phone' | 'vitals'>,
   ) {
     return this.http.put<Visit>(
       `https://hospital-backend-yxe9.onrender.com/api/reception/visits/${id}`,
       data,
-      this.options
+      this.options,
     );
   }
 
@@ -194,9 +183,7 @@ export const splitTests = (text = ''): string[] =>
 // "12" with range "4-11" -> true (shown in red)
 export function isAbnormal(result: string, range: string): boolean {
   const value = parseFloat(result);
-  const match = String(range).match(
-    /(-?\d+(?:\.\d+)?)\s*(?:-|–|to)\s*(-?\d+(?:\.\d+)?)/i
-  );
+  const match = String(range).match(/(-?\d+(?:\.\d+)?)\s*(?:-|–|to)\s*(-?\d+(?:\.\d+)?)/i);
   if (Number.isNaN(value) || !match) return false;
   return value < Number(match[1]) || value > Number(match[2]);
 }

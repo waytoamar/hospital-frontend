@@ -22,12 +22,7 @@ type BoardFilter = 'all' | 'waiting' | 'consult' | 'lab' | 'followup' | 'done';
 type PanelKey = Exclude<BoardFilter, 'all'>;
 type ComorbidityNoteKey = 'drugAllergyDetails' | 'surgicalComplicationsNote';
 type SuggestionField =
-  | 'symptoms'
-  | 'diagnosis'
-  | 'comments'
-  | 'labInvestigations'
-  | ExamNoteKey
-  | ComorbidityNoteKey;
+  'symptoms' | 'diagnosis' | 'comments' | 'labInvestigations' | ExamNoteKey | ComorbidityNoteKey;
 type ExamCheckKey =
   | 'anaemia'
   | 'jaundice'
@@ -39,17 +34,7 @@ type ExamCheckKey =
   | 'others';
 type ExamNoteKey = 'cvs' | 'rs' | 'cns' | 'gi';
 type ComorbidityKey =
-  | 'nil'
-  | 'htn'
-  | 'dm'
-  | 'cad'
-  | 'cva'
-  | 'allergy'
-  | 'atopy'
-  | 'asthma'
-  | 'copd'
-  | 'ild'
-  | 'others';
+  'nil' | 'htn' | 'dm' | 'cad' | 'cva' | 'allergy' | 'atopy' | 'asthma' | 'copd' | 'ild' | 'others';
 
 // "Others" tick + a free-text note, added on top of the shared Examination / Comorbidities types
 type ExamForm = Examination & { others: boolean; othersNote: string };
@@ -123,7 +108,7 @@ export class Dashboard implements OnInit, OnDestroy {
     'Respule',
     'Ointment',
     'Lotion',
-    'Puffs'
+    'Puffs',
   ];
 
   readonly frequencyOptions = [
@@ -192,9 +177,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   get medicineSuggestions(): string[] {
     return this.uniqueSuggestions(
-      this.visits.flatMap((visit) =>
-        (visit.medicines || []).map((medicine) => medicine.name),
-      ),
+      this.visits.flatMap((visit) => (visit.medicines || []).map((medicine) => medicine.name)),
     );
   }
 
@@ -251,9 +234,7 @@ export class Dashboard implements OnInit, OnDestroy {
     );
     const query = this.fieldValue(field).trim().toLowerCase();
 
-    return values
-      .filter((value) => !query || value.toLowerCase().includes(query))
-      .slice(0, 8);
+    return values.filter((value) => !query || value.toLowerCase().includes(query)).slice(0, 8);
   }
 
   selectSuggestion(field: SuggestionField, value: string): void {
@@ -275,7 +256,7 @@ export class Dashboard implements OnInit, OnDestroy {
   private readonly draftKey = 'clinic-visit-draft-v2';
   private readonly previewCount = 3;
   private clockTimer?: ReturnType<typeof setInterval>;
-    private pulseTimer?: ReturnType<typeof setInterval>;
+  private pulseTimer?: ReturnType<typeof setInterval>;
   private lastPulse = '';
   private expandedPanels = new Set<PanelKey>();
 
@@ -292,7 +273,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadVisits();
-        this.pulseTimer = setInterval(() => this.checkForChanges(), 10000);
+    this.pulseTimer = setInterval(() => this.checkForChanges(), 10000);
 
     this.clockTimer = setInterval(() => {
       this.now = new Date();
@@ -303,7 +284,7 @@ export class Dashboard implements OnInit, OnDestroy {
     if (this.clockTimer) {
       clearInterval(this.clockTimer);
     }
-        if (this.pulseTimer) {
+    if (this.pulseTimer) {
       clearInterval(this.pulseTimer);
     }
   }
@@ -316,34 +297,24 @@ export class Dashboard implements OnInit, OnDestroy {
     const today = new Date().toDateString();
 
     return this.visits.filter(
-      (visit) =>
-        visit.visitDate &&
-        new Date(visit.visitDate).toDateString() === today,
+      (visit) => visit.visitDate && new Date(visit.visitDate).toDateString() === today,
     );
   }
 
   get waitingVisits(): Visit[] {
-    return this.todayVisits.filter(
-      (visit) => visit.status === 'Waiting',
-    );
+    return this.todayVisits.filter((visit) => visit.status === 'Waiting');
   }
 
   get consultingVisits(): Visit[] {
-    return this.todayVisits.filter(
-      (visit) => visit.status === 'In consultation',
-    );
+    return this.todayVisits.filter((visit) => visit.status === 'In consultation');
   }
 
   get labVisits(): Visit[] {
-    return this.todayVisits.filter(
-      (visit) => visit.status === 'Lab investigation',
-    );
+    return this.todayVisits.filter((visit) => visit.status === 'Lab investigation');
   }
 
   get completedVisits(): Visit[] {
-    return this.todayVisits.filter(
-      (visit) => visit.status === 'Completed',
-    );
+    return this.todayVisits.filter((visit) => visit.status === 'Completed');
   }
 
   get upcomingFollowUps(): Visit[] {
@@ -405,9 +376,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   get filteredVisits(): Visit[] {
-    return this.visits.filter(
-      (visit) => this.matchesSearch(visit) && this.matchesDate(visit),
-    );
+    return this.visits.filter((visit) => this.matchesSearch(visit) && this.matchesDate(visit));
   }
 
   get patients(): Visit[] {
@@ -428,9 +397,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   get selectedPatientVisits(): Visit[] {
-    return this.visits.filter(
-      (visit) => this.patientKey(visit) === this.selectedPatientKey,
-    );
+    return this.visits.filter((visit) => this.patientKey(visit) === this.selectedPatientKey);
   }
 
   // ===== Board (new design) =====
@@ -444,9 +411,9 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   get nowCalling(): string {
-    const current = this.selectedQueueVisit || [...this.consultingVisits].sort(
-      (a, b) => this.timeOf(b) - this.timeOf(a),
-    )[0];
+    const current =
+      this.selectedQueueVisit ||
+      [...this.consultingVisits].sort((a, b) => this.timeOf(b) - this.timeOf(a))[0];
 
     return this.tokenOf(current) || '—';
   }
@@ -454,9 +421,7 @@ export class Dashboard implements OnInit, OnDestroy {
   get upNextVisits(): Visit[] {
     const selectedId = this.selectedQueueVisit?._id;
 
-    return this.boardWaiting
-      .filter((visit) => visit._id !== selectedId)
-      .slice(0, 4);
+    return this.boardWaiting.filter((visit) => visit._id !== selectedId).slice(0, 4);
   }
 
   get queueActionLabel(): string {
@@ -515,11 +480,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
         const followUp = new Date(`${visit.followUpDate}T00:00:00`);
 
-        return (
-          followUp >= start &&
-          followUp <= end &&
-          this.matchesSearch(visit)
-        );
+        return followUp >= start && followUp <= end && this.matchesSearch(visit);
       })
       .sort((a, b) => a.followUpDate!.localeCompare(b.followUpDate!));
   }
@@ -678,7 +639,10 @@ export class Dashboard implements OnInit, OnDestroy {
 
   ageSex(visit: Visit): string {
     const age = String(visit.age ?? '').trim();
-    const sex = String(visit.gender ?? '').trim().charAt(0).toUpperCase();
+    const sex = String(visit.gender ?? '')
+      .trim()
+      .charAt(0)
+      .toUpperCase();
 
     return `${age}${sex}`;
   }
@@ -691,8 +655,7 @@ export class Dashboard implements OnInit, OnDestroy {
           minute: '2-digit',
         })
       : '';
-    const issue =
-      visit.disease || visit.diagnosis || visit.symptoms || 'General';
+    const issue = visit.disease || visit.diagnosis || visit.symptoms || 'General';
 
     let parts: string[];
 
@@ -703,10 +666,10 @@ export class Dashboard implements OnInit, OnDestroy {
 
       case 'followup': {
         const due = visit.followUpDate
-          ? new Date(`${visit.followUpDate}T00:00:00`).toLocaleDateString(
-              'en-GB',
-              { day: '2-digit', month: 'short' },
-            )
+          ? new Date(`${visit.followUpDate}T00:00:00`).toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: 'short',
+            })
           : '';
 
         parts = [token, due ? `Due ${due}` : '', visit.diagnosis || issue];
@@ -733,10 +696,7 @@ export class Dashboard implements OnInit, OnDestroy {
       return '';
     }
 
-    if (
-      this.tokenSource !== this.visits ||
-      this.tokenLength !== this.visits.length
-    ) {
+    if (this.tokenSource !== this.visits || this.tokenLength !== this.visits.length) {
       this.tokenSource = this.visits;
       this.tokenLength = this.visits.length;
       this.tokenMap = new Map<string, string>();
@@ -745,10 +705,7 @@ export class Dashboard implements OnInit, OnDestroy {
         .sort((a, b) => this.timeOf(a) - this.timeOf(b))
         .forEach((item, index) => {
           if (item._id) {
-            this.tokenMap.set(
-              item._id,
-              `A-${String(index + 1).padStart(3, '0')}`,
-            );
+            this.tokenMap.set(item._id, `A-${String(index + 1).padStart(3, '0')}`);
           }
         });
     }
@@ -757,14 +714,9 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   private waitLabel(visit: Visit): string {
-    const minutes = Math.max(
-      0,
-      Math.round((this.now.getTime() - this.timeOf(visit)) / 60000),
-    );
+    const minutes = Math.max(0, Math.round((this.now.getTime() - this.timeOf(visit)) / 60000));
 
-    return minutes < 60
-      ? `${minutes}m`
-      : `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+    return minutes < 60 ? `${minutes}m` : `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
   }
 
   private timeOf(visit: Visit): number {
@@ -776,13 +728,10 @@ export class Dashboard implements OnInit, OnDestroy {
     this.selectedPatientKey = '';
   }
 
-
   logout(): void {
-  this.authService.logout();
-  this.router.navigate(['/login']);
-}
-
-
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
 
   loadNextPatientId(): void {
     this.visitService.getNextPatientId().subscribe({
@@ -810,10 +759,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   closeForm(): void {
-    if (
-      this.hasFormData() &&
-      !confirm('Close this form? Your auto-saved draft will be kept.')
-    ) {
+    if (this.hasFormData() && !confirm('Close this form? Your auto-saved draft will be kept.')) {
       return;
     }
 
@@ -837,9 +783,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   nextStep(): void {
     if (this.formStep === 1 && !this.patientStepValid()) {
-      alert(
-        'Enter patient name, valid age, gender and 10-digit phone number.',
-      );
+      alert('Enter patient name, valid age, gender and 10-digit phone number.');
       return;
     }
 
@@ -877,10 +821,7 @@ export class Dashboard implements OnInit, OnDestroy {
     const patient = this.visits.find(
       (visit) =>
         (phone && visit.phone === phone) ||
-        (
-          patientId &&
-          visit.patientId?.toLowerCase() === patientId
-        ),
+        (patientId && visit.patientId?.toLowerCase() === patientId),
     );
 
     if (!patient) {
@@ -910,25 +851,15 @@ export class Dashboard implements OnInit, OnDestroy {
   saveVisit(): void {
     if (!this.patientStepValid()) {
       this.formStep = 1;
-      alert(
-        'Enter patient name, valid age, gender and 10-digit phone number.',
-      );
+      alert('Enter patient name, valid age, gender and 10-digit phone number.');
       return;
     }
 
-    if (
-      !confirm(
-        this.editingId
-          ? 'Update this visit?'
-          : 'Save this visit?',
-      )
-    ) {
+    if (!confirm(this.editingId ? 'Update this visit?' : 'Save this visit?')) {
       return;
     }
 
-    const medicines = this.medicines.filter(
-      (medicine) => medicine.name.trim(),
-    );
+    const medicines = this.medicines.filter((medicine) => medicine.name.trim());
 
     const visit: Visit = {
       patientId: this.patientId.trim(),
@@ -962,11 +893,7 @@ export class Dashboard implements OnInit, OnDestroy {
         this.loadVisits();
         this.loadNextPatientId();
       },
-      error: (error) =>
-        alert(
-          error?.error?.message ||
-            'Visit could not be saved.',
-        ),
+      error: (error) => alert(error?.error?.message || 'Visit could not be saved.'),
     });
   }
 
@@ -1087,8 +1014,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   setYesNo(field: YesNoField, value: 'Yes' | 'No'): void {
-    this.comorbidities[field] =
-      this.comorbidities[field] === value ? '' : value;
+    this.comorbidities[field] = this.comorbidities[field] === value ? '' : value;
 
     if (this.comorbidities.drugAllergy !== 'Yes') {
       this.comorbidities.drugAllergyDetails = '';
@@ -1114,10 +1040,7 @@ export class Dashboard implements OnInit, OnDestroy {
     ].join(', ');
   }
 
-  allergySummary(visit?: {
-    allergies?: string;
-    comorbidities?: Comorbidities;
-  }): string {
+  allergySummary(visit?: { allergies?: string; comorbidities?: Comorbidities }): string {
     const como = visit?.comorbidities;
 
     if (como?.drugAllergy === 'Yes') {
@@ -1166,7 +1089,6 @@ export class Dashboard implements OnInit, OnDestroy {
     this.excelExport.exportVisits(this.filteredVisits);
   }
 
-
   // Same print layout as the pharmacist's page (one shared function)
   printVisit(visit: Visit): void {
     printPrescription(visit);
@@ -1208,11 +1130,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   private patientKey(visit: Visit): string {
-    return (
-      visit.patientId ||
-      visit.phone ||
-      `${visit.patientName.toLowerCase()}-${visit.age}`
-    );
+    return visit.patientId || visit.phone || `${visit.patientName.toLowerCase()}-${visit.age}`;
   }
 
   private uniqueSuggestions(values: Array<string | undefined>): string[] {
@@ -1301,8 +1219,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
     if (visit.comorbidities?.drugAllergy === 'Yes') {
       this.comorbidities.drugAllergy = 'Yes';
-      this.comorbidities.drugAllergyDetails =
-        visit.comorbidities.drugAllergyDetails || '';
+      this.comorbidities.drugAllergyDetails = visit.comorbidities.drugAllergyDetails || '';
     }
   }
 
@@ -1328,8 +1245,7 @@ export class Dashboard implements OnInit, OnDestroy {
       ...(visit.comorbidities || {}),
     };
 
-    this.labInvestigations =
-      visit.labInvestigations || '';
+    this.labInvestigations = visit.labInvestigations || '';
 
     this.comments = visit.comments || '';
 
@@ -1368,19 +1284,19 @@ export class Dashboard implements OnInit, OnDestroy {
   private hasFormData(): boolean {
     return Boolean(
       this.patientName ||
-        this.phone ||
-        this.age ||
-        this.gender ||
-        this.allergies ||
-        this.disease ||
-        this.symptoms ||
-        this.diagnosis ||
-        this.labInvestigations ||
-        this.comments ||
-        Object.values(this.vitals).some((value) => value) ||
-        Object.values(this.examination).some((value) => value) ||
-        Object.values(this.comorbidities).some((value) => value) ||
-        this.medicines.some((medicine) => medicine.name.trim()),
+      this.phone ||
+      this.age ||
+      this.gender ||
+      this.allergies ||
+      this.disease ||
+      this.symptoms ||
+      this.diagnosis ||
+      this.labInvestigations ||
+      this.comments ||
+      Object.values(this.vitals).some((value) => value) ||
+      Object.values(this.examination).some((value) => value) ||
+      Object.values(this.comorbidities).some((value) => value) ||
+      this.medicines.some((medicine) => medicine.name.trim()),
     );
   }
 

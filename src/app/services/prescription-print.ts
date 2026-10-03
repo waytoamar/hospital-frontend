@@ -33,155 +33,139 @@ const COMORBIDITY_CHECKS = [
 type WithOthers = { others?: boolean; othersNote?: string };
 
 export function printPrescription(visit: Visit): void {
-    const escapeHtml = (value: unknown): string =>
-      String(value || '').replace(
-        /[&<>"']/g,
-        (character) =>
-          ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;',
-          })[character] || character,
-      );
-
-    const has = (value: unknown): boolean =>
-      String(value || '').trim().length > 0;
-
-    const formatDate = (value?: string): string => {
-      if (!value) {
-        return '';
-      }
-      const [year, month, day] = value.split('-');
-      return year && month && day ? `${day}/${month}/${year}` : value;
-    };
-
-    // ---- Letterhead text (edit here if anything changes) ----
-    const clinic = {
-      name: 'CHEST ALLERGY CLINIC',
-      doctor: 'Dr. Mahesh',
-      qualification: 'MBBS, DNB (PULMONOLOGY)',
-      lines: [
-        'FELLOWSHIP IN RESPIRATORY ICU',
-        'INTENSIVIST SLEEP SPECIALIST',
-        'ALLERGY SPECIALIST, INTERVENTIONAL PULMONOLOGIST',
-        '(ASSIST. PROFESSOR DEPT. OF PULMONARY MEDICINE CIMS CWA',
-        'EX. CONSULTANT WCL HOSPITAL BARKUHI)',
-      ],
-      phones: '8109838316, 8817483758',
-      doctorHindi: 'डॉ. महेश',
-      conditionsHindi:
-        'अस्थमा, दमा. सी.ओ.पी.डी.. आई.एल.डी.. निमोनिया, ट्यूबरक्लोसिस (टी.बी.) खासी. एलर्जी, ब्लडप्रेशर रोग, शुगर, थायराइड, हृदय रोग, लकवा. मिर्गी, नींद की बिमारी एवं छाती के संपूर्ण रोग',
-      special: 'Critical Care (Icu) Ventilator Specialist, Bronchoscopy Specialist',
-      addressHindi: 'मानसरोवर कॉम्पलेक्स. बस स्टैंड के पीछे छिन्दवाड़ा (म.प्र.)',
-      footerHindi: 'दवाईयाँ डॉक्टर को दिखाकर ही सेवन करें',
-    };
-
-    // ---- Left column: only vitals that were filled in ----
-    const v = visit.vitals;
-    const vitalRows = [
-      ['BP', v?.bloodPressure],
-      ['Pulse', v?.heartRate],
-      ['SPO2', v?.spo2],
-      ['TEMP', v?.temperature],
-      ['RBS', v?.bloodSugar],
-      ['Weight', v?.weight],
-    ]
-      .filter(([, value]) => has(value))
-      .map(
-        ([label, value]) =>
-          `<div class="vit"><span>${label}</span><b>${escapeHtml(value)}</b></div>`,
-      )
-      .join('');
-
-    const section = (title: string, body: string): string =>
-      body ? `<div class="block"><h4>${title}</h4>${body}</div>` : '';
-
-    const ticks = (labels: string[]): string =>
-      labels.length
-        ? `<p>${labels
-            .map((label) => `<span class="tk">✓ ${escapeHtml(label)}</span>`)
-            .join('')}</p>`
-        : '';
-
-    // ---- Symptoms ----
-    const symptomsSection = section(
-      'Symptoms',
-      has(visit.symptoms) ? `<p>${escapeHtml(visit.symptoms)}</p>` : '',
+  const escapeHtml = (value: unknown): string =>
+    String(value || '').replace(
+      /[&<>"']/g,
+      (character) =>
+        ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;',
+        })[character] || character,
     );
 
-    // ---- Clinical examination: ticked items + written findings only ----
-    const exam = visit.examination as (Visit['examination'] & WithOthers) | undefined;
-    const examTicked: string[] = EXAM_CHECKS
-      .filter((item) => exam?.[item.key])
-      .map((item) => item.label);
-    // what the doctor wrote under "Others" prints in the same row as the ticked findings
-    if (exam?.others && has(exam.othersNote)) {
-      examTicked.push(String(exam.othersNote).trim());
+  const has = (value: unknown): boolean => String(value || '').trim().length > 0;
+
+  const formatDate = (value?: string): string => {
+    if (!value) {
+      return '';
     }
-    const examFindings = EXAM_NOTES
-      .filter((item) => has(exam?.[item.key]))
-      .map(
-        (item) =>
-          `<p><b>${item.label}:</b> ${escapeHtml(exam?.[item.key])}</p>`,
-      )
-      .join('');
-    const examSection = section(
-      'Clinical Examination',
-      ticks(examTicked) + examFindings,
+    const [year, month, day] = value.split('-');
+    return year && month && day ? `${day}/${month}/${year}` : value;
+  };
+
+  // ---- Letterhead text (edit here if anything changes) ----
+  const clinic = {
+    name: 'CHEST ALLERGY CLINIC',
+    doctor: 'Dr. Mahesh',
+    qualification: 'MBBS, DNB (PULMONOLOGY)',
+    lines: [
+      'FELLOWSHIP IN RESPIRATORY ICU',
+      'INTENSIVIST SLEEP SPECIALIST',
+      'ALLERGY SPECIALIST, INTERVENTIONAL PULMONOLOGIST',
+      '(ASSIST. PROFESSOR DEPT. OF PULMONARY MEDICINE CIMS CWA',
+      'EX. CONSULTANT WCL HOSPITAL BARKUHI)',
+    ],
+    phones: '8109838316, 8817483758',
+    doctorHindi: 'डॉ. महेश',
+    conditionsHindi:
+      'अस्थमा, दमा. सी.ओ.पी.डी.. आई.एल.डी.. निमोनिया, ट्यूबरक्लोसिस (टी.बी.) खासी. एलर्जी, ब्लडप्रेशर रोग, शुगर, थायराइड, हृदय रोग, लकवा. मिर्गी, नींद की बिमारी एवं छाती के संपूर्ण रोग',
+    special: 'Critical Care (Icu) Ventilator Specialist, Bronchoscopy Specialist',
+    addressHindi: 'मानसरोवर कॉम्पलेक्स. बस स्टैंड के पीछे छिन्दवाड़ा (म.प्र.)',
+    footerHindi: 'दवाईयाँ डॉक्टर को दिखाकर ही सेवन करें',
+  };
+
+  // ---- Left column: only vitals that were filled in ----
+  const v = visit.vitals;
+  const vitalRows = [
+    ['BP', v?.bloodPressure],
+    ['Pulse', v?.heartRate],
+    ['SPO2', v?.spo2],
+    ['TEMP', v?.temperature],
+    ['RBS', v?.bloodSugar],
+    ['Weight', v?.weight],
+  ]
+    .filter(([, value]) => has(value))
+    .map(
+      ([label, value]) => `<div class="vit"><span>${label}</span><b>${escapeHtml(value)}</b></div>`,
+    )
+    .join('');
+
+  const section = (title: string, body: string): string =>
+    body ? `<div class="block"><h4>${title}</h4>${body}</div>` : '';
+
+  const ticks = (labels: string[]): string =>
+    labels.length
+      ? `<p>${labels.map((label) => `<span class="tk">✓ ${escapeHtml(label)}</span>`).join('')}</p>`
+      : '';
+
+  // ---- Symptoms ----
+  const symptomsSection = section(
+    'Symptoms',
+    has(visit.symptoms) ? `<p>${escapeHtml(visit.symptoms)}</p>` : '',
+  );
+
+  // ---- Clinical examination: ticked items + written findings only ----
+  const exam = visit.examination as (Visit['examination'] & WithOthers) | undefined;
+  const examTicked: string[] = EXAM_CHECKS.filter((item) => exam?.[item.key]).map(
+    (item) => item.label,
+  );
+  // what the doctor wrote under "Others" prints in the same row as the ticked findings
+  if (exam?.others && has(exam.othersNote)) {
+    examTicked.push(String(exam.othersNote).trim());
+  }
+  const examFindings = EXAM_NOTES.filter((item) => has(exam?.[item.key]))
+    .map((item) => `<p><b>${item.label}:</b> ${escapeHtml(exam?.[item.key])}</p>`)
+    .join('');
+  const examSection = section('Clinical Examination', ticks(examTicked) + examFindings);
+
+  // ---- Comorbidities: ticked items + answered Yes/No only ----
+  const como = visit.comorbidities as (Visit['comorbidities'] & WithOthers) | undefined;
+  const comoTicked: string[] = COMORBIDITY_CHECKS.filter((item) => como?.[item.key]).map(
+    (item) => item.label,
+  );
+  // what the doctor wrote under "Others" prints in the same row as the ticked items
+  if (como?.others && has(como.othersNote)) {
+    comoTicked.push(String(como.othersNote).trim());
+  }
+
+  const comoLines: string[] = [];
+  const drugDetails = como?.drugAllergyDetails;
+  const surgicalNote = como?.surgicalComplicationsNote;
+
+  if (como?.drugAllergy === 'Yes') {
+    comoLines.push(
+      `<p><b>Drug allergy:</b> Yes${has(drugDetails) ? ' — ' + escapeHtml(drugDetails) : ''}</p>`,
     );
+  } else if (como?.drugAllergy === 'No') {
+    comoLines.push('<p><b>Drug allergy:</b> No</p>');
+  } else if (has(visit.allergies)) {
+    comoLines.push(`<p><b>Allergies:</b> ${escapeHtml(visit.allergies)}</p>`);
+  }
 
-    // ---- Comorbidities: ticked items + answered Yes/No only ----
-    const como = visit.comorbidities as (Visit['comorbidities'] & WithOthers) | undefined;
-    const comoTicked: string[] = COMORBIDITY_CHECKS
-      .filter((item) => como?.[item.key])
-      .map((item) => item.label);
-    // what the doctor wrote under "Others" prints in the same row as the ticked items
-    if (como?.others && has(como.othersNote)) {
-      comoTicked.push(String(como.othersNote).trim());
-    }
-
-    const comoLines: string[] = [];
-    const drugDetails = como?.drugAllergyDetails;
-    const surgicalNote = como?.surgicalComplicationsNote;
-
-    if (como?.drugAllergy === 'Yes') {
-      comoLines.push(
-        `<p><b>Drug allergy:</b> Yes${has(drugDetails) ? ' — ' + escapeHtml(drugDetails) : ''}</p>`,
-      );
-    } else if (como?.drugAllergy === 'No') {
-      comoLines.push('<p><b>Drug allergy:</b> No</p>');
-    } else if (has(visit.allergies)) {
-      comoLines.push(`<p><b>Allergies:</b> ${escapeHtml(visit.allergies)}</p>`);
-    }
-
-    if (como?.surgicalComplications) {
-      comoLines.push(
-        `<p><b>Previous surgical complications:</b> ${como.surgicalComplications}${has(surgicalNote) ? ' — ' + escapeHtml(surgicalNote) : ''}</p>`,
-      );
-    }
-
-    const comoSection = section(
-      'Comorbidities',
-      ticks(comoTicked) + comoLines.join(''),
+  if (como?.surgicalComplications) {
+    comoLines.push(
+      `<p><b>Previous surgical complications:</b> ${como.surgicalComplications}${has(surgicalNote) ? ' — ' + escapeHtml(surgicalNote) : ''}</p>`,
     );
+  }
 
-    // Investigations are NOT printed: the lab gives its own printed reports to attach.
+  const comoSection = section('Comorbidities', ticks(comoTicked) + comoLines.join(''));
 
-    // ---- Diagnosis ----
-    const diagnosisSection = section(
-      'Diagnosis',
-      (has(visit.disease)
-        ? `<p><b>Disease:</b> ${escapeHtml(visit.disease)}</p>`
-        : '') +
-        (has(visit.diagnosis) ? `<p>${escapeHtml(visit.diagnosis)}</p>` : ''),
-    );
+  // Investigations are NOT printed: the lab gives its own printed reports to attach.
 
-    // ---- Medication ----
-    const medicineRows = (visit.medicines || [])
-      .map(
-        (medicine, index) => `
+  // ---- Diagnosis ----
+  const diagnosisSection = section(
+    'Diagnosis',
+    (has(visit.disease) ? `<p><b>Disease:</b> ${escapeHtml(visit.disease)}</p>` : '') +
+      (has(visit.diagnosis) ? `<p>${escapeHtml(visit.diagnosis)}</p>` : ''),
+  );
+
+  // ---- Medication ----
+  const medicineRows = (visit.medicines || [])
+    .map(
+      (medicine, index) => `
           <tr>
             <td>${index + 1}</td>
             <td>${escapeHtml(medicine.name)}</td>
@@ -191,11 +175,11 @@ export function printPrescription(visit: Visit): void {
             <td>${escapeHtml(medicine.timing)}</td>
           </tr>
         `,
-      )
-      .join('');
+    )
+    .join('');
 
-    const medicineSection = medicineRows
-      ? `
+  const medicineSection = medicineRows
+    ? `
         <div class="rx">Rx</div>
         <table class="meds">
           <thead>
@@ -210,32 +194,26 @@ export function printPrescription(visit: Visit): void {
           </thead>
           <tbody>${medicineRows}</tbody>
         </table>`
-      : '';
+    : '';
 
-    const adviceSection = section(
-      'Advice',
-      has(visit.comments) ? `<p>${escapeHtml(visit.comments)}</p>` : '',
-    );
+  const adviceSection = section(
+    'Advice',
+    has(visit.comments) ? `<p>${escapeHtml(visit.comments)}</p>` : '',
+  );
 
-    const followUpSection = has(visit.followUpDate)
-      ? `<p class="follow"><b>Follow-up date:</b> ${escapeHtml(formatDate(visit.followUpDate))}</p>`
-      : '';
+  const followUpSection = has(visit.followUpDate)
+    ? `<p class="follow"><b>Follow-up date:</b> ${escapeHtml(formatDate(visit.followUpDate))}</p>`
+    : '';
 
-    const visitDate = visit.visitDate
-      ? new Date(visit.visitDate).toLocaleDateString('en-IN')
-      : '';
+  const visitDate = visit.visitDate ? new Date(visit.visitDate).toLocaleDateString('en-IN') : '';
 
-    const printWindow = window.open(
-      '',
-      '_blank',
-      'width=900,height=900',
-    );
+  const printWindow = window.open('', '_blank', 'width=900,height=900');
 
-    if (!printWindow) {
-      return;
-    }
+  if (!printWindow) {
+    return;
+  }
 
-    printWindow.document.write(`
+  printWindow.document.write(`
       <html>
         <head>
           <meta charset="utf-8" />
@@ -484,20 +462,20 @@ export function printPrescription(visit: Visit): void {
       </html>
     `);
 
-    printWindow.document.close();
+  printWindow.document.close();
 
-    setTimeout(() => {
-      // Shrink the text area a little (only if needed) so everything fits on ONE A4 page
-      const page = printWindow.document.querySelector('.page') as HTMLElement | null;
-      const main = printWindow.document.querySelector('.main') as HTMLElement | null;
-      if (page && main) {
-        const maxHeight = (296 / 25.4) * 96; // 296 mm in CSS pixels
-        let zoom = 1;
-        while (page.getBoundingClientRect().height > maxHeight && zoom > 0.5) {
-          zoom = Math.round((zoom - 0.02) * 100) / 100;
-          main.style.setProperty('zoom', String(zoom));
-        }
+  setTimeout(() => {
+    // Shrink the text area a little (only if needed) so everything fits on ONE A4 page
+    const page = printWindow.document.querySelector('.page') as HTMLElement | null;
+    const main = printWindow.document.querySelector('.main') as HTMLElement | null;
+    if (page && main) {
+      const maxHeight = (296 / 25.4) * 96; // 296 mm in CSS pixels
+      let zoom = 1;
+      while (page.getBoundingClientRect().height > maxHeight && zoom > 0.5) {
+        zoom = Math.round((zoom - 0.02) * 100) / 100;
+        main.style.setProperty('zoom', String(zoom));
       }
-      printWindow.print();
-    }, 500);
-  }
+    }
+    printWindow.print();
+  }, 500);
+}

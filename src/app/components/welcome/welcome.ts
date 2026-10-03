@@ -18,25 +18,37 @@ import { AuthService, Role, homeFor } from '../../services/auth';
         <button class="role-card" (click)="open('doctor', '/login')">
           <span class="icon">🩺</span>
           <b>Doctor</b>
-          <small>{{ signedInAs === 'doctor' ? 'Signed in · tap to continue' : 'Username & password' }}</small>
+          <small>{{
+            signedInAs === 'doctor' ? 'Signed in · tap to continue' : 'Username & password'
+          }}</small>
         </button>
 
         <button class="role-card" (click)="open('receptionist', '/pin/receptionist')">
           <span class="icon">📋</span>
           <b>Receptionist</b>
-          <small>{{ signedInAs === 'receptionist' ? 'Signed in · tap to continue' : 'Register patients & manage queue' }}</small>
+          <small>{{
+            signedInAs === 'receptionist'
+              ? 'Signed in · tap to continue'
+              : 'Register patients & manage queue'
+          }}</small>
         </button>
 
         <button class="role-card" (click)="open('pharmacist', '/pin/pharmacist')">
           <span class="icon">💊</span>
           <b>Pharmacist</b>
-          <small>{{ signedInAs === 'pharmacist' ? 'Signed in · tap to continue' : 'Find & print prescriptions' }}</small>
+          <small>{{
+            signedInAs === 'pharmacist'
+              ? 'Signed in · tap to continue'
+              : 'Find & print prescriptions'
+          }}</small>
         </button>
 
         <button class="role-card" (click)="open('lab', '/pin/lab')">
           <span class="icon">🧪</span>
           <b>Lab</b>
-          <small>{{ signedInAs === 'lab' ? 'Signed in · tap to continue' : 'Enter test results & reports' }}</small>
+          <small>{{
+            signedInAs === 'lab' ? 'Signed in · tap to continue' : 'Enter test results & reports'
+          }}</small>
         </button>
       </div>
     </div>
@@ -45,7 +57,10 @@ import { AuthService, Role, homeFor } from '../../services/auth';
 export class Welcome implements OnInit {
   signedInAs: Role | null = null;
 
-  constructor(private router: Router, private auth: AuthService) {}
+  constructor(
+    private router: Router,
+    private auth: AuthService,
+  ) {}
 
   // Only checks who is signed in. It never redirects, so all four cards always show.
   ngOnInit(): void {

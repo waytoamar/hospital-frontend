@@ -92,7 +92,9 @@ button:disabled {
   font-size: 14px;
   font-weight: 600;
   color: var(--muted);
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .navbar-tabs button:hover {
@@ -154,7 +156,6 @@ button:disabled {
   font-weight: 700;
   font-size: 17px;
 }
-
 
 /* ===== Buttons ===== */
 .primary-btn {
@@ -237,7 +238,6 @@ button:disabled {
   color: var(--coral);
 }
 
-
 /* ===== Page Layout & Toolbar ===== */
 .page {
   max-width: 1280px;
@@ -315,7 +315,9 @@ button:disabled {
   font-size: 15px;
   font-weight: 700;
   color: var(--ink);
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .bd-chip:hover {
@@ -333,11 +335,21 @@ button:disabled {
   font-size: 13px;
 }
 
-.c-waiting { color: var(--c-waiting); }
-.c-consult { color: var(--c-consult); }
-.c-followup { color: var(--c-followup); }
-.c-lab { color: var(--c-lab); }
-.c-done { color: var(--c-done); }
+.c-waiting {
+  color: var(--c-waiting);
+}
+.c-consult {
+  color: var(--c-consult);
+}
+.c-followup {
+  color: var(--c-followup);
+}
+.c-lab {
+  color: var(--c-lab);
+}
+.c-done {
+  color: var(--c-done);
+}
 
 .page-head {
   display: flex;
@@ -382,12 +394,29 @@ button:disabled {
   padding: 22px 24px 24px;
 }
 
-.bd-panel[data-tone='waiting'] { --tone: var(--c-waiting); --tone-bg: #fbf3da; }
-.bd-panel[data-tone='consult'] { --tone: var(--c-consult); --tone-bg: #f9e3dd; }
-.bd-panel[data-tone='followup'] { --tone: var(--c-followup); --tone-bg: #dcf0f1; }
-.bd-panel[data-tone='lab'] { --tone: var(--c-lab); --tone-bg: #ebe6fd; }
-.bd-grid:not(.single) .bd-panel[data-tone='done'] { grid-column: 1 / -1; }
-.bd-panel[data-tone='done'] { --tone: var(--c-done); --tone-bg: #dff3e5; }
+.bd-panel[data-tone='waiting'] {
+  --tone: var(--c-waiting);
+  --tone-bg: #fbf3da;
+}
+.bd-panel[data-tone='consult'] {
+  --tone: var(--c-consult);
+  --tone-bg: #f9e3dd;
+}
+.bd-panel[data-tone='followup'] {
+  --tone: var(--c-followup);
+  --tone-bg: #dcf0f1;
+}
+.bd-panel[data-tone='lab'] {
+  --tone: var(--c-lab);
+  --tone-bg: #ebe6fd;
+}
+.bd-grid:not(.single) .bd-panel[data-tone='done'] {
+  grid-column: 1 / -1;
+}
+.bd-panel[data-tone='done'] {
+  --tone: var(--c-done);
+  --tone-bg: #dff3e5;
+}
 
 .bd-panel-head {
   display: flex;
@@ -1138,7 +1167,10 @@ button:disabled {
 .bd-row {
   border: 1px solid transparent;
   cursor: pointer;
-  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
 }
 
 .bd-row:hover,
@@ -1166,14 +1198,28 @@ button:disabled {
   animation: queue-reveal 0.28s ease-out;
 }
 
-.queue-stage[data-tone='consult'] { --queue-accent: var(--c-consult); }
-.queue-stage[data-tone='followup'] { --queue-accent: #32c2c8; }
-.queue-stage[data-tone='lab'] { --queue-accent: var(--c-lab); }
-.queue-stage[data-tone='done'] { --queue-accent: var(--c-done); }
+.queue-stage[data-tone='consult'] {
+  --queue-accent: var(--c-consult);
+}
+.queue-stage[data-tone='followup'] {
+  --queue-accent: #32c2c8;
+}
+.queue-stage[data-tone='lab'] {
+  --queue-accent: var(--c-lab);
+}
+.queue-stage[data-tone='done'] {
+  --queue-accent: var(--c-done);
+}
 
 @keyframes queue-reveal {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .queue-close {
@@ -1190,9 +1236,13 @@ button:disabled {
   font-size: 20px;
 }
 
-.queue-close:hover { background: rgba(255, 255, 255, 0.16); }
+.queue-close:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
 
-.queue-current { padding: 26px 28px 20px; }
+.queue-current {
+  padding: 26px 28px 20px;
+}
 .queue-current small,
 .queue-next-head span {
   display: block;
@@ -1237,7 +1287,9 @@ button:disabled {
   font-weight: 800;
 }
 
-.queue-primary:hover:not(:disabled) { filter: brightness(1.06); }
+.queue-primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
 
 .queue-next {
   padding: 16px 28px 26px;
@@ -1271,8 +1323,15 @@ button:disabled {
   text-align: left;
 }
 
-.queue-next > button:hover { background: rgba(255, 255, 255, 0.14); }
-.queue-next > button span { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+.queue-next > button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.queue-next > button span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
 .queue-next > button b {
   width: 24px;
   height: 24px;
@@ -1290,19 +1349,40 @@ button:disabled {
   font-size: 11px;
   font-style: normal;
 }
-.queue-empty { color: #8fa7ac; font-size: 13px; }
+.queue-empty {
+  color: #8fa7ac;
+  font-size: 13px;
+}
 
 @media (max-width: 720px) {
-  .queue-stage { border-radius: 22px; }
-  .queue-current, .queue-next { padding-left: 18px; padding-right: 18px; }
-  .queue-next > button { align-items: flex-start; flex-direction: column; gap: 4px; }
-  .queue-next > button em { padding-left: 34px; }
+  .queue-stage {
+    border-radius: 22px;
+  }
+  .queue-current,
+  .queue-next {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+  .queue-next > button {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .queue-next > button em {
+    padding-left: 34px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .queue-stage { animation: none; }
-  .bd-row { transition: none; }
-  .bd-row:hover { transform: none; }
+  .queue-stage {
+    animation: none;
+  }
+  .bd-row {
+    transition: none;
+  }
+  .bd-row:hover {
+    transform: none;
+  }
 }
 
 .field-hint {
@@ -1311,7 +1391,6 @@ button:disabled {
   font-size: 12px;
   color: var(--muted);
 }
-
 
 /* ===== Previous visit suggestions ===== */
 .suggestion-field {
@@ -1402,7 +1481,9 @@ button:disabled {
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.12s, border-color 0.12s;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
 }
 
 .chip .box {

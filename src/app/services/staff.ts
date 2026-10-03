@@ -71,11 +71,7 @@ export class ReceptionService {
   }
 
   updateVisit(id: string, body: ReceptionVisitUpdate) {
-    return this.http.put<QueueItem>(
-      `${API}/reception/visits/${id}`,
-      body,
-      options
-    );
+    return this.http.put<QueueItem>(`${API}/reception/visits/${id}`, body, options);
   }
 
   updatePhone(patientId: string, phone: string) {
@@ -115,33 +111,18 @@ export class LabService {
   }
 
   saveResults(id: string, results: LabResult[]) {
-    return this.http.put<Visit>(
-      `${API}/lab/visits/${id}/results`,
-      { results },
-      options
-    );
+    return this.http.put<Visit>(`${API}/lab/visits/${id}/results`, { results }, options);
   }
 
   addPhoto(id: string, data: string) {
-    return this.http.post<Visit>(
-      `${API}/lab/visits/${id}/photos`,
-      { data },
-      options
-    );
+    return this.http.post<Visit>(`${API}/lab/visits/${id}/photos`, { data }, options);
   }
 
   deletePhoto(id: string, photoId: string) {
-    return this.http.delete<Visit>(
-      `${API}/lab/visits/${id}/photos/${photoId}`,
-      options
-    );
+    return this.http.delete<Visit>(`${API}/lab/visits/${id}/photos/${photoId}`, options);
   }
 
   ready(id: string, results: LabResult[]) {
-    return this.http.post<{ ok: boolean }>(
-      `${API}/lab/visits/${id}/ready`,
-      { results },
-      options
-    );
+    return this.http.post<{ ok: boolean }>(`${API}/lab/visits/${id}/ready`, { results }, options);
   }
 }

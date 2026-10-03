@@ -22,7 +22,10 @@ export class SpeechService {
       const ctx = this.audioCtx;
       if (!ctx) return;
       const now = ctx.currentTime;
-      [[880, 0], [660, 0.3]].forEach(([freq, offset]) => {
+      [
+        [880, 0],
+        [660, 0.3],
+      ].forEach(([freq, offset]) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
@@ -53,21 +56,24 @@ export class SpeechService {
       null;
 
     // small delay: after cancel() Chrome sometimes ignores an immediate speak()
-    setTimeout(() => {
-      synth.resume();
-      for (let i = 0; i < repeat; i++) {
-        const u = new SpeechSynthesisUtterance(text);
-        if (voice) u.voice = voice;
-        u.lang = voice?.lang || 'en-IN';
-        u.volume = 1;
-        u.rate = 0.85;
-        u.pitch = 1;
-        this.keep.push(u);
-        u.onend = u.onerror = () => {
-          this.keep = this.keep.filter((x) => x !== u);
-        };
-        synth.speak(u);
-      }
-    }, withChime ? 700 : 100);
+    setTimeout(
+      () => {
+        synth.resume();
+        for (let i = 0; i < repeat; i++) {
+          const u = new SpeechSynthesisUtterance(text);
+          if (voice) u.voice = voice;
+          u.lang = voice?.lang || 'en-IN';
+          u.volume = 1;
+          u.rate = 0.85;
+          u.pitch = 1;
+          this.keep.push(u);
+          u.onend = u.onerror = () => {
+            this.keep = this.keep.filter((x) => x !== u);
+          };
+          synth.speak(u);
+        }
+      },
+      withChime ? 700 : 100,
+    );
   }
 }

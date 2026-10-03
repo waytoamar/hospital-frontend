@@ -19,7 +19,10 @@ export class ForgotPassword {
   loading = false;
   resultMessage = '';
 
-  constructor(private fb: FormBuilder, private http: HttpClient) {
+  constructor(
+    private fb: FormBuilder,
+    private http: HttpClient,
+  ) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
     });

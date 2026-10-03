@@ -6,10 +6,7 @@ import { Visit } from './services/visit';
   providedIn: 'root',
 })
 export class ExcelExportService {
-  exportVisits(
-    visits: Visit[],
-    fileName = 'visits.xlsx'
-  ): void {
+  exportVisits(visits: Visit[], fileName = 'visits.xlsx'): void {
     const headers = [
       'Patient ID',
       'Patient Name',
@@ -52,43 +49,27 @@ export class ExcelExportService {
           (medicine) =>
             `${medicine.name} | ${medicine.dosage} | ` +
             `${medicine.frequency} | ${medicine.duration} | ` +
-            `${medicine.timing}`
+            `${medicine.timing}`,
         )
         .join('\n'),
       visit.followUpDate || '',
       visit.status,
       visit.comments || '',
-      visit.visitDate
-        ? new Date(visit.visitDate).toLocaleDateString('en-IN')
-        : '',
+      visit.visitDate ? new Date(visit.visitDate).toLocaleDateString('en-IN') : '',
     ]);
 
-    const worksheet =
-      XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
 
-    const widths = [
-      14, 20, 14, 6, 9, 18, 24, 24, 20, 12,
-      12, 10, 12, 24, 48, 14, 18, 25, 14,
-    ];
+    const widths = [14, 20, 14, 6, 9, 18, 24, 24, 20, 12, 12, 10, 12, 24, 48, 14, 18, 25, 14];
 
     worksheet['!cols'] = widths.map((width) => ({
       wch: width,
     }));
 
-    const range = XLSX.utils.decode_range(
-      worksheet['!ref'] || 'A1'
-    );
+    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
 
-    for (
-      let row = range.s.r;
-      row <= range.e.r;
-      row++
-    ) {
-      for (
-        let column = range.s.c;
-        column <= range.e.c;
-        column++
-      ) {
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      for (let column = range.s.c; column <= range.e.c; column++) {
         const address = XLSX.utils.encode_cell({
           r: row,
           c: column,
@@ -126,11 +107,7 @@ export class ExcelExportService {
 
     const workbook = XLSX.utils.book_new();
 
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheet,
-      'Visits'
-    );
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Visits');
 
     XLSX.writeFile(workbook, fileName);
   }

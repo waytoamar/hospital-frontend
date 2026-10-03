@@ -20,13 +20,29 @@ import { printPrescription } from '../../services/prescription-print';
       </div>
 
       <label class="search">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-             stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
-        <input placeholder="Search token, patient name or phone…" [(ngModel)]="search" (ngModelChange)="onSearch()" />
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="M20 20l-3.5-3.5"></path>
+        </svg>
+        <input
+          placeholder="Search token, patient name or phone…"
+          [(ngModel)]="search"
+          (ngModelChange)="onSearch()"
+        />
       </label>
 
       <div class="who">
-        <div><b>{{ name }}</b></div>
+        <div>
+          <b>{{ name }}</b>
+        </div>
         <button class="logout" (click)="logout()">Logout ⇥</button>
       </div>
     </header>
@@ -35,8 +51,18 @@ import { printPrescription } from '../../services/prescription-print';
       <div class="head">
         <div>
           <p class="date">{{ now | date: 'EEEE, d MMMM' }}</p>
-          <h1>{{ searching ? 'Search results' : tab === 'today' ? 'Completed Consultations' : 'Recent Prescriptions' }}</h1>
-          <p class="lead">Doctor-completed prescriptions appear here automatically. View the details and print.</p>
+          <h1>
+            {{
+              searching
+                ? 'Search results'
+                : tab === 'today'
+                  ? 'Completed Consultations'
+                  : 'Recent Prescriptions'
+            }}
+          </h1>
+          <p class="lead">
+            Doctor-completed prescriptions appear here automatically. View the details and print.
+          </p>
         </div>
         <div class="toggle">
           <button [class.on]="tab === 'today'" (click)="setTab('today')">Active Queue</button>
@@ -55,14 +81,20 @@ import { printPrescription } from '../../services/prescription-print';
         <div class="trow" *ngFor="let v of rows; trackBy: trackById">
           <div class="c-token">
             <b>{{ v.token || '—' }}</b>
-            <small>{{ v.visitDate | date: (tab === 'today' && !searching ? 'h:mm a' : 'dd MMM, h:mm a') }}</small>
+            <small>{{
+              v.visitDate | date: (tab === 'today' && !searching ? 'h:mm a' : 'dd MMM, h:mm a')
+            }}</small>
           </div>
           <div class="c-patient">
             <b>{{ v.patientName }}</b>
             <small>{{ v.age }} · {{ v.gender }} · {{ v.phone }}</small>
           </div>
           <div class="c-diag">{{ v.diagnosis || v.disease || '—' }}</div>
-          <div><span class="pill">{{ v.medicines.length }} medication{{ v.medicines.length === 1 ? '' : 's' }}</span></div>
+          <div>
+            <span class="pill"
+              >{{ v.medicines.length }} medication{{ v.medicines.length === 1 ? '' : 's' }}</span
+            >
+          </div>
           <div class="c-status"><i></i>Ready to dispense</div>
           <div class="c-actions">
             <button class="link" (click)="detail = v">👁 View details</button>
@@ -71,7 +103,13 @@ import { printPrescription } from '../../services/prescription-print';
         </div>
 
         <p class="empty" *ngIf="!rows.length && !loading">
-          {{ searching ? 'No prescription found' : tab === 'today' ? 'No completed consultations yet today' : 'No prescriptions yet' }}
+          {{
+            searching
+              ? 'No prescription found'
+              : tab === 'today'
+                ? 'No completed consultations yet today'
+                : 'No prescriptions yet'
+          }}
         </p>
       </section>
 
@@ -149,7 +187,11 @@ export class Pharmacy implements OnInit, OnDestroy {
   private refreshTimer?: ReturnType<typeof setInterval>;
   private searchTimer?: ReturnType<typeof setTimeout>;
 
-  constructor(private api: PharmacyService, private auth: AuthService, private router: Router) {}
+  constructor(
+    private api: PharmacyService,
+    private auth: AuthService,
+    private router: Router,
+  ) {}
 
   get name(): string {
     return this.auth.getUsername();

@@ -24,10 +24,10 @@ export const homeFor = (role: Role): string =>
   role === 'doctor'
     ? '/dashboard'
     : role === 'receptionist'
-    ? '/reception'
-    : role === 'lab'
-    ? '/lab'
-    : '/pharmacy';
+      ? '/reception'
+      : role === 'lab'
+        ? '/lab'
+        : '/pharmacy';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -44,21 +44,13 @@ export class AuthService {
 
   login(username: string, password: string) {
     return this.http
-      .post<SessionResponse>(
-        `${this.url}/login`,
-        { username, password },
-        { withCredentials: true }
-      )
+      .post<SessionResponse>(`${this.url}/login`, { username, password }, { withCredentials: true })
       .pipe(tap((response) => this.remember(response, 'doctor')));
   }
 
   pinLogin(role: Exclude<Role, 'doctor'>, pin: string) {
     return this.http
-      .post<SessionResponse>(
-        `${this.url}/pin-login`,
-        { role, pin },
-        { withCredentials: true }
-      )
+      .post<SessionResponse>(`${this.url}/pin-login`, { role, pin }, { withCredentials: true })
       .pipe(tap((response) => this.remember(response, role)));
   }
 
@@ -81,13 +73,11 @@ export class AuthService {
   }
 
   logout() {
-    return this.http
-      .post(`${this.url}/logout`, {}, { withCredentials: true })
-      .pipe(
-        tap(() => {
-          this.doctor = null;
-          this.role = null;
-        })
-      );
+    return this.http.post(`${this.url}/logout`, {}, { withCredentials: true }).pipe(
+      tap(() => {
+        this.doctor = null;
+        this.role = null;
+      }),
+    );
   }
 }
