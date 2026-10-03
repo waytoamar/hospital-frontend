@@ -83,7 +83,7 @@ import { printPrescription } from '../../services/prescription-print';
         </div>
         <div class="card cream">
           <small>AUTO REFRESH</small>
-          <strong class="sm">Every 15 seconds</strong>
+          <strong class="sm">Every 10 seconds</strong>
           <span>Last updated {{ updated ? (updated | date: 'h:mm:ss a') : '…' }}</span>
         </div>
       </section>
@@ -164,7 +164,7 @@ export class Pharmacy implements OnInit, OnDestroy {
     // Keeps the "today" board up to date when the doctor completes a visit
     this.refreshTimer = setInterval(() => {
       if (!this.searching && !this.detail) this.refresh();
-    }, 15000);
+    }, 10000);
   }
 
   ngOnDestroy(): void {

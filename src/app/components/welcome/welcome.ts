@@ -20,15 +20,23 @@ import { AuthService, Role, homeFor } from '../../services/auth';
           <b>Doctor</b>
           <small>{{ signedInAs === 'doctor' ? 'Signed in · tap to continue' : 'Username & password' }}</small>
         </button>
+
         <button class="role-card" (click)="open('receptionist', '/pin/receptionist')">
           <span class="icon">📋</span>
           <b>Receptionist</b>
           <small>{{ signedInAs === 'receptionist' ? 'Signed in · tap to continue' : 'Register patients & manage queue' }}</small>
         </button>
+
         <button class="role-card" (click)="open('pharmacist', '/pin/pharmacist')">
           <span class="icon">💊</span>
           <b>Pharmacist</b>
           <small>{{ signedInAs === 'pharmacist' ? 'Signed in · tap to continue' : 'Find & print prescriptions' }}</small>
+        </button>
+
+        <button class="role-card" (click)="open('lab', '/pin/lab')">
+          <span class="icon">🧪</span>
+          <b>Lab</b>
+          <small>{{ signedInAs === 'lab' ? 'Signed in · tap to continue' : 'Enter test results & reports' }}</small>
         </button>
       </div>
     </div>
@@ -39,7 +47,7 @@ export class Welcome implements OnInit {
 
   constructor(private router: Router, private auth: AuthService) {}
 
-  // Only checks who is signed in. It never redirects, so all three cards always show.
+  // Only checks who is signed in. It never redirects, so all four cards always show.
   ngOnInit(): void {
     this.auth.me().subscribe({
       next: () => (this.signedInAs = this.auth.getRole()),

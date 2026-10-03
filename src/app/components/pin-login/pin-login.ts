@@ -1,7 +1,7 @@
 import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AuthService, homeFor } from '../../services/auth';
+import { AuthService, Role, homeFor } from '../../services/auth';
 
 @Component({
   selector: 'app-pin-login',
@@ -12,7 +12,7 @@ import { AuthService, homeFor } from '../../services/auth';
     <div class="center-page">
       <div class="pin-card">
         <img class="logo-img" src="lungs.jpg" alt="Chest & Allergy Clinic" />
-        <h1 class="title">{{ role === 'receptionist' ? 'Receptionist' : 'Pharmacist' }}</h1>
+        <h1 class="title">{{ roleTitle }}</h1>
         <p class="sub">Enter your 4-digit PIN</p>
 
         <div class="dots">
@@ -21,8 +21,15 @@ import { AuthService, homeFor } from '../../services/auth';
         <p class="error" *ngIf="error">{{ error }}</p>
 
         <div class="pad">
-          <button *ngFor="let key of keys" class="key" [class.blank]="key === ''"
-                  [disabled]="busy || key === ''" (click)="press(key)">{{ key }}</button>
+          <button
+            *ngFor="let key of keys"
+            class="key"
+            [class.blank]="key === ''"
+            [disabled]="busy || key === ''"
+            (click)="press(key)"
+          >
+            {{ key }}
+          </button>
         </div>
 
         <a class="link" routerLink="/welcome">← Back</a>
@@ -31,19 +38,37 @@ import { AuthService, homeFor } from '../../services/auth';
   `,
 })
 export class PinLogin {
-  role: 'receptionist' | 'pharmacist' = 'receptionist';
+  // 1. Role టైప్‌కు 'lab' జోడించబడింది
+  role: Exclude<Role, 'doctor'> = 'receptionist';
   pin = '';
   error = '';
   busy = false;
   readonly keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'];
 
-  constructor(route: ActivatedRoute, private auth: AuthService, private router: Router) {
-    const role = route.snapshot.paramMap.get('role');
-    if (role === 'receptionist' || role === 'pharmacist') {
-      this.role = role;
+  constructor(
+    route: ActivatedRoute,
+    private auth: AuthService,
+    private router: Router
+  ) {
+    const roleParam = route.snapshot.paramMap.get('role');
+    // 2. Route Params తనిఖీలో 'lab' ని చేర్చాం
+    if (
+      roleParam === 'receptionist' ||
+      roleParam === 'pharmacist' ||
+      roleParam === 'lab'
+    ) {
+      this.role = roleParam;
     } else {
       this.router.navigate(['/welcome']);
     }
+  }
+
+  // 3. UI టైటిల్ ప్రదర్శించడానికి హెల్పర్ గెట్టర్
+  get roleTitle(): string {
+    if (this.role === 'receptionist') return 'Receptionist';
+    if (this.role === 'pharmacist') return 'Pharmacist';
+    if (this.role === 'lab') return 'Lab Technician';
+    return '';
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -71,7 +96,8 @@ export class PinLogin {
       error: (err) => {
         this.busy = false;
         this.pin = '';
-        this.error = err?.error?.message || 'Could not sign in. Please try again.';
+        this.error =
+          err?.error?.message || 'Could not sign in. Please try again.';
       },
     });
   }

@@ -29,6 +29,9 @@ const COMORBIDITY_CHECKS = [
   { key: 'ild', label: 'ILD' },
 ] as const;
 
+// "Others" tick + free text (added on top of the shared Visit types)
+type WithOthers = { others?: boolean; othersNote?: string };
+
 export function printPrescription(visit: Visit): void {
     const escapeHtml = (value: unknown): string =>
       String(value || '').replace(
@@ -109,10 +112,14 @@ export function printPrescription(visit: Visit): void {
     );
 
     // ---- Clinical examination: ticked items + written findings only ----
-    const exam = visit.examination;
-    const examTicked = EXAM_CHECKS
+    const exam = visit.examination as (Visit['examination'] & WithOthers) | undefined;
+    const examTicked: string[] = EXAM_CHECKS
       .filter((item) => exam?.[item.key])
       .map((item) => item.label);
+    // what the doctor wrote under "Others" prints in the same row as the ticked findings
+    if (exam?.others && has(exam.othersNote)) {
+      examTicked.push(String(exam.othersNote).trim());
+    }
     const examFindings = EXAM_NOTES
       .filter((item) => has(exam?.[item.key]))
       .map(
@@ -126,10 +133,14 @@ export function printPrescription(visit: Visit): void {
     );
 
     // ---- Comorbidities: ticked items + answered Yes/No only ----
-    const como = visit.comorbidities;
-    const comoTicked = COMORBIDITY_CHECKS
+    const como = visit.comorbidities as (Visit['comorbidities'] & WithOthers) | undefined;
+    const comoTicked: string[] = COMORBIDITY_CHECKS
       .filter((item) => como?.[item.key])
       .map((item) => item.label);
+    // what the doctor wrote under "Others" prints in the same row as the ticked items
+    if (como?.others && has(como.othersNote)) {
+      comoTicked.push(String(como.othersNote).trim());
+    }
 
     const comoLines: string[] = [];
     const drugDetails = como?.drugAllergyDetails;
@@ -156,13 +167,7 @@ export function printPrescription(visit: Visit): void {
       ticks(comoTicked) + comoLines.join(''),
     );
 
-    // ---- Investigations ----
-    const investigationsSection = section(
-      'Investigations',
-      has(visit.labInvestigations)
-        ? `<p>${escapeHtml(visit.labInvestigations)}</p>`
-        : '',
-    );
+    // Investigations are NOT printed: the lab gives its own printed reports to attach.
 
     // ---- Diagnosis ----
     const diagnosisSection = section(
@@ -259,6 +264,7 @@ export function printPrescription(visit: Visit): void {
 
             .page {
               position: relative;
+              width: 210mm;
               min-height: 296mm;
               padding-bottom: 34mm;
             }
@@ -393,7 +399,7 @@ export function printPrescription(visit: Visit): void {
 
             .follow { margin: 8px 0; text-align: left; }
 
-            .sign { display: flex; justify-content: flex-end; margin-top: 30mm; }
+            .sign { display: flex; justify-content: flex-end; margin-top: 22mm; }
             .sign div { min-width: 50mm; padding-top: 4px; border-top: 1px solid #777; text-align: center; font-size: 12px; }
 
             /* ---- Footer ---- */
@@ -458,7 +464,6 @@ export function printPrescription(visit: Visit): void {
                 ${symptomsSection}
                 ${examSection}
                 ${comoSection}
-                ${investigationsSection}
                 ${diagnosisSection}
                 ${medicineSection}
                 ${adviceSection}
@@ -482,7 +487,17 @@ export function printPrescription(visit: Visit): void {
     printWindow.document.close();
 
     setTimeout(() => {
+      // Shrink the text area a little (only if needed) so everything fits on ONE A4 page
+      const page = printWindow.document.querySelector('.page') as HTMLElement | null;
+      const main = printWindow.document.querySelector('.main') as HTMLElement | null;
+      if (page && main) {
+        const maxHeight = (296 / 25.4) * 96; // 296 mm in CSS pixels
+        let zoom = 1;
+        while (page.getBoundingClientRect().height > maxHeight && zoom > 0.5) {
+          zoom = Math.round((zoom - 0.02) * 100) / 100;
+          main.style.setProperty('zoom', String(zoom));
+        }
+      }
       printWindow.print();
     }, 500);
   }
-

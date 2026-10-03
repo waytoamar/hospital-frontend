@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs';
 
-export type Role = 'doctor' | 'receptionist' | 'pharmacist';
+export type Role = 'doctor' | 'receptionist' | 'pharmacist' | 'lab';
 
 export interface Doctor {
   id: string;
@@ -14,13 +14,20 @@ export interface Doctor {
 
 // Doctor gets everything; staff only get name + photo
 type Person = Partial<Doctor> & { displayName: string; avatarUrl: string };
+
 interface SessionResponse {
   role?: Role;
   doctor: Person;
 }
 
 export const homeFor = (role: Role): string =>
-  role === 'doctor' ? '/dashboard' : role === 'receptionist' ? '/reception' : '/pharmacy';
+  role === 'doctor'
+    ? '/dashboard'
+    : role === 'receptionist'
+    ? '/reception'
+    : role === 'lab'
+    ? '/lab'
+    : '/pharmacy';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -37,13 +44,21 @@ export class AuthService {
 
   login(username: string, password: string) {
     return this.http
-      .post<SessionResponse>(`${this.url}/login`, { username, password }, { withCredentials: true })
+      .post<SessionResponse>(
+        `${this.url}/login`,
+        { username, password },
+        { withCredentials: true }
+      )
       .pipe(tap((response) => this.remember(response, 'doctor')));
   }
 
-  pinLogin(role: 'receptionist' | 'pharmacist', pin: string) {
+  pinLogin(role: Exclude<Role, 'doctor'>, pin: string) {
     return this.http
-      .post<SessionResponse>(`${this.url}/pin-login`, { role, pin }, { withCredentials: true })
+      .post<SessionResponse>(
+        `${this.url}/pin-login`,
+        { role, pin },
+        { withCredentials: true }
+      )
       .pipe(tap((response) => this.remember(response, role)));
   }
 
@@ -68,6 +83,11 @@ export class AuthService {
   logout() {
     return this.http
       .post(`${this.url}/logout`, {}, { withCredentials: true })
-      .pipe(tap(() => { this.doctor = null; this.role = null; }));
+      .pipe(
+        tap(() => {
+          this.doctor = null;
+          this.role = null;
+        })
+      );
   }
 }

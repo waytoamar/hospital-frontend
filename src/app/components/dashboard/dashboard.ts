@@ -3,6 +3,7 @@ import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/co
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
+import { isAbnormal } from '../../services/visit';
 import {
   Comorbidities,
   Examination,
@@ -13,22 +14,32 @@ import {
   Vitals,
 } from '../../services/visit';
 import { ExcelExportService } from '../../excel-export.service';
-import { LETTERHEAD_LOGO, LETTERHEAD_ORGANS } from './letterhead-images';
+import { printPrescription } from '../../services/prescription-print';
 
 type View = 'board' | 'patients' | 'records';
 type FormStep = 1 | 2 | 3 | 4;
-type BoardFilter = 'all' | 'waiting' | 'consult' | 'followup' | 'done';
+type BoardFilter = 'all' | 'waiting' | 'consult' | 'lab' | 'followup' | 'done';
 type PanelKey = Exclude<BoardFilter, 'all'>;
-type SuggestionField = 'symptoms' | 'diagnosis' | 'comments';
+type ComorbidityNoteKey = 'drugAllergyDetails' | 'surgicalComplicationsNote';
+type SuggestionField =
+  | 'symptoms'
+  | 'diagnosis'
+  | 'comments'
+  | 'labInvestigations'
+  | ExamNoteKey
+  | ComorbidityNoteKey;
 type ExamCheckKey =
   | 'anaemia'
   | 'jaundice'
   | 'clubbing'
   | 'cyanosis'
   | 'pedalEdema'
-  | 'lymphNode';
+  | 'lymphNode'
+  | 'nilSignificant'
+  | 'others';
 type ExamNoteKey = 'cvs' | 'rs' | 'cns' | 'gi';
 type ComorbidityKey =
+  | 'nil'
   | 'htn'
   | 'dm'
   | 'cad'
@@ -37,7 +48,13 @@ type ComorbidityKey =
   | 'atopy'
   | 'asthma'
   | 'copd'
-  | 'ild';
+  | 'ild'
+  | 'others';
+
+// "Others" tick + a free-text note, added on top of the shared Examination / Comorbidities types
+type ExamForm = Examination & { others: boolean; othersNote: string };
+type ComorbidityForm = Comorbidities & { others: boolean; othersNote: string };
+
 type YesNoField = 'drugAllergy' | 'surgicalComplications';
 
 interface BoardPanel {
@@ -56,6 +73,8 @@ interface BoardPanel {
   styleUrl: './dashboard.css',
 })
 export class Dashboard implements OnInit, OnDestroy {
+  photoView: string | null = null;
+  isAbnormal = isAbnormal;
   activeView: View = 'board';
   boardFilter: BoardFilter = 'all';
   now = new Date();
@@ -85,8 +104,8 @@ export class Dashboard implements OnInit, OnDestroy {
   diagnosis = '';
   allergies = '';
   vitals: Vitals = this.emptyVitals();
-  examination: Examination = this.emptyExamination();
-  comorbidities: Comorbidities = this.emptyComorbidities();
+  examination: ExamForm = this.emptyExamination();
+  comorbidities: ComorbidityForm = this.emptyComorbidities();
   labInvestigations = '';
   comments = '';
   medicines: Medicine[] = [this.emptyMedicine()];
@@ -135,6 +154,8 @@ export class Dashboard implements OnInit, OnDestroy {
     { key: 'cyanosis', label: 'Cyanosis' },
     { key: 'pedalEdema', label: 'Pedal edema' },
     { key: 'lymphNode', label: 'Lymph node' },
+    { key: 'nilSignificant', label: 'Nil significant' },
+    { key: 'others', label: 'Others' },
   ];
 
   readonly examNotes: { key: ExamNoteKey; label: string }[] = [
@@ -145,6 +166,7 @@ export class Dashboard implements OnInit, OnDestroy {
   ];
 
   readonly comorbidityChecks: { key: ComorbidityKey; label: string }[] = [
+    { key: 'nil', label: 'Nil' },
     { key: 'htn', label: 'HTN' },
     { key: 'dm', label: 'DM' },
     { key: 'cad', label: 'CAD' },
@@ -154,11 +176,13 @@ export class Dashboard implements OnInit, OnDestroy {
     { key: 'asthma', label: 'Asthma' },
     { key: 'copd', label: 'COPD' },
     { key: 'ild', label: 'ILD' },
+    { key: 'others', label: 'Others' },
   ];
 
   readonly statuses: VisitStatus[] = [
     'Waiting',
     'In consultation',
+    'Lab investigation',
     'Completed',
   ];
 
@@ -182,11 +206,50 @@ export class Dashboard implements OnInit, OnDestroy {
     this.activeSuggestionField = null;
   }
 
+  // ---- helpers: where each suggestion field lives (form value + saved value in old visits) ----
+  private isExamNote(field: SuggestionField): field is ExamNoteKey {
+    return field === 'cvs' || field === 'rs' || field === 'cns' || field === 'gi';
+  }
+
+  private isComorbidityNote(field: SuggestionField): field is ComorbidityNoteKey {
+    return field === 'drugAllergyDetails' || field === 'surgicalComplicationsNote';
+  }
+
+  private fieldValue(field: SuggestionField): string {
+    if (this.isExamNote(field)) {
+      return String(this.examination[field] || '');
+    }
+    if (this.isComorbidityNote(field)) {
+      return String(this.comorbidities[field] || '');
+    }
+    return String(this[field] || '');
+  }
+
+  private setFieldValue(field: SuggestionField, value: string): void {
+    if (this.isExamNote(field)) {
+      this.examination[field] = value;
+    } else if (this.isComorbidityNote(field)) {
+      this.comorbidities[field] = value;
+    } else {
+      this[field] = value;
+    }
+  }
+
+  private savedValue(visit: Visit, field: SuggestionField): string | undefined {
+    if (this.isExamNote(field)) {
+      return visit.examination?.[field];
+    }
+    if (this.isComorbidityNote(field)) {
+      return visit.comorbidities?.[field];
+    }
+    return visit[field];
+  }
+
   filteredSuggestions(field: SuggestionField): string[] {
     const values = this.uniqueSuggestions(
-      this.visits.map((visit) => visit[field]),
+      this.visits.map((visit) => this.savedValue(visit, field)),
     );
-    const query = this[field].trim().toLowerCase();
+    const query = this.fieldValue(field).trim().toLowerCase();
 
     return values
       .filter((value) => !query || value.toLowerCase().includes(query))
@@ -194,7 +257,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   selectSuggestion(field: SuggestionField, value: string): void {
-    this[field] = value;
+    this.setFieldValue(field, value);
     this.activeSuggestionField = null;
     this.saveDraft();
   }
@@ -212,6 +275,8 @@ export class Dashboard implements OnInit, OnDestroy {
   private readonly draftKey = 'clinic-visit-draft-v2';
   private readonly previewCount = 3;
   private clockTimer?: ReturnType<typeof setInterval>;
+    private pulseTimer?: ReturnType<typeof setInterval>;
+  private lastPulse = '';
   private expandedPanels = new Set<PanelKey>();
 
   private tokenSource: Visit[] | null = null;
@@ -227,6 +292,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadVisits();
+        this.pulseTimer = setInterval(() => this.checkForChanges(), 10000);
 
     this.clockTimer = setInterval(() => {
       this.now = new Date();
@@ -236,6 +302,9 @@ export class Dashboard implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.clockTimer) {
       clearInterval(this.clockTimer);
+    }
+        if (this.pulseTimer) {
+      clearInterval(this.pulseTimer);
     }
   }
 
@@ -262,6 +331,12 @@ export class Dashboard implements OnInit, OnDestroy {
   get consultingVisits(): Visit[] {
     return this.todayVisits.filter(
       (visit) => visit.status === 'In consultation',
+    );
+  }
+
+  get labVisits(): Visit[] {
+    return this.todayVisits.filter(
+      (visit) => visit.status === 'Lab investigation',
     );
   }
 
@@ -393,6 +468,10 @@ export class Dashboard implements OnInit, OnDestroy {
       return 'Complete consultation';
     }
 
+    if (this.selectedQueueVisit?.status === 'Lab investigation') {
+      return 'Reports back — resume consultation';
+    }
+
     return 'Call next patient';
   }
 
@@ -404,6 +483,12 @@ export class Dashboard implements OnInit, OnDestroy {
 
   get boardConsulting(): Visit[] {
     return this.consultingVisits
+      .filter((visit) => this.matchesSearch(visit))
+      .sort((a, b) => this.timeOf(a) - this.timeOf(b));
+  }
+
+  get boardLab(): Visit[] {
+    return this.labVisits
       .filter((visit) => this.matchesSearch(visit))
       .sort((a, b) => this.timeOf(a) - this.timeOf(b));
   }
@@ -454,6 +539,13 @@ export class Dashboard implements OnInit, OnDestroy {
         note: 'active now',
         empty: 'No active consultation',
         visits: this.boardConsulting,
+      },
+      {
+        key: 'lab',
+        label: 'LAB INVESTIGATION',
+        note: 'gone for tests / reports',
+        empty: 'No patients at the lab',
+        visits: this.boardLab,
       },
       {
         key: 'followup',
@@ -509,6 +601,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
     const nextStatus: VisitStatus =
       visit.status === 'In consultation' ? 'Completed' : 'In consultation';
+    const fromLab = visit.status === 'Lab investigation';
 
     if (!visit._id) {
       return;
@@ -522,6 +615,13 @@ export class Dashboard implements OnInit, OnDestroy {
 
         if (nextStatus === 'Completed') {
           this.selectedQueuePanel = 'done';
+          return;
+        }
+
+        if (fromLab) {
+          // Reports are back: open the visit so the doctor can see them and write medicines
+          this.selectedQueuePanel = 'consult';
+          this.editVisit(visit);
           return;
         }
 
@@ -612,6 +712,10 @@ export class Dashboard implements OnInit, OnDestroy {
         parts = [token, due ? `Due ${due}` : '', visit.diagnosis || issue];
         break;
       }
+
+      case 'lab':
+        parts = [token, visit.labInvestigations || 'Tests ordered'];
+        break;
 
       case 'done':
         parts = [token, time, visit.diagnosis || issue];
@@ -902,13 +1006,84 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   toggleExam(key: ExamCheckKey): void {
-    this.examination[key] = !this.examination[key];
+    const turningOn = !this.examination[key];
+
+    if (key === 'nilSignificant' && turningOn) {
+      // "Nil significant": untick EVERYTHING else (Anaemia, Jaundice ... and Others + its text)
+      this.examChecks.forEach((item) => {
+        this.examination[item.key] = false;
+      });
+      this.examination.othersNote = '';
+      this.examination.nilSignificant = true;
+    } else {
+      this.examination[key] = turningOn;
+      // any real finding cancels "Nil significant"
+      if (turningOn) {
+        this.examination.nilSignificant = false;
+      }
+      // unticking "Others" clears what was written there
+      if (key === 'others' && !turningOn) {
+        this.examination.othersNote = '';
+      }
+    }
     this.saveDraft();
   }
 
   toggleComorbidity(key: ComorbidityKey): void {
-    this.comorbidities[key] = !this.comorbidities[key];
+    const turningOn = !this.comorbidities[key];
+
+    if (key === 'nil' && turningOn) {
+      // "Nil": untick EVERYTHING else (HTN, DM ... and Others + its text)
+      this.comorbidityChecks.forEach((item) => {
+        this.comorbidities[item.key] = false;
+      });
+      this.comorbidities.othersNote = '';
+      this.comorbidities.nil = true;
+    } else {
+      this.comorbidities[key] = turningOn;
+      // any real comorbidity cancels "Nil"
+      if (turningOn) {
+        this.comorbidities.nil = false;
+      }
+      // unticking "Others" clears what was written there
+      if (key === 'others' && !turningOn) {
+        this.comorbidities.othersNote = '';
+      }
+    }
     this.saveDraft();
+  }
+
+  // Doctor orders tests: patient goes to the lab, then comes back with reports
+  sendToLab(visit: Visit): void {
+    if (!visit._id) {
+      return;
+    }
+    if (!visit.labInvestigations?.trim()) {
+      const tests = prompt('Which tests? (e.g. CBC, X-ray chest)', '');
+      if (tests === null) {
+        return;
+      }
+      if (tests.trim()) {
+        const updated: Visit = {
+          ...visit,
+          labInvestigations: tests.trim(),
+          status: 'Lab investigation',
+        };
+        this.visitService.updateVisit(visit._id, updated).subscribe({
+          next: (saved) => Object.assign(visit, saved),
+          error: () => alert('Could not send to lab.'),
+        });
+        return;
+      }
+    }
+    this.setStatus(visit, 'Lab investigation');
+  }
+
+  // Reports are back: patient returns to the doctor, open the visit to write medicines
+  resumeFromLab(visit: Visit): void {
+    visit.status = 'In consultation';
+    this.setStatus(visit, 'In consultation');
+    this.editVisit(visit);
   }
 
   setYesNo(field: YesNoField, value: 'Yes' | 'No'): void {
@@ -991,461 +1166,25 @@ export class Dashboard implements OnInit, OnDestroy {
     this.excelExport.exportVisits(this.filteredVisits);
   }
 
+
+  // Same print layout as the pharmacist's page (one shared function)
   printVisit(visit: Visit): void {
-    const escapeHtml = (value: unknown): string =>
-      String(value || '').replace(
-        /[&<>"']/g,
-        (character) =>
-          ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;',
-          })[character] || character,
-      );
-
-    const has = (value: unknown): boolean =>
-      String(value || '').trim().length > 0;
-
-    const formatDate = (value?: string): string => {
-      if (!value) {
-        return '';
-      }
-      const [year, month, day] = value.split('-');
-      return year && month && day ? `${day}/${month}/${year}` : value;
-    };
-
-    // ---- Letterhead text (edit here if anything changes) ----
-    const clinic = {
-      name: 'CHEST ALLERGY CLINIC',
-      doctor: 'Dr. Mahesh C.',
-      qualification: 'MBBS, DNB (PULMONOLOGY)',
-      lines: [
-        'FELLOWSHIP IN RESPIRATORY ICU',
-        'INTENSIVIST SLEEP SPECIALIST',
-        'ALLERGY SPECIALIST, INTERVENTIONAL PULMONOLOGIST',
-        '(ASSIST. PROFESSOR DEPT. OF PULMONARY MEDICINE CIMS CWA',
-        'EX. CONSULTANT WCL HOSPITAL BARKUHI)',
-      ],
-      phones: '8109838316, 8817483758',
-      doctorHindi: 'डॉ. महेश सी.',
-      conditionsHindi:
-        'अस्थमा, दमा. सी.ओ.पी.डी.. आई.एल.डी.. निमोनिया, ट्यूबरक्लोसिस (टी.बी.) खासी. एलर्जी, ब्लडप्रेशर रोग, शुगर, थायराइड, हृदय रोग, लकवा. मिर्गी, नींद की बिमारी एवं छाती के संपूर्ण रोग',
-      special: 'Critical Care (Icu) Ventilator Specialist, Bronchoscopy Specialist',
-      addressHindi: 'मानसरोवर कॉम्पलेक्स. बस स्टैंड के पीछे छिन्दवाड़ा (म.प्र.)',
-      footerHindi: 'दवाईयाँ डॉक्टर को दिखाकर ही सेवन करें',
-    };
-
-    // ---- Left column: only vitals that were filled in ----
-    const v = visit.vitals;
-    const vitalRows = [
-      ['BP', v?.bloodPressure],
-      ['Pulse', v?.heartRate],
-      ['SPO2', v?.spo2],
-      ['TEMP', v?.temperature],
-      ['RBS', v?.bloodSugar],
-      ['Weight', v?.weight],
-    ]
-      .filter(([, value]) => has(value))
-      .map(
-        ([label, value]) =>
-          `<div class="vit"><span>${label}</span><b>${escapeHtml(value)}</b></div>`,
-      )
-      .join('');
-
-    const section = (title: string, body: string): string =>
-      body ? `<div class="block"><h4>${title}</h4>${body}</div>` : '';
-
-    const ticks = (labels: string[]): string =>
-      labels.length
-        ? `<p>${labels
-            .map((label) => `<span class="tk">✓ ${escapeHtml(label)}</span>`)
-            .join('')}</p>`
-        : '';
-
-    // ---- Symptoms ----
-    const symptomsSection = section(
-      'Symptoms',
-      has(visit.symptoms) ? `<p>${escapeHtml(visit.symptoms)}</p>` : '',
-    );
-
-    // ---- Clinical examination: ticked items + written findings only ----
-    const exam = visit.examination;
-    const examTicked = this.examChecks
-      .filter((item) => exam?.[item.key])
-      .map((item) => item.label);
-    const examFindings = this.examNotes
-      .filter((item) => has(exam?.[item.key]))
-      .map(
-        (item) =>
-          `<p><b>${item.label}:</b> ${escapeHtml(exam?.[item.key])}</p>`,
-      )
-      .join('');
-    const examSection = section(
-      'Clinical Examination',
-      ticks(examTicked) + examFindings,
-    );
-
-    // ---- Comorbidities: ticked items + answered Yes/No only ----
-    const como = visit.comorbidities;
-    const comoTicked = this.comorbidityChecks
-      .filter((item) => como?.[item.key])
-      .map((item) => item.label);
-
-    const comoLines: string[] = [];
-    const drugDetails = como?.drugAllergyDetails;
-    const surgicalNote = como?.surgicalComplicationsNote;
-
-    if (como?.drugAllergy === 'Yes') {
-      comoLines.push(
-        `<p><b>Drug allergy:</b> Yes${has(drugDetails) ? ' — ' + escapeHtml(drugDetails) : ''}</p>`,
-      );
-    } else if (como?.drugAllergy === 'No') {
-      comoLines.push('<p><b>Drug allergy:</b> No</p>');
-    } else if (has(visit.allergies)) {
-      comoLines.push(`<p><b>Allergies:</b> ${escapeHtml(visit.allergies)}</p>`);
-    }
-
-    if (como?.surgicalComplications) {
-      comoLines.push(
-        `<p><b>Previous surgical complications:</b> ${como.surgicalComplications}${has(surgicalNote) ? ' — ' + escapeHtml(surgicalNote) : ''}</p>`,
-      );
-    }
-
-    const comoSection = section(
-      'Comorbidities',
-      ticks(comoTicked) + comoLines.join(''),
-    );
-
-    // ---- Investigations ----
-    const investigationsSection = section(
-      'Investigations',
-      has(visit.labInvestigations)
-        ? `<p>${escapeHtml(visit.labInvestigations)}</p>`
-        : '',
-    );
-
-    // ---- Diagnosis ----
-    const diagnosisSection = section(
-      'Diagnosis',
-      (has(visit.disease)
-        ? `<p><b>Disease:</b> ${escapeHtml(visit.disease)}</p>`
-        : '') +
-        (has(visit.diagnosis) ? `<p>${escapeHtml(visit.diagnosis)}</p>` : ''),
-    );
-
-    // ---- Medication ----
-    const medicineRows = (visit.medicines || [])
-      .map(
-        (medicine, index) => `
-          <tr>
-            <td>${index + 1}</td>
-            <td>${escapeHtml(medicine.name)}</td>
-            <td>${escapeHtml(medicine.dosage)}</td>
-            <td>${escapeHtml(medicine.frequency)}</td>
-            <td>${escapeHtml(medicine.duration)}</td>
-            <td>${escapeHtml(medicine.timing)}</td>
-          </tr>
-        `,
-      )
-      .join('');
-
-    const medicineSection = medicineRows
-      ? `
-        <div class="rx">Rx</div>
-        <table class="meds">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Medicine</th>
-              <th>Dose</th>
-              <th>Frequency</th>
-              <th>Duration</th>
-              <th>Food</th>
-            </tr>
-          </thead>
-          <tbody>${medicineRows}</tbody>
-        </table>`
-      : '';
-
-    const adviceSection = section(
-      'Advice',
-      has(visit.comments) ? `<p>${escapeHtml(visit.comments)}</p>` : '',
-    );
-
-    const followUpSection = has(visit.followUpDate)
-      ? `<p class="follow"><b>Follow-up date:</b> ${escapeHtml(formatDate(visit.followUpDate))}</p>`
-      : '';
-
-    const visitDate = visit.visitDate
-      ? new Date(visit.visitDate).toLocaleDateString('en-IN')
-      : '';
-
-    const printWindow = window.open(
-      '',
-      '_blank',
-      'width=900,height=900',
-    );
-
-    if (!printWindow) {
-      return;
-    }
-
-    printWindow.document.write(`
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <title>Prescription</title>
-          <style>
-            @page { size: A4; margin: 0; }
-
-            * {
-              box-sizing: border-box;
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
-            }
-
-            body {
-              margin: 0;
-              font-family: Arial, Helvetica, sans-serif;
-              font-size: 14px;
-              line-height: 1.4;
-              color: #111;
-            }
-
-            .hi {
-              font-family: 'Nirmala UI', 'Mangal', 'Noto Sans Devanagari',
-                'Kohinoor Devanagari', Arial, sans-serif;
-            }
-
-            .page {
-              position: relative;
-              min-height: 296mm;
-              padding-bottom: 34mm;
-            }
-
-            /* ---- Letterhead ---- */
-            .lh { position: relative; padding: 7mm 10mm 0 8mm; }
-
-            .reg {
-              position: absolute;
-              top: 3mm;
-              right: 10mm;
-              font-size: 11px;
-              color: #222;
-            }
-
-            .organs {
-              position: absolute;
-              top: 8mm;
-              right: 10mm;
-              width: 46mm;
-              height: auto;
-            }
-
-            .hi-top { min-height: 15mm; padding-right: 50mm; }
-
-            .lh h1 {
-              margin: 0;
-              font-family: Impact, 'Arial Black', Arial, sans-serif;
-              font-size: 44px;
-              font-weight: 900;
-              letter-spacing: 1px;
-              line-height: 1.05;
-              color: #1b7fc4;
-            }
-
-            .lh-cols {
-              display: flex;
-              gap: 10px;
-              align-items: flex-start;
-              margin-top: 4px;
-            }
-
-            .lh-l { flex: 1.25; }
-            .lh-r { flex: 1.4; }
-            .lh-logo { flex: none; width: 60px; padding-top: 14px; }
-
-            .dr {
-              font-family: Georgia, 'Times New Roman', serif;
-              font-size: 28px;
-              font-weight: 700;
-              line-height: 1.1;
-              color: #8c1c1c;
-            }
-
-            .lh-r .dr { font-size: 26px; }
-            .q { font-weight: 700; font-size: 13px; margin-top: 2px; }
-            .s { font-size: 11px; line-height: 1.3; text-transform: uppercase; }
-            .ph { font-weight: 700; font-size: 14px; margin-top: 3px; }
-            .cond { font-size: 11px; font-weight: 700; line-height: 1.35; }
-            .spec { font-size: 12px; font-weight: 700; color: #b3202a; margin-top: 2px; }
-
-            .lh-bar { display: flex; align-items: center; margin-top: 6px; }
-            .rule { flex: 1.25; height: 3px; background: #2b2b2b; }
-
-            .addr {
-              flex: 1.4;
-              background: #1b7fc4;
-              color: #fff;
-              padding: 5px 10px;
-              font-weight: 700;
-              font-size: 12px;
-            }
-
-            /* ---- Body ---- */
-            .body { display: flex; margin-top: 6px; }
-
-            .side {
-              flex: none;
-              width: 36mm;
-              min-height: 170mm;
-              padding: 6mm 4mm 0 10mm;
-              border-right: 1.5px solid #222;
-            }
-
-            .vit { margin-bottom: 8mm; }
-            .vit span { display: block; font-size: 13px; }
-            .vit b { font-size: 15px; }
-
-            .main { flex: 1; padding: 4mm 10mm 0 8mm; }
-
-            .pt {
-              display: flex;
-              justify-content: space-between;
-              gap: 12px;
-              margin-bottom: 8px;
-              padding-bottom: 6px;
-              border-bottom: 1px dotted #888;
-            }
-
-            .pt-name span, .pt-meta span { color: #555; }
-            .pt-name b { font-size: 17px; }
-            .pt-name small { display: block; color: #555; }
-            .pt-meta div { margin-bottom: 2px; white-space: nowrap; }
-
-            .block { margin: 8px 0; }
-
-            .block h4 {
-              margin: 0 0 3px;
-              padding-bottom: 2px;
-              font-size: 12px;
-              letter-spacing: 0.06em;
-              text-transform: uppercase;
-              color: #1b7fc4;
-              border-bottom: 1px solid #cfe0ee;
-            }
-
-            .block p { margin: 2px 0; }
-            .tk { display: inline-block; margin: 0 14px 2px 0; font-weight: 600; }
-
-            .rx {
-              margin-top: 10px;
-              font-size: 22px;
-              font-weight: 700;
-              font-style: italic;
-              color: #1b7fc4;
-            }
-
-            table.meds { width: 100%; border-collapse: collapse; margin: 4px 0 8px; }
-            .meds th, .meds td { border: 1px solid #999; padding: 5px 7px; text-align: left; font-size: 13px; }
-            .meds th { background: #e6f1fa; }
-            .meds tr { page-break-inside: avoid; }
-
-            .follow { margin: 8px 0; text-align: left; }
-
-            .sign { display: flex; justify-content: flex-end; margin-top: 30mm; }
-            .sign div { min-width: 50mm; padding-top: 4px; border-top: 1px solid #777; text-align: center; font-size: 12px; }
-
-            /* ---- Footer ---- */
-            .foot { position: absolute; left: 0; right: 0; bottom: 0; }
-            .foot .note { padding: 0 10mm 3px; text-align: right; font-weight: 700; font-size: 13px; }
-            .foot .band { height: 8mm; background: #1b7fc4; border-top: 2.5mm solid #262626; }
-          </style>
-        </head>
-
-        <body>
-          <div class="page">
-            <header class="lh">
-              <div class="reg">Reg. No......................</div>
-              <img class="organs" src="${LETTERHEAD_ORGANS}" alt="" />
-              <h1>${escapeHtml(clinic.name)}</h1>
-
-              <div class="lh-cols">
-                <div class="lh-l">
-                  <div class="dr">${escapeHtml(clinic.doctor)}</div>
-                  <div class="q">${escapeHtml(clinic.qualification)}</div>
-                  <div class="s">${clinic.lines.map(escapeHtml).join('<br />')}</div>
-                  <div class="ph">☎ ${escapeHtml(clinic.phones)}</div>
-                </div>
-
-                <div class="lh-logo">
-                  <img src="${LETTERHEAD_LOGO}" alt="" width="56" height="56" />
-                </div>
-
-                <div class="lh-r hi">
-                  <div class="hi-top">
-                    <div class="dr">${escapeHtml(clinic.doctorHindi)}</div>
-                    <div class="q">${escapeHtml(clinic.qualification)}</div>
-                  </div>
-                  <div class="cond">${escapeHtml(clinic.conditionsHindi)}</div>
-                  <div class="spec">${escapeHtml(clinic.special)}</div>
-                </div>
-              </div>
-
-              <div class="lh-bar">
-                <div class="rule"></div>
-                <div class="addr hi">${escapeHtml(clinic.addressHindi)}</div>
-              </div>
-            </header>
-
-            <div class="body">
-              <aside class="side">${vitalRows}</aside>
-
-              <main class="main">
-                <div class="pt">
-                  <div class="pt-name">
-                    <span>Name</span> <b>${escapeHtml(visit.patientName)}</b>
-                    <small>${escapeHtml(visit.patientId)}${has(visit.phone) ? ' · ' + escapeHtml(visit.phone) : ''}</small>
-                  </div>
-
-                  <div class="pt-meta">
-                    <div><span>Date :</span> ${escapeHtml(visitDate)}</div>
-                    <div><span>Age :</span> ${escapeHtml(visit.age)}</div>
-                    <div><span>Sex :</span> ${escapeHtml(visit.gender)}</div>
-                  </div>
-                </div>
-
-                ${symptomsSection}
-                ${examSection}
-                ${comoSection}
-                ${investigationsSection}
-                ${diagnosisSection}
-                ${medicineSection}
-                ${adviceSection}
-                ${followUpSection}
-
-                <div class="sign">
-                  <div>Doctor's signature</div>
-                </div>
-              </main>
-            </div>
-
-            <footer class="foot">
-              <div class="note hi">${escapeHtml(clinic.footerHindi)}</div>
-              <div class="band"></div>
-            </footer>
-          </div>
-        </body>
-      </html>
-    `);
-
-    printWindow.document.close();
-
-    setTimeout(() => {
-      printWindow.print();
-    }, 500);
+    printPrescription(visit);
+  }
+
+  // Every 10 seconds ask the server "did anything change?" (a tiny request).
+  // Only when it did, reload the visits. So the lab's "Reports ready" shows up by itself.
+  private checkForChanges(): void {
+    this.visitService.pulse().subscribe({
+      next: (p) => {
+        const stamp = `${p.latest}|${p.count}`;
+        if (this.lastPulse && stamp !== this.lastPulse) {
+          this.loadVisits();
+        }
+        this.lastPulse = stamp;
+      },
+      error: () => {},
+    });
   }
 
   private loadVisits(): void {
@@ -1513,7 +1252,7 @@ export class Dashboard implements OnInit, OnDestroy {
     };
   }
 
-  private emptyExamination(): Examination {
+  private emptyExamination(): ExamForm {
     return {
       anaemia: false,
       jaundice: false,
@@ -1521,6 +1260,9 @@ export class Dashboard implements OnInit, OnDestroy {
       cyanosis: false,
       pedalEdema: false,
       lymphNode: false,
+      nilSignificant: false,
+      others: false,
+      othersNote: '',
       cvs: '',
       rs: '',
       cns: '',
@@ -1528,8 +1270,9 @@ export class Dashboard implements OnInit, OnDestroy {
     };
   }
 
-  private emptyComorbidities(): Comorbidities {
+  private emptyComorbidities(): ComorbidityForm {
     return {
+      nil: false,
       htn: false,
       dm: false,
       cad: false,
@@ -1539,6 +1282,8 @@ export class Dashboard implements OnInit, OnDestroy {
       asthma: false,
       copd: false,
       ild: false,
+      others: false,
+      othersNote: '',
       drugAllergy: '',
       drugAllergyDetails: '',
       surgicalComplications: '',

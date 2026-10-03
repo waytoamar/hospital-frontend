@@ -123,6 +123,9 @@
                   >
                     {{ visit.patientName }}
                   </button>
+                  <span class="ready-badge" *ngIf="visit.labReady && visit.status !== 'Completed'"
+                    >🧪 Reports ready</span
+                  >
 
                   <span class="bd-agesex">{{ ageSex(visit) }}</span>
                 </div>
@@ -574,13 +577,40 @@
             <span class="box">{{ examination[item.key] ? '✓' : '' }}</span>
             {{ item.label }}
           </button>
+
+          <input
+            *ngIf="examination.others"
+            class="others-input"
+            [(ngModel)]="examination.othersNote"
+            (ngModelChange)="saveDraft()"
+            placeholder="Other examination findings (write here)"
+            aria-label="Other examination findings"
+          />
         </div>
 
         <div class="form-grid">
-          <label *ngFor="let note of examNotes">
+          <label *ngFor="let note of examNotes" class="suggestion-field">
             {{ note.label }}
 
-            <input [(ngModel)]="examination[note.key]" [placeholder]="note.label + ' findings'" />
+            <input
+              [(ngModel)]="examination[note.key]"
+              [placeholder]="note.label + ' findings'"
+              autocomplete="off"
+              (focus)="openSuggestions(note.key)"
+              (click)="openSuggestions(note.key)"
+              (blur)="closeSuggestions()"
+            />
+
+            <span class="suggestion-menu" *ngIf="activeSuggestionField === note.key">
+              <button
+                type="button"
+                *ngFor="let suggestion of filteredSuggestions(note.key)"
+                (mousedown)="$event.preventDefault()"
+                (click)="selectSuggestion(note.key, suggestion)"
+              >
+                {{ suggestion }}
+              </button>
+            </span>
           </label>
         </div>
 
@@ -599,6 +629,15 @@
             <span class="box">{{ comorbidities[item.key] ? '✓' : '' }}</span>
             {{ item.label }}
           </button>
+
+          <input
+            *ngIf="comorbidities.others"
+            class="others-input"
+            [(ngModel)]="comorbidities.othersNote"
+            (ngModelChange)="saveDraft()"
+            placeholder="Other disease / comorbidity (write here)"
+            aria-label="Other comorbidity"
+          />
         </div>
 
         <div class="yn-row">
@@ -622,11 +661,27 @@
             No
           </button>
 
-          <input
-            *ngIf="comorbidities.drugAllergy === 'Yes'"
-            [(ngModel)]="comorbidities.drugAllergyDetails"
-            placeholder="Which drug / reaction"
-          />
+          <span class="suggestion-field sug-inline" *ngIf="comorbidities.drugAllergy === 'Yes'">
+            <input
+              [(ngModel)]="comorbidities.drugAllergyDetails"
+              placeholder="Which drug / reaction"
+              autocomplete="off"
+              (focus)="openSuggestions('drugAllergyDetails')"
+              (click)="openSuggestions('drugAllergyDetails')"
+              (blur)="closeSuggestions()"
+            />
+
+            <span class="suggestion-menu" *ngIf="activeSuggestionField === 'drugAllergyDetails'">
+              <button
+                type="button"
+                *ngFor="let suggestion of filteredSuggestions('drugAllergyDetails')"
+                (mousedown)="$event.preventDefault()"
+                (click)="selectSuggestion('drugAllergyDetails', suggestion)"
+              >
+                {{ suggestion }}
+              </button>
+            </span>
+          </span>
         </div>
 
         <div class="yn-row">
@@ -650,26 +705,59 @@
             No
           </button>
 
-          <input
-            *ngIf="comorbidities.surgicalComplications"
-            [(ngModel)]="comorbidities.surgicalComplicationsNote"
-            [placeholder]="
-              comorbidities.surgicalComplications === 'Yes'
-                ? 'Describe the complication'
-                : 'Note (optional)'
-            "
-          />
+          <span class="suggestion-field sug-inline" *ngIf="comorbidities.surgicalComplications">
+            <input
+              [(ngModel)]="comorbidities.surgicalComplicationsNote"
+              [placeholder]="
+                comorbidities.surgicalComplications === 'Yes'
+                  ? 'Describe the complication'
+                  : 'Note (optional)'
+              "
+              autocomplete="off"
+              (focus)="openSuggestions('surgicalComplicationsNote')"
+              (click)="openSuggestions('surgicalComplicationsNote')"
+              (blur)="closeSuggestions()"
+            />
+
+            <span class="suggestion-menu" *ngIf="activeSuggestionField === 'surgicalComplicationsNote'">
+              <button
+                type="button"
+                *ngFor="let suggestion of filteredSuggestions('surgicalComplicationsNote')"
+                (mousedown)="$event.preventDefault()"
+                (click)="selectSuggestion('surgicalComplicationsNote', suggestion)"
+              >
+                {{ suggestion }}
+              </button>
+            </span>
+          </span>
         </div>
 
         <!-- 4. Investigations -->
         <h4 class="sub-head">Investigations</h4>
 
-        <textarea
-          [(ngModel)]="labInvestigations"
-          rows="2"
-          aria-label="Investigations"
-          placeholder="CBC, blood sugar, X-ray..."
-        ></textarea>
+        <div class="suggestion-field">
+          <textarea
+            [(ngModel)]="labInvestigations"
+            rows="2"
+            aria-label="Investigations"
+            placeholder="CBC, blood sugar, X-ray..."
+            autocomplete="off"
+            (focus)="openSuggestions('labInvestigations')"
+            (click)="openSuggestions('labInvestigations')"
+            (blur)="closeSuggestions()"
+          ></textarea>
+
+          <span class="suggestion-menu" *ngIf="activeSuggestionField === 'labInvestigations'">
+            <button
+              type="button"
+              *ngFor="let suggestion of filteredSuggestions('labInvestigations')"
+              (mousedown)="$event.preventDefault()"
+              (click)="selectSuggestion('labInvestigations', suggestion)"
+            >
+              {{ suggestion }}
+            </button>
+          </span>
+        </div>
 
         <!-- 5. Diagnosis -->
         <h4 class="sub-head">Diagnosis</h4>
@@ -793,6 +881,7 @@
             rows="3"
             autocomplete="off"
             (focus)="openSuggestions('comments')"
+            (click)="openSuggestions('comments')"
             (blur)="closeSuggestions()"
             (keydown.tab)="acceptFirstSuggestion('comments', $event)"
           ></textarea>
@@ -898,10 +987,35 @@
           <span *ngIf="!visit.medicines.length"> - </span>
         </p>
 
-        <p>
-          <b>Labs:</b>
-          {{ visit.labInvestigations || '-' }}
-        </p>
+        <p><b>Labs:</b> {{ visit.labInvestigations || '-' }}</p>
+        <div class="lab-box" *ngIf="visit.labResults?.length || visit.labPhotos?.length">
+          <p class="lab-title">
+            🧪 Lab reports
+            <small *ngIf="visit.labReadyAt">· ready {{ visit.labReadyAt | date: 'h:mm a' }}</small>
+          </p>
+          <table *ngIf="visit.labResults?.length">
+            <tr>
+              <th>Test</th>
+              <th>Result</th>
+              <th>Range</th>
+              <th></th>
+            </tr>
+            <tr *ngFor="let r of visit.labResults">
+              <td>{{ r.name }}</td>
+              <td [class.bad]="isAbnormal(r.result, r.range)">{{ r.result || '-' }}</td>
+              <td>{{ r.range || '-' }}</td>
+              <td>{{ r.done ? '✓' : 'Pending' }}</td>
+            </tr>
+          </table>
+          <div class="lab-photos">
+            <img
+              *ngFor="let p of visit.labPhotos"
+              [src]="p.data"
+              alt="Lab report"
+              (click)="photoView = p.data"
+            />
+          </div>
+        </div>
 
         <div class="row-actions">
           <button (click)="editVisit(visit); closePatient()">✎ Edit</button>
@@ -911,4 +1025,8 @@
       </article>
     </div>
   </aside>
+</div>
+
+<div class="photo-viewer" *ngIf="photoView" (click)="photoView = null">
+  <img [src]="photoView" alt="Lab report" />
 </div>
