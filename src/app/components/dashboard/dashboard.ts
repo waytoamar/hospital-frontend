@@ -119,11 +119,6 @@ export class Dashboard implements OnInit, OnDestroy {
     '1-1-1',
     '2-0-2',
     '0-0-2',
-    '1/2-0-0',
-    '1/2-1/2-0',
-    '1/2-1/2-1/2',
-    '0-1/2-0',
-    '0-0-1/2',
     'SOS',
   ];
 
@@ -322,6 +317,21 @@ export class Dashboard implements OnInit, OnDestroy {
     return this.todayVisits.filter((visit) => visit.status === 'Completed');
   }
 
+  // Latest visit time of every patient. A follow-up is "still waiting for the patient"
+  // only while it belongs to the patient's LATEST visit. Once the patient has come back
+  // (a newer visit exists), the old follow-up entry disappears from the list.
+  private latestVisitTimes(): Map<string, number> {
+    const latest = new Map<string, number>();
+    this.visits.forEach((visit) => {
+      const key = this.patientKey(visit);
+      const time = this.timeOf(visit);
+      if (time > (latest.get(key) ?? 0)) {
+        latest.set(key, time);
+      }
+    });
+    return latest;
+  }
+
   get upcomingFollowUps(): Visit[] {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
@@ -330,10 +340,16 @@ export class Dashboard implements OnInit, OnDestroy {
     end.setDate(end.getDate() + 7);
     end.setHours(23, 59, 59, 999);
 
+    const latest = this.latestVisitTimes();
+
     return this.visits
       .filter((visit) => {
         if (!visit.followUpDate) {
           return false;
+        }
+
+        if (this.timeOf(visit) < (latest.get(this.patientKey(visit)) ?? 0)) {
+          return false; // patient already came back
         }
 
         const followUp = new Date(`${visit.followUpDate}T00:00:00`);
@@ -477,10 +493,16 @@ export class Dashboard implements OnInit, OnDestroy {
     end.setDate(end.getDate() + 7);
     end.setHours(23, 59, 59, 999);
 
+    const latest = this.latestVisitTimes();
+
     return this.visits
       .filter((visit) => {
         if (!visit.followUpDate) {
           return false;
+        }
+
+        if (this.timeOf(visit) < (latest.get(this.patientKey(visit)) ?? 0)) {
+          return false; // patient already came back: no longer "waiting to come"
         }
 
         const followUp = new Date(`${visit.followUpDate}T00:00:00`);
