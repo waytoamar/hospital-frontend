@@ -755,6 +755,10 @@ export class Dashboard implements OnInit, OnDestroy {
     this.selectedPatientKey = '';
   }
 
+openStaff(): void {
+  this.router.navigate(['/staff']);
+}
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);

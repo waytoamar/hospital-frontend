@@ -9,6 +9,7 @@ import { Lab } from './pages/lab/lab';
 import { roleGuard } from './guards/role-guard';
 import { ForgotPassword } from './forgot-password/forgot-password';
 import { ResetPassword } from './reset-password/reset-password';
+import { StaffManager } from './components/staff-manager/staff-manager';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'welcome' },
@@ -21,5 +22,6 @@ export const routes: Routes = [
   { path: 'lab', component: Lab, canActivate: [roleGuard('lab')] },
   { path: 'forgot-password', component: ForgotPassword },
   { path: 'reset-password', component: ResetPassword },
+  { path: 'staff', component: StaffManager, canActivate: [roleGuard('doctor')] },
   { path: '**', redirectTo: 'welcome' },
 ];
