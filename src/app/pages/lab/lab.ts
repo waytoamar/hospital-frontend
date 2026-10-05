@@ -30,6 +30,22 @@ interface LabCard {
         <img class="logo-img" src="lungs.jpg" alt="" />
         <div><b>Chest &amp; Allergy Clinic</b><small>Lab Desk</small></div>
       </div>
+      <label class="search">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="M20 20l-3.5-3.5"></path>
+        </svg>
+        <input placeholder="Search token, patient name or phone…" [(ngModel)]="search" />
+      </label>
+
       <div class="who">
         <b>{{ name }}</b>
         <button class="logout" (click)="logout()">Logout ⇥</button>
@@ -63,9 +79,11 @@ interface LabCard {
 
       <!-- COMPLETED -->
       <ng-container *ngIf="tab === 'completed'">
-        <p class="empty" *ngIf="!completed.length">No completed reports yet today</p>
+        <p class="empty" *ngIf="!shownCompleted.length">
+          {{ searching ? 'No matching patient' : 'No completed reports yet today' }}
+        </p>
 
-        <section class="card done" *ngFor="let v of completed; trackBy: trackDone">
+        <section class="card done" *ngFor="let v of shownCompleted; trackBy: trackDone">
           <div class="card-head">
             <span class="tok">{{ v.token || '—' }}</span>
             <div class="who-pt">
@@ -102,12 +120,12 @@ interface LabCard {
       </ng-container>
 
       <!-- PENDING -->
-      <p class="empty" *ngIf="tab === 'pending' && !cards.length && !loading">
-        No patients waiting for tests 🎉
+      <p class="empty" *ngIf="tab === 'pending' && !shownCards.length && !loading">
+        {{ searching ? 'No matching patient' : 'No patients waiting for tests 🎉' }}
       </p>
 
       <ng-container *ngIf="tab === 'pending'">
-        <section class="card" *ngFor="let c of cards; trackBy: trackById">
+        <section class="card" *ngFor="let c of shownCards; trackBy: trackById">
           <div class="card-head">
             <span class="tok">{{ c.visit.token || '—' }}</span>
             <div class="who-pt">
@@ -190,6 +208,7 @@ export class Lab implements OnInit, OnDestroy {
   loading = false;
   error = '';
   now = new Date();
+  search = '';
   view: string | null = null;
   private timer?: ReturnType<typeof setInterval>;
 
@@ -202,6 +221,28 @@ export class Lab implements OnInit, OnDestroy {
 
   get name(): string {
     return this.auth.getUsername();
+  }
+
+  get searching(): boolean {
+    return this.search.trim().length > 0;
+  }
+
+  private matches(v: Visit): boolean {
+    const q = this.search.trim().toLowerCase();
+    if (!q) return true;
+    return [v.token, v.patientName, v.phone, v.patientId].some((x) =>
+      String(x || '')
+        .toLowerCase()
+        .includes(q),
+    );
+  }
+
+  get shownCards(): LabCard[] {
+    return this.cards.filter((c) => this.matches(c.visit));
+  }
+
+  get shownCompleted(): DoneVisit[] {
+    return this.completed.filter((v) => this.matches(v));
   }
 
   ngOnInit(): void {

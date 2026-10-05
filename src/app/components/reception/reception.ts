@@ -69,6 +69,31 @@ const emptyForm = (): VisitForm => ({
         border-color: var(--primary);
         color: var(--primary-dark);
       }
+      .ticket-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: stretch;
+      }
+      .noshow-btn {
+        border: 1px solid #f0c4be;
+        background: #fff5f4;
+        color: #b42318;
+        border-radius: 8px;
+        padding: 5px 10px;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .noshow-btn:hover {
+        background: #fdecea;
+      }
+      .noshow-btn:disabled {
+        opacity: 0.5;
+        cursor: wait;
+      }
       .at-lab {
         margin-top: 16px;
         background: #fff;
@@ -195,9 +220,20 @@ const emptyForm = (): VisitForm => ({
                 <span class="reports-badge" *ngIf="isReportsReady(v)">🧪 Reports ready</span>
                 <small>{{ v.age }} · {{ v.gender }} · {{ v.phone }}</small>
               </div>
-              <button class="edit-btn" (click)="openEdit(v)" aria-label="Edit patient details">
-                ✎ Edit
-              </button>
+              <div class="ticket-actions">
+                <button class="edit-btn" (click)="openEdit(v)" aria-label="Edit patient details">
+                  ✎ Edit
+                </button>
+                <button
+                  class="noshow-btn"
+                  *ngIf="v.status === 'Waiting'"
+                  [disabled]="busyId === v._id"
+                  (click)="markNoShow(v)"
+                  title="Patient did not come"
+                >
+                  ✕ No show
+                </button>
+              </div>
             </div>
             <p class="empty" *ngIf="!col.items.length">Nobody here</p>
           </div>
@@ -350,6 +386,7 @@ export class Reception implements OnInit, OnDestroy {
   updated: Date | null = null;
   loadError = '';
   message = '';
+  busyId: string | null = null;
 
   formOpen = false;
   form: VisitForm = emptyForm();
@@ -458,6 +495,32 @@ export class Reception implements OnInit, OnDestroy {
         this.loadError = 'Could not refresh the queue. Retrying…';
       },
     });
+  }
+
+  // Patient took a token but did not come: remove from the waiting list.
+  // The record stays in history; if the patient comes later, register a new visit.
+  markNoShow(v: QueueItem): void {
+    if (!v._id || this.busyId) return;
+    if (!confirm(`Mark ${v.patientName} (${v.token}) as No show?`)) return;
+    this.busyId = v._id;
+    this.http
+      .patch(`${API}/reception/visits/${v._id}/no-show`, {}, { withCredentials: true })
+      .subscribe({
+        next: () => {
+          this.busyId = null;
+          this.message = `${v.patientName} marked as No show.`;
+          this.load();
+        },
+        error: (err) => {
+          this.busyId = null;
+          if (err.status === 401 || err.status === 403) {
+            this.router.navigate(['/welcome']);
+            return;
+          }
+          this.loadError = err?.error?.message || 'Could not update. Please try again.';
+          this.load();
+        },
+      });
   }
 
   // ---- New visit modal ----
