@@ -91,14 +91,18 @@ import { printPrescription } from '../../services/prescription-print';
           </div>
           <div class="c-diag">{{ v.diagnosis || v.disease || '—' }}</div>
           <div>
-            <span class="pill"
-              >{{ v.medicines.length }} medication{{ v.medicines.length === 1 ? '' : 's' }}</span
-            >
+            <span class="pill">{{
+              v.medicines.length
+                ? v.medicines.length + ' medication' + (v.medicines.length === 1 ? '' : 's')
+                : 'No medicines'
+            }}</span>
           </div>
           <div class="c-status"><i></i>Ready to dispense</div>
           <div class="c-actions">
             <button class="link" (click)="detail = v">👁 View details</button>
-            <button class="go" (click)="print(v)">Print prescription</button>
+            <button class="go" (click)="print(v)">
+              {{ v.medicines.length ? 'Print prescription' : 'Advice only · print' }}
+            </button>
           </div>
         </div>
 
@@ -152,6 +156,7 @@ import { printPrescription } from '../../services/prescription-print';
         <p *ngIf="detail.allergies">{{ detail.allergies }}</p>
 
         <p class="label">Medicines</p>
+        <p *ngIf="!detail.medicines.length">No medicines — advice only</p>
         <div class="med" *ngFor="let m of detail.medicines; let i = index">
           <span class="n">{{ i + 1 }}</span>
           <div>

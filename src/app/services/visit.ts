@@ -1,7 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
-export type VisitStatus = 'Waiting' | 'In consultation' | 'Lab investigation' | 'Completed';
+export type VisitStatus =
+  | 'Waiting'
+  | 'In consultation'
+  | 'Lab investigation'
+  | 'Completed'
+  | 'No show';
 
 export interface Medicine {
   name: string;
@@ -73,6 +78,7 @@ export interface Visit {
   labSentAt?: string;
   labReady?: boolean;
   labReadyAt?: string;
+  carriedFrom?: string;
   updatedAt?: string;
   comments?: string;
   medicines: Medicine[];
@@ -157,7 +163,7 @@ export class VisitService {
 }
 
 // ------------------------------------------------------------------
-// కొత్తగా చేర్చబడిన Lab Interfaces మరియు Utility Functions
+// Lab interfaces and utility functions
 // ------------------------------------------------------------------
 
 export interface LabResult {

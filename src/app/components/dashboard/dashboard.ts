@@ -70,6 +70,7 @@ export class Dashboard implements OnInit, OnDestroy {
   selectedQueueVisit: Visit | null = null;
   selectedQueuePanel: PanelKey = 'waiting';
   queueBusy = false;
+  prefilledFrom = '';
 
   @ViewChild('queueStage') private queueStage?: ElementRef<HTMLElement>;
 
@@ -169,6 +170,7 @@ export class Dashboard implements OnInit, OnDestroy {
     'In consultation',
     'Lab investigation',
     'Completed',
+    'No show',
   ];
 
   get diseaseSuggestions(): string[] {
@@ -309,8 +311,9 @@ export class Dashboard implements OnInit, OnDestroy {
     return this.todayVisits.filter((visit) => visit.status === 'In consultation');
   }
 
+  // Patients at the lab stay on the board even if they were sent on an earlier day
   get labVisits(): Visit[] {
-    return this.todayVisits.filter((visit) => visit.status === 'Lab investigation');
+    return this.visits.filter((visit) => visit.status === 'Lab investigation');
   }
 
   get completedVisits(): Visit[] {
@@ -755,9 +758,9 @@ export class Dashboard implements OnInit, OnDestroy {
     this.selectedPatientKey = '';
   }
 
-openStaff(): void {
-  this.router.navigate(['/staff']);
-}
+  openStaff(): void {
+    this.router.navigate(['/staff']);
+  }
 
   logout(): void {
     this.authService.logout();
@@ -780,6 +783,7 @@ openStaff(): void {
 
     if (patient) {
       this.fillPatient(patient);
+      this.prefillFromLast(patient);
     } else {
       this.restoreDraft();
     }
@@ -932,6 +936,12 @@ openStaff(): void {
     this.clearForm();
     this.editingId = visit._id || null;
     this.fillAll(visit);
+
+    // Empty visit registered by reception: load the patient's last visit data
+    if (!visit.disease && !visit.diagnosis && !visit.medicines?.length) {
+      this.prefillFromLast(visit, visit._id);
+    }
+
     this.formOpen = true;
     this.formStep = 1;
   }
@@ -1240,6 +1250,34 @@ openStaff(): void {
     };
   }
 
+  medLine(medicine: Medicine): string {
+    return [medicine.dosage, medicine.frequency, medicine.duration, medicine.timing]
+      .filter(Boolean)
+      .join(' · ');
+  }
+
+  // Same patient's last filled visit: disease, diagnosis, comorbidities, medicines
+  private prefillFromLast(patient: Visit, excludeId?: string): void {
+    const key = this.patientKey(patient);
+    const last = this.visits.find(
+      (visit) =>
+        visit._id !== excludeId &&
+        this.patientKey(visit) === key &&
+        (visit.disease || visit.diagnosis || visit.medicines?.length),
+    );
+    if (!last) {
+      return;
+    }
+
+    this.disease = last.disease || '';
+    this.diagnosis = last.diagnosis || '';
+    this.comorbidities = { ...this.emptyComorbidities(), ...(last.comorbidities || {}) };
+    this.medicines = last.medicines?.length
+      ? last.medicines.map((medicine) => ({ ...this.emptyMedicine(), ...medicine }))
+      : [this.emptyMedicine()];
+    this.prefilledFrom = last.visitDate || '';
+  }
+
   private fillPatient(visit: Visit): void {
     this.patientId = visit.patientId || '';
     this.phone = visit.phone || '';
@@ -1293,6 +1331,7 @@ openStaff(): void {
 
   private clearForm(): void {
     this.editingId = null;
+    this.prefilledFrom = '';
     this.patientId = '';
     this.phone = '';
     this.patientName = '';

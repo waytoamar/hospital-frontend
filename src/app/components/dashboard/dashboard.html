@@ -149,6 +149,14 @@
                   </button>
 
                   <button
+                    *ngIf="panel.key === 'waiting'"
+                    (click)="setStatus(visit, 'No show'); $event.stopPropagation()"
+                    title="Patient did not come"
+                  >
+                    No show
+                  </button>
+
+                  <button
                     *ngIf="panel.key === 'consult'"
                     (click)="editVisit(visit); $event.stopPropagation()"
                   >
