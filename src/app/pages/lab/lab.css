@@ -12,6 +12,25 @@
     sans-serif;
 }
 
+/* ---------- desk banner (top strip) ---------- */
+.desk-banner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #17594c;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+.desk-banner .ico {
+  font-size: 20px;
+  letter-spacing: 0;
+}
+
 /* ---------- top bar ---------- */
 .topbar {
   display: flex;

@@ -13,6 +13,8 @@ import { printPrescription } from '../../services/prescription-print';
   imports: [CommonModule, FormsModule],
   styleUrl: './pharmacy.css',
   template: `
+    <div class="desk-banner"><span class="ico">💊</span> Pharmacy Desk</div>
+
     <header class="topbar">
       <div class="brand">
         <img class="logo-img" src="lungs.jpg" alt="" />

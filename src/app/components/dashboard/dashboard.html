@@ -456,6 +456,10 @@
     </div>
 
     <div class="modal-body" (input)="saveDraft()">
+      <p class="field-hint" *ngIf="prefilledFrom">
+        Loaded from last visit ({{ prefilledFrom | date: 'dd MMM yyyy' }}) — edit as needed.
+      </p>
+
       <div *ngIf="formStep === 1" class="form-section">
         <div class="lookup-row">
           <div class="lookup-field">

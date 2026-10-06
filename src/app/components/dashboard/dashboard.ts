@@ -110,6 +110,7 @@ export class Dashboard implements OnInit, OnDestroy {
     'Ointment',
     'Lotion',
     'Puffs',
+    'spray'
   ];
 
   readonly frequencyOptions = [
@@ -131,6 +132,10 @@ export class Dashboard implements OnInit, OnDestroy {
     'Not related to food',
     'Before Breakfast',
     '1hr Before food',
+    'Before Lunch',
+    'Before Dinner',
+    'At Bed time',
+    'Topical Application'
   ];
 
   readonly examChecks: { key: ExamCheckKey; label: string }[] = [

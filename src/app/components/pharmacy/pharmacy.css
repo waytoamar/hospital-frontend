@@ -28,6 +28,25 @@ button {
   cursor: pointer;
 }
 
+/* ---------- desk banner (top strip) ---------- */
+.desk-banner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--teal-dark);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+.desk-banner .ico {
+  font-size: 20px;
+  letter-spacing: 0;
+}
+
 .topbar {
   display: flex;
   align-items: center;

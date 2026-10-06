@@ -25,6 +25,8 @@ interface LabCard {
   imports: [CommonModule, FormsModule],
   styleUrl: './lab.css',
   template: `
+    <div class="desk-banner"><span class="ico">🧪</span> Lab Desk</div>
+
     <header class="topbar">
       <div class="brand">
         <img class="logo-img" src="lungs.jpg" alt="" />
