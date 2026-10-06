@@ -14,7 +14,11 @@ import {
   Vitals,
 } from '../../services/visit';
 import { ExcelExportService } from '../../excel-export.service';
-import { printPrescription } from '../../services/prescription-print';
+import {
+  isPreprintedPaper,
+  printPrescription,
+  setPreprintedPaper,
+} from '../../services/prescription-print';
 
 type View = 'board' | 'patients' | 'records';
 type FormStep = 1 | 2 | 3 | 4;
@@ -70,6 +74,8 @@ interface BoardPanel {
 })
 export class Dashboard implements OnInit, OnDestroy {
   photoView: string | null = null;
+  // Print on paper that already has the clinic header: header is not printed
+  preprintedPaper = isPreprintedPaper();
   isAbnormal = isAbnormal;
   activeView: View = 'board';
   boardFilter: BoardFilter = 'all';
@@ -1147,6 +1153,11 @@ export class Dashboard implements OnInit, OnDestroy {
     }
 
     this.excelExport.exportVisits(this.filteredVisits);
+  }
+
+  togglePreprinted(event: Event): void {
+    this.preprintedPaper = (event.target as HTMLInputElement).checked;
+    setPreprintedPaper(this.preprintedPaper);
   }
 
   // Same print layout as the pharmacist's page (one shared function)

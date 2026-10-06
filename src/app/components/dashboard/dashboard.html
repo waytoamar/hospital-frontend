@@ -18,6 +18,21 @@
     </nav>
 
     <div class="navbar-right">
+      <label
+        title="Tick when printing on paper that already has the clinic header"
+        style="
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          cursor: pointer;
+          white-space: nowrap;
+        "
+      >
+        <input type="checkbox" [checked]="preprintedPaper" (change)="togglePreprinted($event)" />
+        Letterhead paper
+      </label>
+
       <span class="hdr-clock">{{ now | date: 'HH:mm' }}</span>
 
       <div class="hdr-calling">

@@ -27,10 +27,39 @@ const COMORBIDITY_CHECKS = [
   { key: 'asthma', label: 'Asthma' },
   { key: 'copd', label: 'COPD' },
   { key: 'ild', label: 'ILD' },
+  { key: 'hypothyroidism', label: 'Hypothyroidism' },
 ] as const;
 
 // "Others" tick + free text (added on top of the shared Visit types)
 type WithOthers = { others?: boolean; othersNote?: string };
+
+// ---- Pre-printed letterhead paper ----
+// When the clinic prints on paper that already has the header, the digital header is not
+// printed. An empty gap is left instead, so the prescription starts BELOW the printed header.
+// Change PREPRINTED_TOP_SPACE_MM if the text starts too high or too low on your paper.
+const PREPRINTED_KEY = 'print-on-preprinted-paper';
+const PREPRINTED_TOP_SPACE_MM = 60;
+const PREPRINTED_HIDE_FOOTER = false; // true: also skip the bottom band + Hindi note
+
+export function isPreprintedPaper(): boolean {
+  try {
+    return localStorage.getItem(PREPRINTED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function setPreprintedPaper(on: boolean): void {
+  try {
+    if (on) {
+      localStorage.setItem(PREPRINTED_KEY, '1');
+    } else {
+      localStorage.removeItem(PREPRINTED_KEY);
+    }
+  } catch {
+    // storage blocked: the normal header will print
+  }
+}
 
 export function printPrescription(visit: Visit): void {
   const escapeHtml = (value: unknown): string =>
@@ -151,6 +180,13 @@ export function printPrescription(visit: Visit): void {
     );
   }
 
+  if (como?.smoker) {
+    comoLines.push(`<p><b>Smoker:</b> ${como.smoker}</p>`);
+  }
+  if (como?.alcoholic) {
+    comoLines.push(`<p><b>Alcoholic:</b> ${como.alcoholic}</p>`);
+  }
+
   const comoSection = section('Comorbidities', ticks(comoTicked) + comoLines.join(''));
 
   // Investigations are NOT printed: the lab gives its own printed reports to attach.
@@ -204,6 +240,8 @@ export function printPrescription(visit: Visit): void {
   const followUpSection = has(visit.followUpDate)
     ? `<p class="follow"><b>Follow-up date:</b> ${escapeHtml(formatDate(visit.followUpDate))}</p>`
     : '';
+
+  const preprinted = isPreprintedPaper();
 
   const visitDate = visit.visitDate ? new Date(visit.visitDate).toLocaleDateString('en-IN') : '';
 
@@ -389,7 +427,8 @@ export function printPrescription(visit: Visit): void {
 
         <body>
           <div class="page">
-            <header class="lh">
+            ${preprinted ? `<div style="height:${PREPRINTED_TOP_SPACE_MM}mm"></div>` : ''}
+            <header class="lh" ${preprinted ? 'hidden style="display:none"' : ''}>
               <div class="reg">Reg. No......................</div>
               <img class="organs" src="${LETTERHEAD_ORGANS}" alt="" />
               <h1>${escapeHtml(clinic.name)}</h1>
@@ -453,7 +492,7 @@ export function printPrescription(visit: Visit): void {
               </main>
             </div>
 
-            <footer class="foot">
+            <footer class="foot" ${preprinted && PREPRINTED_HIDE_FOOTER ? 'hidden style="display:none"' : ''}>
               <div class="note hi">${escapeHtml(clinic.footerHindi)}</div>
               <div class="band"></div>
             </footer>

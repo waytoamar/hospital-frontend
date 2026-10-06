@@ -5,7 +5,11 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { Medicine, Visit } from '../../services/visit';
 import { PharmacyService } from '../../services/staff';
-import { printPrescription } from '../../services/prescription-print';
+import {
+  isPreprintedPaper,
+  printPrescription,
+  setPreprintedPaper,
+} from '../../services/prescription-print';
 
 @Component({
   selector: 'app-pharmacy',
@@ -42,6 +46,13 @@ import { printPrescription } from '../../services/prescription-print';
       </label>
 
       <div class="who">
+        <label
+        title="Tick when printing on paper that already has the clinic header"
+        style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; white-space: nowrap"
+      >
+        <input type="checkbox" [checked]="preprintedPaper" (change)="togglePreprinted($event)" />
+        Letterhead paper
+      </label>
         <div>
           <b>{{ name }}</b>
         </div>
@@ -190,6 +201,8 @@ export class Pharmacy implements OnInit, OnDestroy {
   error = '';
   updated: Date | null = null;
   now = new Date();
+  // Print on paper that already has the clinic header: header is not printed
+  preprintedPaper = isPreprintedPaper();
 
   private refreshTimer?: ReturnType<typeof setInterval>;
   private searchTimer?: ReturnType<typeof setTimeout>;
@@ -265,6 +278,11 @@ export class Pharmacy implements OnInit, OnDestroy {
         this.error = 'Could not load prescriptions. Retrying…';
       },
     });
+  }
+
+  togglePreprinted(event: Event): void {
+    this.preprintedPaper = (event.target as HTMLInputElement).checked;
+    setPreprintedPaper(this.preprintedPaper);
   }
 
   // Opens the full prescription paper (same as the doctor's) and starts printing
