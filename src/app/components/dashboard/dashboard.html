@@ -747,6 +747,50 @@
           </span>
         </div>
 
+        <div class="yn-row">
+          <b>Smoker</b>
+
+          <button
+            type="button"
+            class="chip yn yes"
+            [class.on]="comorbidities.smoker === 'Yes'"
+            (click)="setYesNo('smoker', 'Yes')"
+          >
+            Yes
+          </button>
+
+          <button
+            type="button"
+            class="chip yn"
+            [class.on]="comorbidities.smoker === 'No'"
+            (click)="setYesNo('smoker', 'No')"
+          >
+            No
+          </button>
+        </div>
+
+        <div class="yn-row">
+          <b>Alcoholic</b>
+
+          <button
+            type="button"
+            class="chip yn yes"
+            [class.on]="comorbidities.alcoholic === 'Yes'"
+            (click)="setYesNo('alcoholic', 'Yes')"
+          >
+            Yes
+          </button>
+
+          <button
+            type="button"
+            class="chip yn"
+            [class.on]="comorbidities.alcoholic === 'No'"
+            (click)="setYesNo('alcoholic', 'No')"
+          >
+            No
+          </button>
+        </div>
+
         <!-- 4. Investigations -->
         <h4 class="sub-head">Investigations</h4>
 
@@ -822,7 +866,12 @@
             </option>
           </select>
 
-          <input [(ngModel)]="medicine.duration" placeholder="Duration" />
+          <input
+            [(ngModel)]="medicine.duration"
+            list="duration-suggestions"
+            autocomplete="off"
+            placeholder="Duration"
+          />
 
           <select [(ngModel)]="medicine.timing">
             <option value="">Food timing</option>
@@ -919,6 +968,10 @@
 
       <datalist id="medicine-suggestions">
         <option *ngFor="let suggestion of medicineSuggestions" [value]="suggestion"></option>
+      </datalist>
+
+      <datalist id="duration-suggestions">
+        <option *ngFor="let suggestion of durationSuggestions" [value]="suggestion"></option>
       </datalist>
     </div>
 

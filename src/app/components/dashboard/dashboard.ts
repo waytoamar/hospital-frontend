@@ -34,13 +34,24 @@ type ExamCheckKey =
   | 'others';
 type ExamNoteKey = 'cvs' | 'rs' | 'cns' | 'gi';
 type ComorbidityKey =
-  'nil' | 'htn' | 'dm' | 'cad' | 'cva' | 'allergy' | 'atopy' | 'asthma' | 'copd' | 'ild' | 'others';
+  | 'nil'
+  | 'htn'
+  | 'dm'
+  | 'cad'
+  | 'cva'
+  | 'allergy'
+  | 'atopy'
+  | 'asthma'
+  | 'copd'
+  | 'ild'
+  | 'hypothyroidism'
+  | 'others';
 
 // "Others" tick + a free-text note, added on top of the shared Examination / Comorbidities types
 type ExamForm = Examination & { others: boolean; othersNote: string };
 type ComorbidityForm = Comorbidities & { others: boolean; othersNote: string };
 
-type YesNoField = 'drugAllergy' | 'surgicalComplications';
+type YesNoField = 'drugAllergy' | 'surgicalComplications' | 'smoker' | 'alcoholic';
 
 interface BoardPanel {
   key: PanelKey;
@@ -110,7 +121,6 @@ export class Dashboard implements OnInit, OnDestroy {
     'Ointment',
     'Lotion',
     'Puffs',
-    'spray'
   ];
 
   readonly frequencyOptions = [
@@ -132,10 +142,6 @@ export class Dashboard implements OnInit, OnDestroy {
     'Not related to food',
     'Before Breakfast',
     '1hr Before food',
-    'Before Lunch',
-    'Before Dinner',
-    'At Bed time',
-    'Topical Application'
   ];
 
   readonly examChecks: { key: ExamCheckKey; label: string }[] = [
@@ -167,6 +173,7 @@ export class Dashboard implements OnInit, OnDestroy {
     { key: 'asthma', label: 'Asthma' },
     { key: 'copd', label: 'COPD' },
     { key: 'ild', label: 'ILD' },
+    { key: 'hypothyroidism', label: 'Hypothyroidism' },
     { key: 'others', label: 'Others' },
   ];
 
@@ -180,6 +187,13 @@ export class Dashboard implements OnInit, OnDestroy {
 
   get diseaseSuggestions(): string[] {
     return this.uniqueSuggestions(this.visits.map((visit) => visit.disease));
+  }
+
+  // Durations typed in earlier prescriptions (e.g. "5 days") - shown when the field is clicked
+  get durationSuggestions(): string[] {
+    return this.uniqueSuggestions(
+      this.visits.flatMap((visit) => (visit.medicines || []).map((medicine) => medicine.duration)),
+    );
   }
 
   get medicineSuggestions(): string[] {
@@ -1246,12 +1260,15 @@ export class Dashboard implements OnInit, OnDestroy {
       asthma: false,
       copd: false,
       ild: false,
+      hypothyroidism: false,
       others: false,
       othersNote: '',
       drugAllergy: '',
       drugAllergyDetails: '',
       surgicalComplications: '',
       surgicalComplicationsNote: '',
+      smoker: '',
+      alcoholic: '',
     };
   }
 

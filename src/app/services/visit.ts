@@ -52,10 +52,13 @@ export interface Comorbidities {
   asthma: boolean;
   copd: boolean;
   ild: boolean;
+  hypothyroidism?: boolean;
   drugAllergy: YesNo;
   drugAllergyDetails: string;
   surgicalComplications: YesNo;
   surgicalComplicationsNote: string;
+  smoker?: YesNo;
+  alcoholic?: YesNo;
 }
 
 export interface Visit {
