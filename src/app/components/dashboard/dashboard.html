@@ -20,14 +20,7 @@
     <div class="navbar-right">
       <label
         title="Tick when printing on paper that already has the clinic header"
-        style="
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 12px;
-          cursor: pointer;
-          white-space: nowrap;
-        "
+        style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; white-space: nowrap"
       >
         <input type="checkbox" [checked]="preprintedPaper" (change)="togglePreprinted($event)" />
         Letterhead paper
@@ -857,9 +850,15 @@
           <button class="outline-btn" (click)="addMedicineRow()">＋ Add medicine</button>
         </div>
 
+        <p class="field-hint">
+          Pick a medicine you have used before — its dose, frequency, duration and food timing fill
+          automatically. Change anything if needed.
+        </p>
+
         <div class="medicine-row" *ngFor="let medicine of medicines; let i = index">
           <input
             [(ngModel)]="medicine.name"
+            (change)="autoFillMedicine(medicine)"
             list="medicine-suggestions"
             autocomplete="off"
             placeholder="Medicine name"
@@ -868,6 +867,13 @@
           <select [(ngModel)]="medicine.dosage">
             <option value="">Dose</option>
 
+            <option
+              *ngIf="medicine.dosage && !dosageOptions.includes(medicine.dosage)"
+              [value]="medicine.dosage"
+            >
+              {{ medicine.dosage }}
+            </option>
+
             <option *ngFor="let option of dosageOptions">
               {{ option }}
             </option>
@@ -875,6 +881,13 @@
 
           <select [(ngModel)]="medicine.frequency">
             <option value="">Frequency</option>
+
+            <option
+              *ngIf="medicine.frequency && !frequencyOptions.includes(medicine.frequency)"
+              [value]="medicine.frequency"
+            >
+              {{ medicine.frequency }}
+            </option>
 
             <option *ngFor="let option of frequencyOptions">
               {{ option }}
@@ -890,6 +903,13 @@
 
           <select [(ngModel)]="medicine.timing">
             <option value="">Food timing</option>
+
+            <option
+              *ngIf="medicine.timing && !timingOptions.includes(medicine.timing)"
+              [value]="medicine.timing"
+            >
+              {{ medicine.timing }}
+            </option>
 
             <option *ngFor="let option of timingOptions">
               {{ option }}

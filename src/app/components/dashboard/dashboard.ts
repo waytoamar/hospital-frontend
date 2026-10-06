@@ -898,6 +898,35 @@ export class Dashboard implements OnInit, OnDestroy {
     this.saveDraft();
   }
 
+  // Doctor picks a medicine used before: fill dose, frequency, duration and food timing from
+  // the last time it was prescribed. Only empty boxes are filled, so nothing typed is overwritten.
+  autoFillMedicine(medicine: Medicine): void {
+    const name = medicine.name.trim().toLowerCase();
+    if (!name) {
+      return;
+    }
+
+    if (medicine.dosage || medicine.frequency || medicine.duration || medicine.timing) {
+      return;
+    }
+
+    // visits come newest first, so the first match is the most recent prescription
+    for (const visit of this.visits) {
+      const previous = (visit.medicines || []).find(
+        (item) => item.name.trim().toLowerCase() === name,
+      );
+
+      if (previous) {
+        medicine.dosage = previous.dosage || '';
+        medicine.frequency = previous.frequency || '';
+        medicine.duration = previous.duration || '';
+        medicine.timing = previous.timing || '';
+        this.saveDraft();
+        return;
+      }
+    }
+  }
+
   removeMedicineRow(index: number): void {
     this.medicines.splice(index, 1);
 
