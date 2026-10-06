@@ -152,16 +152,22 @@ export class Dashboard implements OnInit, OnDestroy {
     'SOS',
   ];
 
-  readonly timingOptions = [
-    'Before food',
-    'After food',
-    'With food',
-    'Empty stomach',
-    'At bedtime',
+readonly timingOptions = [
+    'Food timing',
     'Morning empty stomach',
-    'Not related to food',
     'Before Breakfast',
+    '30 mins before food',
     '1hr Before food',
+    'Before food',
+    'Empty stomach',
+    'With food',
+    'After breakfast',
+    'After lunch',
+    'After dinner',
+    'After food',
+    'Not related to food',
+    'At bedtime',
+    'Once a week',
     'As directed',
   ];
 
