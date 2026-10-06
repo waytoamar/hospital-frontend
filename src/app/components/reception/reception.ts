@@ -9,6 +9,15 @@ import { HttpClient } from '@angular/common/http';
 
 const API = 'https://hospital-backend-yxe9.onrender.com/api';
 
+interface FollowUpHit {
+  patientId: string;
+  patientName: string;
+  age: string;
+  gender: string;
+  phone: string;
+  followUpDate: string;
+}
+
 interface Column {
   label: string;
   tone: 'waiting' | 'consult' | 'lab' | 'done';
@@ -68,6 +77,57 @@ const emptyForm = (): VisitForm => ({
       .edit-btn:hover {
         border-color: var(--primary);
         color: var(--primary-dark);
+      }
+      .fup {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-left: 5px solid #0d9488;
+        border-radius: 14px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+      }
+      .fup h4 {
+        margin: 0 0 10px;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .fup h4 small {
+        display: inline;
+        font-weight: 400;
+      }
+      .fup-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 10px;
+      }
+      .fup-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #f3fbfa;
+      }
+      .fup-info {
+        min-width: 0;
+      }
+      .fup-info small {
+        font-size: 12px;
+      }
+      .fup-due {
+        display: inline-block;
+        margin-top: 3px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #0f766e;
+      }
+      .fup-due.late {
+        color: #b45309;
       }
       .ticket-actions {
         display: flex;
@@ -208,6 +268,25 @@ const emptyForm = (): VisitForm => ({
       <!-- BOARD -->
       <section *ngIf="tab === 'board'">
         <p class="error" *ngIf="loadError">{{ loadError }}</p>
+        <div class="fup" *ngIf="followUps.length">
+          <h4>
+            📅 Follow-up patients <span class="count">{{ followUps.length }}</span>
+            <small>due today or earlier this week, not yet come back</small>
+          </h4>
+          <div class="fup-list">
+            <div class="fup-item" *ngFor="let f of followUps">
+              <div class="fup-info">
+                <b>{{ f.patientName }}</b>
+                <small>{{ f.patientId }} · {{ f.age }} · {{ f.gender }} · 📞 {{ f.phone }}</small>
+                <span class="fup-due" [class.late]="f.followUpDate < todayStr">{{
+                  f.followUpDate === todayStr ? 'Due today' : 'Due ' + (f.followUpDate | date: 'dd MMM')
+                }}</span>
+              </div>
+              <button class="btn sm" (click)="addFollowUp(f)">＋ Add to queue</button>
+            </div>
+          </div>
+        </div>
+
         <div class="cols">
           <div class="col" *ngFor="let col of columns" [attr.data-tone]="col.tone">
             <h3>
@@ -381,6 +460,9 @@ const emptyForm = (): VisitForm => ({
 export class Reception implements OnInit, OnDestroy {
   tab: 'board' | 'patients' = 'board';
   columns: Column[] = [];
+  followUps: FollowUpHit[] = [];
+  todayStr = '';
+  private boardSig = '';
   atLab: QueueItem[] = [];
   calling: QueueItem | null = null;
   updated: Date | null = null;
@@ -472,6 +554,25 @@ export class Reception implements OnInit, OnDestroy {
     );
   }
 
+  private loadFollowUps(): void {
+    this.http
+      .get<{ today: string; list: FollowUpHit[] }>(`${API}/reception/followups`, {
+        withCredentials: true,
+      })
+      .subscribe({
+        next: (r) => {
+          this.todayStr = r.today;
+          this.followUps = r.list;
+        },
+        error: () => {},
+      });
+  }
+
+  // One click: opens the new-visit form with the old patient's details filled in
+  addFollowUp(f: FollowUpHit): void {
+    this.openForm({ ...f, lastVisit: '' } as unknown as PatientHit);
+  }
+
   private load(): void {
     this.api.board().subscribe({
       next: (visits) => {
@@ -484,6 +585,12 @@ export class Reception implements OnInit, OnDestroy {
           { label: 'Completed', tone: 'done', items: by('Completed') },
         ];
         this.atLab = by('Lab investigation');
+        // Reload the follow-up list only when the queue changed (new visit, no show...)
+        const sig = visits.map((v) => v._id + v.status).join('|');
+        if (sig !== this.boardSig) {
+          this.boardSig = sig;
+          this.loadFollowUps();
+        }
         this.calling = this.columns[1].items[0] || null;
         this.announceIfNew();
       },
