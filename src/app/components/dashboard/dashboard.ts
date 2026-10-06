@@ -127,6 +127,13 @@ export class Dashboard implements OnInit, OnDestroy {
     'Ointment',
     'Lotion',
     'Puffs',
+    'Nasal Spray',
+    'Eye Drops',
+    'Ear Drops',
+    'Nasal Drops',
+    'Cream / Gel',
+    'Sachet',
+    'Rotacap',
   ];
 
   readonly frequencyOptions = [
@@ -135,8 +142,13 @@ export class Dashboard implements OnInit, OnDestroy {
     '0-0-1',
     '1-0-1',
     '1-1-1',
+    '0-1-1',
+    '1-1-0',
     '2-0-2',
     '0-0-2',
+    'OD',
+    'BD',
+    'TDS',
     'SOS',
   ];
 
@@ -145,9 +157,12 @@ export class Dashboard implements OnInit, OnDestroy {
     'After food',
     'With food',
     'Empty stomach',
+    'At bedtime',
+    'Morning empty stomach',
     'Not related to food',
     'Before Breakfast',
     '1hr Before food',
+    'As directed',
   ];
 
   readonly examChecks: { key: ExamCheckKey; label: string }[] = [
