@@ -696,12 +696,14 @@ label select {
 .edit-btn:hover {
   background: #f1f5f9;
 }
+/* Board: Waiting / In consultation / Completed - three equal columns that fill the page */
 .cols {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
 }
 @media (max-width: 900px) {
   .cols {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 }
 
