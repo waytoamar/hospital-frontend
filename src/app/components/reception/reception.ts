@@ -405,15 +405,20 @@ const emptyForm = (): VisitForm => ({
           </ng-template>
 
           <p class="found" *ngIf="lookupMsg">{{ lookupMsg }}</p>
-          <div class="chip-list" *ngIf="matches.length > 1">
+          <div class="chip-list" *ngIf="matches.length">
             <button *ngFor="let m of matches" class="pick" (click)="usePatient(m)">
-              {{ m.patientName }} · {{ m.age }} · {{ m.patientId }}
+              {{ m.patientName }} · {{ m.age }} · {{ m.gender }} · {{ m.patientId }}
             </button>
+            <button class="pick" (click)="newOnSamePhone()">+ New patient on this number</button>
           </div>
 
           <label
             >Patient name *
-            <input [(ngModel)]="form.patientName" placeholder="Full name" />
+            <input
+              [(ngModel)]="form.patientName"
+              (ngModelChange)="onNameTyped()"
+              placeholder="Full name"
+            />
           </label>
 
           <div class="form-grid">
@@ -475,6 +480,7 @@ export class Reception implements OnInit, OnDestroy {
   editingId: string | null = null;
   formError = '';
   lookupMsg = '';
+  pickedName = '';
   matches: PatientHit[] = [];
   saving = false;
 
@@ -675,7 +681,31 @@ export class Reception implements OnInit, OnDestroy {
     this.form.gender = p.gender;
     this.form.phone = p.phone;
     this.lookupMsg = `Existing patient: ${p.patientName} (${p.patientId})`;
+    this.pickedName = p.patientName;
     this.matches = [];
+  }
+
+  // Same phone, different family member: keep the phone, clear the rest, new ID
+  newOnSamePhone(): void {
+    this.form.patientId = '';
+    this.form.patientName = '';
+    this.form.age = '';
+    this.form.gender = '';
+    this.pickedName = '';
+    this.matches = [];
+    this.lookupMsg = 'New patient on this number. Fill in the details below.';
+  }
+
+  // Name changed after picking an old patient: this is a different person, drop the old ID
+  onNameTyped(): void {
+    if (
+      this.form.patientId &&
+      this.form.patientName.trim().toLowerCase() !== this.pickedName.trim().toLowerCase()
+    ) {
+      this.form.patientId = '';
+      this.pickedName = '';
+      this.lookupMsg = 'Name changed, so this will be saved as a new patient.';
+    }
   }
 
   onPhoneTyped(): void {
@@ -694,12 +724,15 @@ export class Reception implements OnInit, OnDestroy {
     this.api.patients(this.form.phone).subscribe({
       next: (hits) => {
         const exact = hits.filter((h) => h.phone === this.form.phone);
-        if (exact.length === 1) {
-          this.usePatient(exact[0]);
-        } else if (exact.length > 1) {
+        if (exact.length) {
+          // Always let the receptionist choose: the number may belong to a family
           this.matches = exact;
-          this.lookupMsg = 'More than one patient uses this number. Pick one:';
+          this.lookupMsg =
+            exact.length === 1
+              ? 'Found 1 patient on this number. Tap the name, or add a new patient:'
+              : `Found ${exact.length} patients on this number. Pick one, or add a new patient:`;
         } else {
+          this.matches = [];
           this.lookupMsg = 'New patient. Fill in the details below.';
         }
       },
