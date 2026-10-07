@@ -20,14 +20,7 @@
     <div class="navbar-right">
       <label
         title="Tick when printing on paper that already has the clinic header"
-        style="
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 12px;
-          cursor: pointer;
-          white-space: nowrap;
-        "
+        style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; white-space: nowrap"
       >
         <input type="checkbox" [checked]="preprintedPaper" (change)="togglePreprinted($event)" />
         Letterhead paper
@@ -135,14 +128,38 @@
               s.services[item.key]?.amount || 0
             }}
           </span>
-          <span *ngIf="s.split"
-            >Split (cash + UPI): <b>{{ s.split }}</b></span
-          >
+          <span *ngIf="s.split">Split (cash + UPI): <b>{{ s.split }}</b></span>
         </div>
 
         <p class="coll-warn" *ngIf="s.notBilled">
           ⚠ {{ s.notBilled }} patient(s) have no bill entered
         </p>
+
+        <div class="coll-changes" *ngIf="s.feeChanges">
+          <button type="button" (click)="showChanges = !showChanges">
+            🕵 {{ s.feeChanges }} bill change(s) by reception ·
+            {{ showChanges ? 'hide' : 'view' }}
+          </button>
+
+          <div class="chg-list" *ngIf="showChanges">
+            <div class="chg" *ngFor="let c of feeChanges">
+              <div class="chg-top">
+                <b>{{ c.patientName }}</b>
+                <small
+                  >{{ c.token }} · {{ c.patientId }} · {{ c.at | date: 'h:mm a' }} · by
+                  {{ c.by || 'Receptionist' }}</small
+                >
+                <span class="chg-kind" [attr.data-kind]="c.kind">{{ c.kind }}</span>
+              </div>
+              <div class="chg-amt">₹{{ c.beforeTotal }} → <b>₹{{ c.afterTotal }}</b></div>
+              <small *ngIf="itemDiff(c)">{{ itemDiff(c) }}</small>
+              <small *ngIf="payChanged(c)"
+                >Paid: {{ payText(c.beforeCash, c.beforeUpi) }} →
+                {{ payText(c.afterCash, c.afterUpi) }}</small
+              >
+            </div>
+          </div>
+        </div>
       </section>
 
       <section class="bd-grid" [class.single]="boardFilter !== 'all'">

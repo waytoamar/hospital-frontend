@@ -1718,3 +1718,78 @@ button:disabled {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* ---- Bill changes (doctor only) ---- */
+.coll-changes {
+  margin-top: 10px;
+}
+
+.coll-changes > button {
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  background: #fff8e1;
+  border: 1px solid #f1d27a;
+  border-radius: 10px;
+  color: #7a5200;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chg-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.chg {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid #e3e8ee;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.chg-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chg-top small,
+.chg small {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.chg-amt {
+  font-size: 15px;
+}
+
+.chg-kind {
+  margin-left: auto;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #eef2f6;
+  color: #475569;
+}
+
+.chg-kind[data-kind='reduced'],
+.chg-kind[data-kind='removed'] {
+  background: #fdecea;
+  color: #b42318;
+}
+
+.chg-kind[data-kind='increased'],
+.chg-kind[data-kind='added'] {
+  background: #e3f6ea;
+  color: #0f7a3d;
+}

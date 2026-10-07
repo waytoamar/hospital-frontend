@@ -28,11 +28,30 @@ interface Money {
   amount: number;
 }
 
+interface FeeChange {
+  visitId: string;
+  patientName: string;
+  patientId: string;
+  token: string;
+  at: string;
+  by: string;
+  kind: string;
+  beforeTotal: number;
+  afterTotal: number;
+  beforeFees: Record<string, number>;
+  afterFees: Record<string, number>;
+  beforeCash: number;
+  beforeUpi: number;
+  afterCash: number;
+  afterUpi: number;
+}
+
 interface Summary {
   date: string;
   patients: number;
   notBilled: number;
   split: number;
+  feeChanges?: number;
   cash: Money;
   upi: Money;
   total: Money;
@@ -116,6 +135,8 @@ export class Dashboard implements OnInit, OnDestroy {
   visits: Visit[] = [];
 
   summary: Summary | null = null;
+  feeChanges: FeeChange[] = [];
+  showChanges = false;
   summaryDate = new Date().toLocaleDateString('en-CA');
   readonly serviceList = [
     { key: 'consultation', label: 'Consultation' },
@@ -1268,9 +1289,48 @@ readonly timingOptions = [
     this.http
       .get<Summary>(`${API}/summary`, { params: { date }, withCredentials: true })
       .subscribe({
-        next: (summary) => (this.summary = summary),
+        next: (summary) => {
+          this.summary = summary;
+          if (summary.feeChanges) {
+            this.loadFeeChanges(date);
+          } else {
+            this.feeChanges = [];
+            this.showChanges = false;
+          }
+        },
         error: () => {},
       });
+  }
+
+  private loadFeeChanges(date: string): void {
+    this.http
+      .get<FeeChange[]>(`${API}/fee-changes`, { params: { date }, withCredentials: true })
+      .subscribe({
+        next: (list) => (this.feeChanges = list),
+        error: () => {},
+      });
+  }
+
+  // "Consultation ₹300 → ₹100, ECG ₹200 → ₹0"
+  itemDiff(change: FeeChange): string {
+    return this.serviceList
+      .filter((item) => (change.beforeFees?.[item.key] || 0) !== (change.afterFees?.[item.key] || 0))
+      .map(
+        (item) =>
+          `${item.label} ₹${change.beforeFees?.[item.key] || 0} → ₹${change.afterFees?.[item.key] || 0}`,
+      )
+      .join(', ');
+  }
+
+  payChanged(change: FeeChange): boolean {
+    return change.beforeCash !== change.afterCash || change.beforeUpi !== change.afterUpi;
+  }
+
+  payText(cash: number, upi: number): string {
+    const parts = [];
+    if (cash) parts.push(`Cash ₹${cash}`);
+    if (upi) parts.push(`UPI ₹${upi}`);
+    return parts.join(' + ') || 'none';
   }
 
   private loadVisits(): void {
