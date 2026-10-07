@@ -20,7 +20,14 @@
     <div class="navbar-right">
       <label
         title="Tick when printing on paper that already has the clinic header"
-        style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; white-space: nowrap"
+        style="
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          cursor: pointer;
+          white-space: nowrap;
+        "
       >
         <input type="checkbox" [checked]="preprintedPaper" (change)="togglePreprinted($event)" />
         Letterhead paper
@@ -94,6 +101,50 @@
     </div>
 
     <ng-container *ngIf="activeView === 'board'">
+      <section class="coll" *ngIf="summary as s">
+        <div class="coll-head">
+          <h3>Collections</h3>
+          <input type="date" [(ngModel)]="summaryDate" (change)="loadSummary()" />
+        </div>
+
+        <div class="coll-grid">
+          <div class="coll-box">
+            <small>Patients</small>
+            <b>{{ s.patients }}</b>
+          </div>
+          <div class="coll-box">
+            <small>Cash</small>
+            <b>₹{{ s.cash.amount }}</b>
+            <em>{{ s.cash.count }} patients</em>
+          </div>
+          <div class="coll-box">
+            <small>UPI</small>
+            <b>₹{{ s.upi.amount }}</b>
+            <em>{{ s.upi.count }} patients</em>
+          </div>
+          <div class="coll-box total">
+            <small>Total</small>
+            <b>₹{{ s.total.amount }}</b>
+            <em>{{ s.total.count }} billed</em>
+          </div>
+        </div>
+
+        <div class="coll-services">
+          <span *ngFor="let item of serviceList">
+            {{ item.label }}: <b>{{ s.services[item.key]?.count || 0 }}</b> · ₹{{
+              s.services[item.key]?.amount || 0
+            }}
+          </span>
+          <span *ngIf="s.split"
+            >Split (cash + UPI): <b>{{ s.split }}</b></span
+          >
+        </div>
+
+        <p class="coll-warn" *ngIf="s.notBilled">
+          ⚠ {{ s.notBilled }} patient(s) have no bill entered
+        </p>
+      </section>
+
       <section class="bd-grid" [class.single]="boardFilter !== 'all'">
         <article
           class="bd-panel"

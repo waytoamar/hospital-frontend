@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { isAbnormal } from '../../services/visit';
@@ -19,6 +20,24 @@ import {
   printPrescription,
   setPreprintedPaper,
 } from '../../services/prescription-print';
+
+const API = 'https://hospital-backend-yxe9.onrender.com/api';
+
+interface Money {
+  count: number;
+  amount: number;
+}
+
+interface Summary {
+  date: string;
+  patients: number;
+  notBilled: number;
+  split: number;
+  cash: Money;
+  upi: Money;
+  total: Money;
+  services: Record<string, Money>;
+}
 
 type View = 'board' | 'patients' | 'records';
 type FormStep = 1 | 2 | 3 | 4;
@@ -95,6 +114,16 @@ export class Dashboard implements OnInit, OnDestroy {
   filterStartDate = '';
   filterEndDate = '';
   visits: Visit[] = [];
+
+  summary: Summary | null = null;
+  summaryDate = new Date().toLocaleDateString('en-CA');
+  readonly serviceList = [
+    { key: 'consultation', label: 'Consultation' },
+    { key: 'rbs', label: 'RBS' },
+    { key: 'ecg', label: 'ECG' },
+    { key: 'xray', label: 'X-ray' },
+    { key: 'daycare', label: 'Daycare' },
+  ];
 
   nextPatientId = '';
   patientId = '';
@@ -317,10 +346,12 @@ readonly timingOptions = [
     private visitService: VisitService,
     private excelExport: ExcelExportService,
     private router: Router,
+    private http: HttpClient,
   ) {}
 
   ngOnInit(): void {
     this.loadVisits();
+    this.loadSummary();
     this.pulseTimer = setInterval(() => this.checkForChanges(), 10000);
 
     this.clockTimer = setInterval(() => {
@@ -1223,11 +1254,23 @@ readonly timingOptions = [
         const stamp = `${p.latest}|${p.count}`;
         if (this.lastPulse && stamp !== this.lastPulse) {
           this.loadVisits();
+          this.loadSummary();
         }
         this.lastPulse = stamp;
       },
       error: () => {},
     });
+  }
+
+  // Cash / UPI / total for the chosen day (today by default)
+  loadSummary(): void {
+    const date = this.summaryDate || new Date().toLocaleDateString('en-CA');
+    this.http
+      .get<Summary>(`${API}/summary`, { params: { date }, withCredentials: true })
+      .subscribe({
+        next: (summary) => (this.summary = summary),
+        error: () => {},
+      });
   }
 
   private loadVisits(): void {

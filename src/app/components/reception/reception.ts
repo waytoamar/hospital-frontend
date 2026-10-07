@@ -24,6 +24,11 @@ interface Column {
   items: QueueItem[];
 }
 
+type FeeKey = 'consultation' | 'rbs' | 'ecg' | 'xray' | 'daycare';
+type Fees = Record<FeeKey, string>;
+
+const emptyFees = (): Fees => ({ consultation: '', rbs: '', ecg: '', xray: '', daycare: '' });
+
 interface VisitForm {
   patientId: string;
   patientName: string;
@@ -31,6 +36,10 @@ interface VisitForm {
   gender: string;
   phone: string;
   vitals: DeskVitals;
+  fees: Fees;
+  payCash: boolean;
+  payUpi: boolean;
+  cashPart: string; // used only when both Cash and UPI are selected
 }
 
 const emptyVitals = (): DeskVitals => ({
@@ -49,6 +58,10 @@ const emptyForm = (): VisitForm => ({
   gender: '',
   phone: '',
   vitals: emptyVitals(),
+  fees: emptyFees(),
+  payCash: false,
+  payUpi: false,
+  cashPart: '',
 });
 
 @Component({
@@ -228,6 +241,153 @@ const emptyForm = (): VisitForm => ({
       }
       .voice-banner:hover {
         background: #fff1c2;
+      }
+      .bill-card {
+        background: #f6f8f7;
+        border: 1px solid #dfe5e3;
+        border-radius: 14px;
+        padding: 4px 20px 18px;
+        margin-top: 6px;
+      }
+      .bill-grid,
+      .split-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 48px;
+        align-items: center;
+      }
+      .bill-card .bill-field {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        padding: 16px 0;
+        text-align: left;
+        border-bottom: 1px solid #dfe5e3;
+        cursor: text;
+      }
+      .bill-card .bill-field:focus-within {
+        border-bottom-color: #0f7a3d;
+      }
+      .bill-card .bill-name {
+        flex: 1;
+        text-align: left;
+        font-size: 15px;
+        font-weight: 500;
+        color: #16262d;
+      }
+      .bill-card .bill-rs {
+        font-size: 14px;
+        color: #6b7a80;
+      }
+      .bill-card .bill-field input {
+        width: 96px;
+        margin: -8px 0;
+        padding: 8px 12px;
+        border: 0;
+        border-radius: 8px;
+        outline: none;
+        box-shadow: none;
+        background: transparent;
+        text-align: right;
+        font: inherit;
+        font-size: 16px;
+        font-weight: 700;
+        color: #16262d;
+      }
+      .bill-card .bill-field input:focus {
+        box-shadow: 0 0 0 2px #0f7a3d;
+      }
+      .bill-card .bill-field input::placeholder {
+        color: #16262d;
+        opacity: 1;
+      }
+      .bill-due {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 8px;
+        padding: 16px 18px;
+        background: #132d36;
+        color: #fff;
+        border-radius: 10px;
+      }
+      .bill-due small {
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        opacity: 0.8;
+      }
+      .bill-due b {
+        font-size: 22px;
+      }
+      .pay-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      .pay-label {
+        margin-right: 10px;
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        color: #6b7a80;
+      }
+      .pay-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border: 1px solid #dfe5e3;
+        border-radius: 10px;
+        background: #fff;
+        font: inherit;
+        font-size: 15px;
+        color: #16262d;
+        cursor: pointer;
+      }
+      .pay-pill i {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #6b7a80;
+      }
+      .pay-pill.on {
+        border-color: #0f7a3d;
+        background: #e9f7ee;
+        color: #0f7a3d;
+      }
+      .pay-pill.on i {
+        background: #0f7a3d;
+      }
+      .split-row {
+        margin-top: 6px;
+      }
+      .split-upi {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 0;
+        border-bottom: 1px solid #dfe5e3;
+      }
+      .split-upi small {
+        font-size: 13px;
+        color: #6b7a80;
+      }
+      .split-upi b {
+        font-size: 16px;
+      }
+      .pay-hint {
+        margin: 10px 0 0;
+        font-size: 12px;
+        color: #6b7a80;
+      }
+      @media (max-width: 640px) {
+        .bill-grid,
+        .split-row {
+          grid-template-columns: 1fr;
+        }
       }
     `,
   ],
@@ -449,6 +609,68 @@ const emptyForm = (): VisitForm => ({
             <label>Heart rate<input [(ngModel)]="form.vitals.heartRate" placeholder="bpm" /></label>
           </div>
 
+          <h4 class="sub-head">Billing (₹)</h4>
+          <div class="bill-card">
+            <div class="bill-grid">
+              <div class="bill-field" *ngFor="let item of feeItems" (click)="amt.focus()">
+                <span class="bill-name">{{ item.label }}</span>
+                <span class="bill-rs">₹</span>
+                <input
+                  #amt
+                  [(ngModel)]="form.fees[item.key]"
+                  inputmode="numeric"
+                  maxlength="7"
+                  placeholder="0"
+                />
+              </div>
+              <div class="bill-due">
+                <small>TOTAL DUE</small>
+                <b>₹ {{ billTotal | number: '1.2-2' }}</b>
+              </div>
+            </div>
+
+            <div class="pay-row">
+              <span class="pay-label">PAID BY</span>
+              <button
+                type="button"
+                class="pay-pill"
+                [class.on]="form.payCash"
+                (click)="form.payCash = !form.payCash"
+              >
+                <i></i>Cash
+              </button>
+              <button
+                type="button"
+                class="pay-pill"
+                [class.on]="form.payUpi"
+                (click)="form.payUpi = !form.payUpi"
+              >
+                <i></i>UPI
+              </button>
+            </div>
+
+            <div class="split-row" *ngIf="form.payCash && form.payUpi">
+              <div class="bill-field" (click)="cashIn.focus()">
+                <span class="bill-name">Cash given</span>
+                <span class="bill-rs">₹</span>
+                <input
+                  #cashIn
+                  [(ngModel)]="form.cashPart"
+                  inputmode="numeric"
+                  maxlength="7"
+                  placeholder="0"
+                />
+              </div>
+              <div class="split-upi">
+                <small>UPI (remaining)</small>
+                <b>₹ {{ upiAmount | number: '1.2-2' }}</b>
+              </div>
+            </div>
+            <p class="pay-hint" *ngIf="billTotal > 0 && !(form.payCash && form.payUpi)">
+              Part cash, part UPI? Select both.
+            </p>
+          </div>
+
           <p class="error" *ngIf="formError">{{ formError }}</p>
         </div>
       </div>
@@ -490,6 +712,14 @@ export class Reception implements OnInit, OnDestroy {
   phoneEdit: { id: string; value: string } | null = null;
   phoneError = '';
 
+  readonly feeItems: { key: FeeKey; label: string }[] = [
+    { key: 'consultation', label: 'Consultation fee' },
+    { key: 'rbs', label: 'RBS' },
+    { key: 'ecg', label: 'ECG' },
+    { key: 'xray', label: 'X-ray' },
+    { key: 'daycare', label: 'Daycare' },
+  ];
+
   voiceEnabled = false;
   private lastCalledId: string | null = null;
 
@@ -524,6 +754,25 @@ export class Reception implements OnInit, OnDestroy {
   }
 
   trackById = (_: number, v: QueueItem) => v._id;
+
+  get billTotal(): number {
+    return this.feeItems.reduce((sum, item) => sum + (Number(this.form.fees[item.key]) || 0), 0);
+  }
+
+  // Only Cash: all of it. Both: what the patient handed over in cash. Only UPI: none.
+  get cashAmount(): number {
+    const total = this.billTotal;
+    if (!total || !this.form.payCash) return 0;
+    if (!this.form.payUpi) return total;
+    return Math.min(Math.max(Number(this.form.cashPart) || 0, 0), total);
+  }
+
+  // Whatever is left after the cash goes to UPI
+  get upiAmount(): number {
+    const total = this.billTotal;
+    if (!total || !this.form.payUpi) return 0;
+    return total - this.cashAmount;
+  }
 
   // ---- Reports ready + Voice ----
 
@@ -653,6 +902,24 @@ export class Reception implements OnInit, OnDestroy {
 
   openEdit(v: QueueItem): void {
     const vit = (v as QueueItem & { vitals?: Partial<DeskVitals> }).vitals || {};
+    const bill = v as QueueItem & {
+      fees?: Partial<Record<FeeKey, number>>;
+      paymentMode?: string;
+      cashAmount?: number;
+      upiAmount?: number;
+    };
+    const fees = emptyFees();
+    this.feeItems.forEach((item) => {
+      const amount = bill.fees?.[item.key];
+      fees[item.key] = amount ? String(amount) : '';
+    });
+    const paid = this.feeItems.reduce((sum, item) => sum + (bill.fees?.[item.key] || 0), 0);
+    let cash = bill.cashAmount || 0;
+    let upi = bill.upiAmount || 0;
+    if (!cash && !upi) {
+      if (bill.paymentMode === 'Cash') cash = paid;
+      if (bill.paymentMode === 'UPI') upi = paid;
+    }
     this.form = {
       patientId: v.patientId || '',
       patientName: v.patientName || '',
@@ -660,6 +927,10 @@ export class Reception implements OnInit, OnDestroy {
       gender: v.gender || '',
       phone: v.phone || '',
       vitals: { ...emptyVitals(), ...vit } as DeskVitals,
+      fees,
+      payCash: cash > 0,
+      payUpi: upi > 0,
+      cashPart: cash > 0 && upi > 0 ? String(cash) : '',
     };
     this.editingId = v._id || null;
     this.formError = '';
@@ -753,6 +1024,30 @@ export class Reception implements OnInit, OnDestroy {
       return;
     }
 
+    const badFee = this.feeItems.find((item) => !/^\d{0,7}$/.test(String(f.fees[item.key]).trim()));
+    if (badFee) {
+      this.formError = `${badFee.label}: enter the amount in numbers only`;
+      return;
+    }
+    if (this.billTotal > 0) {
+      if (!f.payCash && !f.payUpi) {
+        this.formError = 'Choose Cash or UPI (or both) for the amount entered';
+        return;
+      }
+      if (f.payCash && f.payUpi && (this.cashAmount <= 0 || this.cashAmount >= this.billTotal)) {
+        this.formError =
+          'Split payment: enter the cash given. It must be less than the total, the rest goes to UPI';
+        return;
+      }
+    }
+
+    const billing = {
+      fees: Object.fromEntries(
+        this.feeItems.map((item) => [item.key, Number(f.fees[item.key]) || 0]),
+      ),
+      payment: { cash: this.cashAmount, upi: this.upiAmount },
+    };
+
     this.saving = true;
     this.formError = '';
 
@@ -767,6 +1062,7 @@ export class Reception implements OnInit, OnDestroy {
             gender: f.gender,
             phone: f.phone,
             vitals: f.vitals,
+            ...billing,
           },
           { withCredentials: true },
         )
@@ -787,15 +1083,20 @@ export class Reception implements OnInit, OnDestroy {
     }
 
     // NEW VISIT: POST /api/reception/visits  (receptionist route)
-    this.api
-      .addVisit({
-        patientId: f.patientId || undefined,
-        patientName: f.patientName.trim(),
-        age: f.age,
-        gender: f.gender,
-        phone: f.phone,
-        vitals: f.vitals,
-      })
+    this.http
+      .post<QueueItem>(
+        `${API}/reception/visits`,
+        {
+          patientId: f.patientId || undefined,
+          patientName: f.patientName.trim(),
+          age: f.age,
+          gender: f.gender,
+          phone: f.phone,
+          vitals: f.vitals,
+          ...billing,
+        },
+        { withCredentials: true },
+      )
       .subscribe({
         next: (visit) => {
           this.saving = false;
