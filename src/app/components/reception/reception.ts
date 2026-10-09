@@ -18,18 +18,11 @@ interface FollowUpHit {
   followUpDate: string;
 }
 
-interface Column {
-  label: string;
-  tone: 'waiting' | 'consult' | 'lab' | 'done';
-  items: QueueItem[];
-}
-
 interface Money {
   count: number;
   amount: number;
 }
 
-// Today's collection, from /api/reception/summary (same numbers the doctor sees)
 interface Summary {
   date: string;
   patients: number;
@@ -39,6 +32,12 @@ interface Summary {
   upi: Money;
   total: Money;
   services: Record<string, Money>;
+}
+
+interface Column {
+  label: string;
+  tone: 'waiting' | 'consult' | 'lab' | 'done';
+  items: QueueItem[];
 }
 
 type FeeKey = 'consultation' | 'rbs' | 'ecg' | 'xray' | 'daycare';
@@ -259,78 +258,6 @@ const emptyForm = (): VisitForm => ({
       .voice-banner:hover {
         background: #fff1c2;
       }
-      .coll {
-        background: #fff;
-        border: 1px solid #e3e8ee;
-        border-radius: 14px;
-        padding: 14px 16px;
-        margin-bottom: 16px;
-      }
-      .coll-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 12px;
-      }
-      .coll-head h3 {
-        margin: 0;
-        font-size: 15px;
-      }
-      .coll-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
-      }
-      .coll-box {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        padding: 10px 12px;
-        border: 1px solid #e3e8ee;
-        border-radius: 12px;
-        background: #f8fafc;
-      }
-      .coll-box small {
-        font-size: 12px;
-        color: #64748b;
-        font-weight: 600;
-      }
-      .coll-box b {
-        font-size: 22px;
-      }
-      .coll-box em {
-        font-size: 12px;
-        font-style: normal;
-        color: #64748b;
-      }
-      .coll-box.total {
-        background: #e3f6ea;
-        border-color: #9ad6b0;
-      }
-      .coll-services {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px 18px;
-        margin-top: 12px;
-        font-size: 13px;
-        color: #475569;
-      }
-      .coll-warn {
-        margin: 10px 0 0;
-        padding: 8px 12px;
-        background: #fff5f4;
-        border: 1px solid #f0c4be;
-        border-radius: 10px;
-        color: #b42318;
-        font-size: 13px;
-        font-weight: 600;
-      }
-      @media (max-width: 720px) {
-        .coll-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-      }
       .bill-card {
         background: #f6f8f7;
         border: 1px solid #dfe5e3;
@@ -478,6 +405,82 @@ const emptyForm = (): VisitForm => ({
           grid-template-columns: 1fr;
         }
       }
+      .coll {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px 16px;
+        margin: 16px 0;
+      }
+      .coll-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .coll-head h3 {
+        margin: 0;
+        font-size: 15px;
+      }
+      .coll-head span {
+        font-size: 13px;
+        color: #64748b;
+      }
+      .coll-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .coll-box {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #f8fafc;
+      }
+      .coll-box small {
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+      }
+      .coll-box b {
+        font-size: 22px;
+      }
+      .coll-box em {
+        font-size: 12px;
+        font-style: normal;
+        color: #64748b;
+      }
+      .coll-box.total {
+        background: #e3f6ea;
+        border-color: #9ad6b0;
+      }
+      .coll-services {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 18px;
+        margin-top: 12px;
+        font-size: 13px;
+        color: #475569;
+      }
+      .coll-warn {
+        margin: 10px 0 0;
+        padding: 8px 12px;
+        background: #fff5f4;
+        border: 1px solid #f0c4be;
+        border-radius: 10px;
+        color: #b42318;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      @media (max-width: 640px) {
+        .coll-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
     `,
   ],
   template: `
@@ -511,50 +514,6 @@ const emptyForm = (): VisitForm => ({
         </button>
         <button class="primary-btn" (click)="openForm()">＋ New visit</button>
       </nav>
-
-      <ng-container *ngIf="tab === 'board'">
-        <section class="coll" *ngIf="summary as s">
-          <div class="coll-head">
-            <h3>Today's collection</h3>
-            <small>{{ s.date | date: 'dd MMM yyyy' }}</small>
-          </div>
-
-          <div class="coll-grid">
-            <div class="coll-box">
-              <small>Patients</small>
-              <b>{{ s.patients }}</b>
-            </div>
-            <div class="coll-box">
-              <small>Cash</small>
-              <b>₹{{ s.cash.amount }}</b>
-              <em>{{ s.cash.count }} patients</em>
-            </div>
-            <div class="coll-box">
-              <small>UPI</small>
-              <b>₹{{ s.upi.amount }}</b>
-              <em>{{ s.upi.count }} patients</em>
-            </div>
-            <div class="coll-box total">
-              <small>Total</small>
-              <b>₹{{ s.total.amount }}</b>
-              <em>{{ s.total.count }} billed</em>
-            </div>
-          </div>
-
-          <div class="coll-services">
-            <span *ngFor="let item of serviceList">
-              {{ item.label }}: <b>{{ s.services[item.key]?.count || 0 }}</b> · ₹{{
-                s.services[item.key]?.amount || 0
-              }}
-            </span>
-            <span *ngIf="s.split">Split (cash + UPI): <b>{{ s.split }}</b></span>
-          </div>
-
-          <p class="coll-warn" *ngIf="s.notBilled">
-            ⚠ {{ s.notBilled }} patient(s) have no bill entered
-          </p>
-        </section>
-      </ng-container>
 
       <p class="notice ok" *ngIf="message">{{ message }}</p>
 
@@ -619,6 +578,45 @@ const emptyForm = (): VisitForm => ({
             <b>{{ v.token }}</b> {{ v.patientName }}
           </span>
         </div>
+
+        <section class="coll" *ngIf="summary as s">
+          <div class="coll-head">
+            <h3>Today's collection</h3>
+            <span>{{ s.date | date: 'dd MMM yyyy' }}</span>
+          </div>
+          <div class="coll-grid">
+            <div class="coll-box">
+              <small>Patients</small>
+              <b>{{ s.patients }}</b>
+            </div>
+            <div class="coll-box">
+              <small>Cash</small>
+              <b>₹{{ s.cash.amount }}</b>
+              <em>{{ s.cash.count }} patients</em>
+            </div>
+            <div class="coll-box">
+              <small>UPI</small>
+              <b>₹{{ s.upi.amount }}</b>
+              <em>{{ s.upi.count }} patients</em>
+            </div>
+            <div class="coll-box total">
+              <small>Total</small>
+              <b>₹{{ s.total.amount }}</b>
+              <em>{{ s.total.count }} billed</em>
+            </div>
+          </div>
+          <div class="coll-services">
+            <span *ngFor="let item of feeItems">
+              {{ item.label }}: <b>{{ s.services[item.key]?.count || 0 }}</b> · ₹{{
+                s.services[item.key]?.amount || 0
+              }}
+            </span>
+            <span *ngIf="s.split">Split (cash + UPI): <b>{{ s.split }}</b></span>
+          </div>
+          <p class="coll-warn" *ngIf="s.notBilled">
+            ⚠ {{ s.notBilled }} patient(s) have no bill entered
+          </p>
+        </section>
       </section>
 
       <!-- PATIENTS -->
@@ -823,17 +821,11 @@ export class Reception implements OnInit, OnDestroy {
   followUps: FollowUpHit[] = [];
   todayStr = '';
   private boardSig = '';
+  private summarySig = '';
+  summary: Summary | null = null;
   atLab: QueueItem[] = [];
   calling: QueueItem | null = null;
   updated: Date | null = null;
-  summary: Summary | null = null;
-  readonly serviceList = [
-    { key: 'consultation', label: 'Consultation' },
-    { key: 'rbs', label: 'RBS' },
-    { key: 'ecg', label: 'ECG' },
-    { key: 'xray', label: 'X-ray' },
-    { key: 'daycare', label: 'Daycare' },
-  ];
   loadError = '';
   message = '';
   busyId: string | null = null;
@@ -950,6 +942,13 @@ export class Reception implements OnInit, OnDestroy {
     );
   }
 
+  private loadSummary(): void {
+    this.http.get<Summary>(`${API}/reception/summary`, { withCredentials: true }).subscribe({
+      next: (r) => (this.summary = r),
+      error: () => {},
+    });
+  }
+
   private loadFollowUps(): void {
     this.http
       .get<{ today: string; list: FollowUpHit[] }>(`${API}/reception/followups`, {
@@ -987,9 +986,17 @@ export class Reception implements OnInit, OnDestroy {
           this.boardSig = sig;
           this.loadFollowUps();
         }
+        // Reload today's collection when the queue or any bill changed
+        const billSig =
+          sig +
+          '|' +
+          visits.map((v) => (v as QueueItem & { billTotal?: number }).billTotal || 0).join(',');
+        if (billSig !== this.summarySig) {
+          this.summarySig = billSig;
+          this.loadSummary();
+        }
         this.calling = this.columns[1].items[0] || null;
         this.announceIfNew();
-        this.loadSummary();
       },
       error: (err) => {
         if (err.status === 401 || err.status === 403) {
@@ -998,14 +1005,6 @@ export class Reception implements OnInit, OnDestroy {
         }
         this.loadError = 'Could not refresh the queue. Retrying…';
       },
-    });
-  }
-
-  // Today's cash / UPI / total (kept quiet on errors: the card simply stays hidden)
-  private loadSummary(): void {
-    this.http.get<Summary>(`${API}/reception/summary`, { withCredentials: true }).subscribe({
-      next: (summary) => (this.summary = summary),
-      error: () => {},
     });
   }
 

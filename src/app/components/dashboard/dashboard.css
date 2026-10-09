@@ -1640,7 +1640,7 @@ button:disabled {
   border: 1px solid #e3e8ee;
   border-radius: 14px;
   padding: 14px 16px;
-  margin-bottom: 16px;
+  margin: 16px 0;
 }
 
 .coll-head {
