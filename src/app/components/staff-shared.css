@@ -729,3 +729,49 @@ label select {
   padding: 4px 12px;
   font-size: 13px;
 }
+
+/* ===== Reception top row on phones: nothing goes off the screen ===== */
+@media (max-width: 640px) {
+  .tabs {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  .tabs button {
+    padding: 9px 16px;
+  }
+  .tabs .primary-btn {
+    order: 1;
+    margin-left: auto;
+  }
+  .tabs .voice-btn {
+    order: 2;
+  }
+  .refresh {
+    order: 3;
+    margin-left: 0;
+  }
+}
+
+/* Staff page: small gap between "Edit / New PIN" and "Remove" */
+.person-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Big "Now calling" token: smaller on narrow phones so "A-003" stays on one line */
+@media (max-width: 420px) {
+  .calling strong {
+    font-size: 64px;
+    white-space: nowrap;
+  }
+}
+
+/* Big "Now calling" token: smaller on narrow phones so "A-003" stays on one line */
+@media (max-width: 420px) {
+  .calling strong {
+    font-size: 64px;
+    white-space: nowrap;
+  }
+}

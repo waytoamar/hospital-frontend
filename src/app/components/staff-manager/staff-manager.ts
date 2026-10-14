@@ -95,7 +95,7 @@ const ROLE_TITLES: Record<StaffRole, string> = {
             <p class="error" *ngIf="editing === person._id && editError">{{ editError }}</p>
           </div>
 
-          <div>
+          <div class="person-actions">
             <ng-container *ngIf="editing !== person._id">
               <button class="ghost" (click)="startEdit(person)">Edit / New PIN</button>
               <button class="ghost" (click)="remove(person)">Remove</button>
