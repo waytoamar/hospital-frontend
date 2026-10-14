@@ -1,8 +1,9 @@
+import { API_BASE } from '../api';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { LabResult, Visit, VisitStatus } from './visit';
 
-const API = 'https://hospital-backend-yxe9.onrender.com/api';
+const API = API_BASE;
 const options = { withCredentials: true };
 
 export interface DeskVitals {

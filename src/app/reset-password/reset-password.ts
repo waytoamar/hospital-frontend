@@ -1,10 +1,9 @@
+import { API_BASE } from '../api';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-
-const API_BASE = 'https://hospital-backend-yxe9.onrender.com/api';
 
 @Component({
   selector: 'app-reset-password',

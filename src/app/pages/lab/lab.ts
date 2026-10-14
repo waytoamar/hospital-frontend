@@ -1,3 +1,4 @@
+import { API_BASE } from '../../api';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,7 +8,7 @@ import { AuthService } from '../../services/auth';
 import { LabService } from '../../services/staff';
 import { LabResult, Visit, isAbnormal, splitTests } from '../../services/visit';
 
-const API = 'https://hospital-backend-yxe9.onrender.com/api';
+const API = API_BASE;
 
 type DoneVisit = Visit & { labReadyAt?: string };
 

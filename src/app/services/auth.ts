@@ -1,3 +1,4 @@
+import { API_BASE } from '../api';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs';
@@ -31,7 +32,7 @@ export const homeFor = (role: Role): string =>
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly url = 'https://hospital-backend-yxe9.onrender.com/api/auth';
+  private readonly url = `${API_BASE}/auth`;
   private doctor: Person | null = null;
   private role: Role | null = null;
 

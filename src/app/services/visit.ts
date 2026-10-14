@@ -1,3 +1,4 @@
+import { API_BASE } from '../api';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
@@ -96,7 +97,7 @@ export interface Visit {
   providedIn: 'root',
 })
 export class VisitService {
-  private readonly url = 'https://hospital-backend-yxe9.onrender.com/api/visits';
+  private readonly url = `${API_BASE}/visits`;
 
   private readonly options = {
     withCredentials: true,
@@ -132,6 +133,22 @@ export class VisitService {
     });
   }
 
+  // Only the visits that changed since the given time (quick refresh)
+  getChangedVisits(since: string) {
+    return this.http.get<Visit[]>(this.url, {
+      ...this.options,
+      params: new HttpParams().set('since', since),
+    });
+  }
+
+  // Whole clinic data as one file (doctor only)
+  downloadBackup() {
+    return this.http.get(`${API_BASE}/backup`, {
+      ...this.options,
+      responseType: 'blob',
+    });
+  }
+
   getNextPatientId() {
     return this.http.get<{ patientId: string }>(`${this.url}/next-id`, this.options);
   }
@@ -154,7 +171,7 @@ export class VisitService {
     data: Pick<Visit, 'patientName' | 'age' | 'gender' | 'phone' | 'vitals'>,
   ) {
     return this.http.put<Visit>(
-      `https://hospital-backend-yxe9.onrender.com/api/reception/visits/${id}`,
+      `${API_BASE}/reception/visits/${id}`,
       data,
       this.options,
     );

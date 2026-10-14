@@ -1,27 +1,56 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './components/login/login';
-import { Dashboard } from './components/dashboard/dashboard';
-import { Welcome } from './components/welcome/welcome';
-import { PinLogin } from './components/pin-login/pin-login';
-import { Reception } from './components/reception/reception';
-import { Pharmacy } from './components/pharmacy/pharmacy';
-import { Lab } from './pages/lab/lab';
 import { roleGuard } from './guards/role-guard';
-import { ForgotPassword } from './forgot-password/forgot-password';
-import { ResetPassword } from './reset-password/reset-password';
-import { StaffManager } from './components/staff-manager/staff-manager';
 
+// Each page is downloaded only when someone opens it, so the receptionist's / pharmacist's
+// phone does not download the doctor's screens (and the Excel library) it never uses.
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'welcome' },
-  { path: 'welcome', component: Welcome },
-  { path: 'login', component: LoginComponent },
-  { path: 'pin/:role', component: PinLogin },
-  { path: 'dashboard', component: Dashboard, canActivate: [roleGuard('doctor')] },
-  { path: 'reception', component: Reception, canActivate: [roleGuard('receptionist')] },
-  { path: 'pharmacy', component: Pharmacy, canActivate: [roleGuard('pharmacist')] },
-  { path: 'lab', component: Lab, canActivate: [roleGuard('lab')] },
-  { path: 'forgot-password', component: ForgotPassword },
-  { path: 'reset-password', component: ResetPassword },
-  { path: 'staff', component: StaffManager, canActivate: [roleGuard('doctor')] },
+  {
+    path: 'welcome',
+    loadComponent: () => import('./components/welcome/welcome').then((m) => m.Welcome),
+  },
+  {
+    path: 'login',
+    loadComponent: () => import('./components/login/login').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'pin/:role',
+    loadComponent: () => import('./components/pin-login/pin-login').then((m) => m.PinLogin),
+  },
+  {
+    path: 'dashboard',
+    canActivate: [roleGuard('doctor')],
+    loadComponent: () => import('./components/dashboard/dashboard').then((m) => m.Dashboard),
+  },
+  {
+    path: 'reception',
+    canActivate: [roleGuard('receptionist')],
+    loadComponent: () => import('./components/reception/reception').then((m) => m.Reception),
+  },
+  {
+    path: 'pharmacy',
+    canActivate: [roleGuard('pharmacist')],
+    loadComponent: () => import('./components/pharmacy/pharmacy').then((m) => m.Pharmacy),
+  },
+  {
+    path: 'lab',
+    canActivate: [roleGuard('lab')],
+    loadComponent: () => import('./pages/lab/lab').then((m) => m.Lab),
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./forgot-password/forgot-password').then((m) => m.ForgotPassword),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./reset-password/reset-password').then((m) => m.ResetPassword),
+  },
+  {
+    path: 'staff',
+    canActivate: [roleGuard('doctor')],
+    loadComponent: () =>
+      import('./components/staff-manager/staff-manager').then((m) => m.StaffManager),
+  },
   { path: '**', redirectTo: 'welcome' },
 ];

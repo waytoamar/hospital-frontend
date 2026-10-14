@@ -1,3 +1,4 @@
+import { API_BASE } from '../../api';
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -21,7 +22,7 @@ import {
   setPreprintedPaper,
 } from '../../services/prescription-print';
 
-const API = 'https://hospital-backend-yxe9.onrender.com/api';
+const API = API_BASE;
 
 interface Money {
   count: number;
@@ -356,6 +357,10 @@ readonly timingOptions = [
   private clockTimer?: ReturnType<typeof setInterval>;
   private pulseTimer?: ReturnType<typeof setInterval>;
   private lastPulse = '';
+  // Newest "updatedAt" we already have; the quick refresh asks only for newer changes
+  private syncedAt: string | null = null;
+  private syncing = false;
+  backupBusy = false;
   private expandedPanels = new Set<PanelKey>();
 
   private tokenSource: Visit[] | null = null;
@@ -1052,7 +1057,7 @@ readonly timingOptions = [
         localStorage.removeItem(this.draftKey);
         this.formOpen = false;
         this.clearForm();
-        this.loadVisits();
+        this.refreshVisits();
         this.loadNextPatientId();
       },
       error: (error) => alert(error?.error?.message || 'Visit could not be saved.'),
@@ -1079,7 +1084,10 @@ readonly timingOptions = [
     }
 
     this.visitService.deleteVisit(id).subscribe({
-      next: () => this.loadVisits(),
+      next: () => {
+        this.applyVisits(this.visits.filter((visit) => visit._id !== id));
+        this.refreshVisits();
+      },
       error: () => alert('Visit could not be deleted.'),
     });
   }
@@ -1268,13 +1276,13 @@ readonly timingOptions = [
   }
 
   // Every 10 seconds ask the server "did anything change?" (a tiny request).
-  // Only when it did, reload the visits. So the lab's "Reports ready" shows up by itself.
+  // Only when it did, fetch just the changed visits. So the lab's "Reports ready" shows up by itself.
   private checkForChanges(): void {
     this.visitService.pulse().subscribe({
       next: (p) => {
         const stamp = `${p.latest}|${p.count}`;
         if (this.lastPulse && stamp !== this.lastPulse) {
-          this.loadVisits();
+          this.refreshVisits(p.count);
           this.loadSummary();
         }
         this.lastPulse = stamp;
@@ -1333,14 +1341,79 @@ readonly timingOptions = [
     return parts.join(' + ') || 'none';
   }
 
+  // Downloads all clinic data as one file. Keep these files safe (they have patient details).
+  downloadBackup(): void {
+    if (this.backupBusy) {
+      return;
+    }
+    this.backupBusy = true;
+    this.visitService.downloadBackup().subscribe({
+      next: (blob) => {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `clinic-backup-${new Date().toLocaleDateString('en-CA')}.json`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 10000);
+        this.backupBusy = false;
+      },
+      error: () => {
+        this.backupBusy = false;
+        alert('Backup could not be downloaded. Please try again.');
+      },
+    });
+  }
+
+  private applyVisits(visits: Visit[]): void {
+    this.visits = visits;
+    this.syncedAt = visits.reduce<string | null>(
+      (latest, visit) =>
+        visit.updatedAt && (!latest || visit.updatedAt > latest) ? visit.updatedAt : latest,
+      null,
+    );
+    if (this.selectedQueueVisit?._id) {
+      this.selectedQueueVisit =
+        visits.find((visit) => visit._id === this.selectedQueueVisit?._id) || null;
+    }
+  }
+
+  // Quick refresh: fetch only visits changed since the last load and merge them in.
+  // Falls back to a full reload if the numbers don't add up (e.g. a visit was deleted).
+  private refreshVisits(serverCount?: number): void {
+    if (!this.syncedAt) {
+      this.loadVisits();
+      return;
+    }
+    if (this.syncing) {
+      return;
+    }
+    this.syncing = true;
+    this.visitService.getChangedVisits(this.syncedAt).subscribe({
+      next: (changed) => {
+        this.syncing = false;
+        const byId = new Map(this.visits.map((visit) => [visit._id, visit]));
+        for (const visit of changed) {
+          byId.set(visit._id, visit);
+        }
+        const merged = [...byId.values()].sort(
+          (a, b) => new Date(b.visitDate || 0).getTime() - new Date(a.visitDate || 0).getTime(),
+        );
+        if (serverCount !== undefined && merged.length !== serverCount) {
+          this.loadVisits();
+          return;
+        }
+        this.applyVisits(merged);
+      },
+      error: () => {
+        this.syncing = false;
+        this.loadVisits();
+      },
+    });
+  }
+
   private loadVisits(): void {
     this.visitService.getVisits().subscribe({
       next: (visits) => {
-        this.visits = visits;
-        if (this.selectedQueueVisit?._id) {
-          this.selectedQueueVisit =
-            visits.find((visit) => visit._id === this.selectedQueueVisit?._id) || null;
-        }
+        this.applyVisits(visits);
       },
       error: (error) => {
         if (error.status === 401) {

@@ -1,7 +1,7 @@
 {
   "name": "Chest & Allergy Clinic",
   "short_name": "Chest & Allergy Clinic",
-  "theme_color": "#1976d2",
+  "theme_color": "#1f7a4d",
   "background_color": "#fafafa",
   "display": "standalone",
   "start_url": "./",

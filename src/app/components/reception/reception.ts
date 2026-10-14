@@ -1,3 +1,4 @@
+import { API_BASE } from '../../api';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,7 +8,7 @@ import { DeskVitals, PatientHit, QueueItem, ReceptionService } from '../../servi
 import { SpeechService } from '../../services/speech.service';
 import { HttpClient } from '@angular/common/http';
 
-const API = 'https://hospital-backend-yxe9.onrender.com/api';
+const API = API_BASE;
 
 interface FollowUpHit {
   patientId: string;

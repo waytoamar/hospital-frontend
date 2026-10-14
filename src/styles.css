@@ -1,1 +1,21 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global styles (apply to every page) */
+
+/* Removes the browser's default 8px gap around every page */
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Same font on every page (login / forgot / reset password were falling back to Times New Roman) */
+body {
+  font-family: 'Inter', 'Segoe UI', Roboto, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}

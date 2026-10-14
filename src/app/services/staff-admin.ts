@@ -1,3 +1,4 @@
+import { API_BASE } from '../api';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
@@ -14,7 +15,7 @@ export interface StaffMember {
   providedIn: 'root',
 })
 export class StaffAdminService {
-  private readonly url = 'https://hospital-backend-yxe9.onrender.com/api/staff';
+  private readonly url = `${API_BASE}/staff`;
 
   private readonly options = {
     withCredentials: true,
