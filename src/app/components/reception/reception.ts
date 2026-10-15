@@ -19,6 +19,9 @@ interface FollowUpHit {
   followUpDate: string;
 }
 
+type BoardView = 'waiting' | 'consult' | 'done' | 'lab' | 'followup';
+const BOARD_VIEWS: BoardView[] = ['waiting', 'consult', 'done', 'lab', 'followup'];
+
 interface Money {
   count: number;
   amount: number;
@@ -108,6 +111,235 @@ const emptyForm = (): VisitForm => ({
         border-color: var(--primary);
         color: var(--primary-dark);
       }
+      /* ---- Board: count boxes + cards ---- */
+      main .calling {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+        padding: 14px 24px;
+        text-align: left;
+      }
+      main .calling strong {
+        display: inline;
+        font-size: 48px;
+        white-space: nowrap;
+      }
+      [data-tone='waiting'] {
+        --tone: #d9a21b;
+      }
+      [data-tone='consult'] {
+        --tone: #e0552b;
+      }
+      [data-tone='done'] {
+        --tone: #2fae5b;
+      }
+      [data-tone='lab'] {
+        --tone: #7a5af0;
+      }
+      [data-tone='followup'] {
+        --tone: #16a3aa;
+      }
+      .stat-row {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .stat {
+        text-align: left;
+        background: #fff;
+        border: 2px solid #fff;
+        border-top: 6px solid var(--tone);
+        border-radius: 16px;
+        padding: 12px 16px;
+        font: inherit;
+        cursor: pointer;
+        opacity: 0.85;
+        transition:
+          opacity 0.15s,
+          box-shadow 0.15s;
+      }
+      .stat:hover {
+        opacity: 1;
+      }
+      .stat.on {
+        opacity: 1;
+        border-color: var(--tone);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+      }
+      .stat small {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--tone);
+      }
+      .stat b {
+        display: block;
+        font-size: 30px;
+        font-weight: 800;
+        line-height: 1.15;
+        color: var(--ink);
+      }
+      .stat em {
+        font-style: normal;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .group {
+        background: #f7fbfa;
+        border-radius: 16px;
+        border-top: 5px solid var(--tone);
+        padding: 14px;
+      }
+      .group-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .group-head h3 {
+        margin: 0;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .group-search {
+        margin-left: auto;
+        width: 260px;
+        max-width: 50%;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 8px 14px;
+        font: inherit;
+        font-size: 13px;
+        background: #fff;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .pcard {
+        background: #fff;
+        border: 1px solid #e3eeec;
+        border-radius: 14px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 0;
+      }
+      .pcard-top {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+      .pcard .tok {
+        flex: none;
+      }
+      .id-tok {
+        font-size: 13px;
+      }
+      .pcard-name {
+        min-width: 0;
+      }
+      .pcard-name b {
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .pcard-name small {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .pcard .reports-badge,
+      .pcard .fup-due {
+        align-self: flex-start;
+        margin: 0;
+      }
+      .pcard-foot {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .phone {
+        font-size: 12px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .pcard-actions {
+        display: flex;
+        gap: 6px;
+        margin-left: auto;
+      }
+      /* Follow-up card: compact "Add to queue", same place on every card */
+      .pcard .btn.sm {
+        padding: 5px 10px;
+        font-size: 12px;
+        border-radius: 8px;
+        white-space: nowrap;
+        margin-left: auto;
+      }
+      .group .empty {
+        text-align: center;
+        color: var(--muted);
+        padding: 18px 0 8px;
+        margin: 0;
+      }
+      @media (max-width: 1100px) {
+        .cards {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 760px) {
+        .stat-row {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 8px;
+        }
+        .stat {
+          padding: 8px 10px;
+        }
+        .stat b {
+          font-size: 24px;
+        }
+        .stat em {
+          display: none;
+        }
+        .cards {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 600px) {
+        main .calling {
+          flex-direction: column;
+          gap: 2px;
+          text-align: center;
+        }
+        main .calling strong {
+          font-size: 52px;
+        }
+        .group-head {
+          flex-wrap: wrap;
+        }
+        .group-search {
+          width: 100%;
+          max-width: none;
+          margin-left: 0;
+        }
+      }
+      @media (max-width: 480px) {
+        .cards {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
       /* Section headings that open / close their section */
       .sec-toggle {
         cursor: pointer;
@@ -545,99 +777,99 @@ const emptyForm = (): VisitForm => ({
 
       <p class="notice ok" *ngIf="message">{{ message }}</p>
 
-      <!-- BOARD -->
+      <!-- BOARD: count boxes on top; the chosen group shows below as cards, 4 in a row -->
       <section *ngIf="tab === 'board'">
         <p class="error" *ngIf="loadError">{{ loadError }}</p>
-        <div class="cols">
-          <div class="col" *ngFor="let col of columns" [attr.data-tone]="col.tone">
-            <h3
-              class="sec-toggle"
-              role="button"
-              tabindex="0"
-              [attr.aria-expanded]="!isClosed(col.tone)"
-              (click)="toggle(col.tone)"
-              (keydown.enter)="toggle(col.tone)"
-            >
-              <span class="sec-title">
-                <span class="arrow" [class.closed]="isClosed(col.tone)">▾</span>
-                {{ col.label }}
-              </span>
-              <span class="count">{{ col.items.length }}</span>
+
+        <div class="stat-row" role="tablist">
+          <button
+            *ngFor="let g of groups"
+            type="button"
+            class="stat"
+            role="tab"
+            [attr.data-tone]="g.key"
+            [class.on]="view === g.key"
+            [attr.aria-selected]="view === g.key"
+            (click)="pick(g.key)"
+          >
+            <small>{{ g.label }}</small>
+            <b>{{ g.count }}</b>
+            <em>{{ view === g.key ? 'showing below' : 'click to see' }}</em>
+          </button>
+        </div>
+
+        <div class="group" [attr.data-tone]="view">
+          <div class="group-head">
+            <h3>
+              {{ current.label }} <span class="count">{{ current.count }}</span>
             </h3>
-            <ng-container *ngIf="!isClosed(col.tone)">
-            <div class="ticket" *ngFor="let v of col.items; trackBy: trackById">
-              <span class="tok">{{ v.token }}</span>
-              <div class="ticket-info">
-                <b>{{ v.patientName }}</b>
-                <span class="reports-badge" *ngIf="isReportsReady(v)">🧪 Reports ready</span>
-                <small>{{ v.age }} · {{ v.gender }} · {{ v.phone }}</small>
+            <input
+              class="group-search"
+              [(ngModel)]="groupSearch"
+              [placeholder]="'⌕ Search in ' + current.label.toLowerCase() + '…'"
+              aria-label="Search in this list"
+            />
+          </div>
+
+          <!-- Waiting / With doctor / Completed / At lab -->
+          <div class="cards" *ngIf="view !== 'followup'">
+            <div class="pcard" *ngFor="let v of visibleQueue; trackBy: trackById">
+              <div class="pcard-top">
+                <span class="tok">{{ v.token }}</span>
+                <div class="pcard-name">
+                  <b>{{ v.patientName }}</b>
+                  <small>{{ v.age }} · {{ v.gender }}</small>
+                </div>
               </div>
-              <div class="ticket-actions">
-                <button class="edit-btn" (click)="openEdit(v)" aria-label="Edit patient details">
-                  ✎ Edit
-                </button>
-                <button
-                  class="noshow-btn"
-                  *ngIf="v.status === 'Waiting'"
-                  [disabled]="busyId === v._id"
-                  (click)="markNoShow(v)"
-                  title="Patient did not come"
-                >
-                  ✕ No show
-                </button>
+              <span class="reports-badge" *ngIf="isReportsReady(v)">🧪 Reports ready</span>
+              <div class="pcard-foot">
+                <span class="phone">📞 {{ v.phone }}</span>
+                <span class="pcard-actions">
+                  <button
+                    class="edit-btn"
+                    *ngIf="view !== 'lab'"
+                    (click)="openEdit(v)"
+                    aria-label="Edit patient details"
+                  >
+                    ✎ Edit
+                  </button>
+                  <button
+                    class="noshow-btn"
+                    *ngIf="v.status === 'Waiting'"
+                    [disabled]="busyId === v._id"
+                    (click)="markNoShow(v)"
+                    title="Patient did not come"
+                  >
+                    ✕ No show
+                  </button>
+                </span>
               </div>
             </div>
-            <p class="empty" *ngIf="!col.items.length">Nobody here</p>
-            </ng-container>
           </div>
-        </div>
 
-        <!-- Follow-ups come after the live queue; click the heading to close / open -->
-        <div class="fup" *ngIf="followUps.length">
-          <h4
-            class="sec-toggle"
-            role="button"
-            tabindex="0"
-            [attr.aria-expanded]="!isClosed('followup')"
-            (click)="toggle('followup')"
-            (keydown.enter)="toggle('followup')"
-          >
-            <span class="arrow" [class.closed]="isClosed('followup')">▾</span>
-            📅 Follow-up patients <span class="count">{{ followUps.length }}</span>
-            <small>due today or earlier this week, not yet come back</small>
-          </h4>
-          <div class="fup-list" *ngIf="!isClosed('followup')">
-            <div class="fup-item" *ngFor="let f of followUps">
-              <div class="fup-info">
-                <b>{{ f.patientName }}</b>
-                <small>{{ f.patientId }} · {{ f.age }} · {{ f.gender }} · 📞 {{ f.phone }}</small>
-                <span class="fup-due" [class.late]="f.followUpDate < todayStr">{{
-                  f.followUpDate === todayStr ? 'Due today' : 'Due ' + (f.followUpDate | date: 'dd MMM')
-                }}</span>
+          <!-- Follow-ups due -->
+          <div class="cards" *ngIf="view === 'followup'">
+            <div class="pcard" *ngFor="let f of visibleFollowUps">
+              <div class="pcard-top">
+                <span class="tok id-tok">{{ f.patientId }}</span>
+                <div class="pcard-name">
+                  <b>{{ f.patientName }}</b>
+                  <small>{{ f.age }} · {{ f.gender }}</small>
+                </div>
               </div>
-              <button class="btn sm" (click)="addFollowUp(f)">＋ Add to queue</button>
+              <span class="fup-due" [class.late]="f.followUpDate < todayStr">{{
+                f.followUpDate === todayStr ? 'Due today' : 'Due ' + (f.followUpDate | date: 'dd MMM')
+              }}</span>
+              <div class="pcard-foot">
+                <span class="phone">📞 {{ f.phone }}</span>
+                <button class="btn sm" (click)="addFollowUp(f)">＋ Add to queue</button>
+              </div>
             </div>
           </div>
-        </div>
 
-
-        <div class="at-lab" *ngIf="atLab.length">
-          <h4
-            class="sec-toggle"
-            role="button"
-            tabindex="0"
-            [attr.aria-expanded]="!isClosed('lab')"
-            (click)="toggle('lab')"
-            (keydown.enter)="toggle('lab')"
-          >
-            <span class="arrow" [class.closed]="isClosed('lab')">▾</span>
-            🧪 At lab <span class="count">{{ atLab.length }}</span>
-          </h4>
-          <ng-container *ngIf="!isClosed('lab')">
-          <span class="lab-chip" *ngFor="let v of atLab; trackBy: trackById">
-            <b>{{ v.token }}</b> {{ v.patientName }}
-          </span>
-          </ng-container>
+          <p class="empty" *ngIf="!shownCount">
+            {{ groupSearch ? 'No patient matches "' + groupSearch + '"' : 'Nobody here' }}
+          </p>
         </div>
 
         <section class="coll" *ngIf="summary as s">
@@ -889,6 +1121,9 @@ export class Reception implements OnInit, OnDestroy {
   tab: 'board' | 'patients' = 'board';
   // Which board sections are closed. Remembered on this computer / phone.
   private closed: Record<string, boolean> = Reception.loadClosed();
+  // Which count box is chosen (shown as cards below). Remembered on this computer / phone.
+  view: BoardView = Reception.loadView();
+  groupSearch = '';
   columns: Column[] = [];
   followUps: FollowUpHit[] = [];
   todayStr = '';
@@ -944,6 +1179,64 @@ export class Reception implements OnInit, OnDestroy {
   }
 
   private static readonly CLOSED_KEY = 'reception-closed-sections';
+  private static readonly VIEW_KEY = 'reception-board-view';
+
+  private static loadView(): BoardView {
+    try {
+      const v = localStorage.getItem(Reception.VIEW_KEY) as BoardView | null;
+      return v && BOARD_VIEWS.includes(v) ? v : 'waiting';
+    } catch {
+      return 'waiting';
+    }
+  }
+
+  // The five count boxes on top of the board
+  get groups(): { key: BoardView; label: string; count: number }[] {
+    return [
+      { key: 'waiting', label: 'Waiting', count: this.itemsFor('waiting').length },
+      { key: 'consult', label: 'With doctor', count: this.itemsFor('consult').length },
+      { key: 'done', label: 'Completed', count: this.itemsFor('done').length },
+      { key: 'lab', label: 'At lab', count: this.atLab.length },
+      { key: 'followup', label: 'Follow-ups', count: this.followUps.length },
+    ];
+  }
+
+  get current(): { key: BoardView; label: string; count: number } {
+    return this.groups.find((g) => g.key === this.view) || this.groups[0];
+  }
+
+  private itemsFor(key: BoardView): QueueItem[] {
+    if (key === 'lab') return this.atLab;
+    return this.columns.find((c) => c.tone === key)?.items || [];
+  }
+
+  private matchesSearch(...fields: (string | undefined)[]): boolean {
+    const q = this.groupSearch.trim().toLowerCase();
+    return !q || fields.some((f) => String(f || '').toLowerCase().includes(q));
+  }
+
+  get visibleQueue(): QueueItem[] {
+    return this.itemsFor(this.view).filter((v) => this.matchesSearch(v.patientName, v.token, v.phone));
+  }
+
+  get visibleFollowUps(): FollowUpHit[] {
+    return this.followUps.filter((f) => this.matchesSearch(f.patientName, f.patientId, f.phone));
+  }
+
+  get shownCount(): number {
+    return this.view === 'followup' ? this.visibleFollowUps.length : this.visibleQueue.length;
+  }
+
+  // Click a count box: show that group below
+  pick(key: BoardView): void {
+    this.view = key;
+    this.groupSearch = '';
+    try {
+      localStorage.setItem(Reception.VIEW_KEY, key);
+    } catch {
+      // not remembered in a private window - still works
+    }
+  }
 
   private static loadClosed(): Record<string, boolean> {
     try {

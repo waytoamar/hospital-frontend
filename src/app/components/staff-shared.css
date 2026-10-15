@@ -767,11 +767,3 @@ label select {
     white-space: nowrap;
   }
 }
-
-/* Big "Now calling" token: smaller on narrow phones so "A-003" stays on one line */
-@media (max-width: 420px) {
-  .calling strong {
-    font-size: 64px;
-    white-space: nowrap;
-  }
-}

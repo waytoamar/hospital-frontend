@@ -1913,10 +1913,3 @@ button:disabled {
     display: none;
   }
 }
-
-/* Narrow phones: hide the round initial so all header buttons fit on one line */
-@media (max-width: 400px) {
-  .hdr-avatar {
-    display: none;
-  }
-}
