@@ -364,6 +364,11 @@ const emptyForm = (): VisitForm => ({
         color: #b6c4c6;
         cursor: default;
       }
+      .pager .page-of {
+        padding: 0 10px;
+        font-weight: 700;
+        font-size: 14px;
+      }
       .pager .gap {
         color: var(--muted);
         padding: 0 2px;
@@ -963,10 +968,11 @@ const emptyForm = (): VisitForm => ({
             </div>
           </div>
 
-          <!-- Page numbers (only Completed and Follow-ups, when they don't fit on one page) -->
+          <!-- Page numbers (any box, when its patients don't fit on one page) -->
           <nav class="pager" *ngIf="pageCount > 1" aria-label="Pages">
             <button type="button" [disabled]="page === 1" (click)="goPage(page - 1)" aria-label="Previous page">‹</button>
-            <ng-container *ngFor="let n of pageNumbers">
+            <span class="page-of" *ngIf="compactPager">Page {{ page }} of {{ pageCount }}</span>
+            <ng-container *ngFor="let n of compactPager ? [] : pageNumbers">
               <span class="gap" *ngIf="n === 0">…</span>
               <button
                 type="button"
@@ -981,7 +987,7 @@ const emptyForm = (): VisitForm => ({
             <button type="button" [disabled]="page === pageCount" (click)="goPage(page + 1)" aria-label="Next page">›</button>
             <span class="pager-info"
               >Showing {{ pageStart + 1 }}–{{ pageStart + pageItemsCount }} of {{ shownCount }}{{
-                view === 'done' ? ' · newest first' : ''
+                view === 'done' ? ' · newest first' : view === 'waiting' ? ' · next in line first' : ''
               }}</span
             >
           </nav>
@@ -1355,8 +1361,9 @@ export class Reception implements OnInit, OnDestroy {
     this.screenWidth = window.innerWidth;
   }
 
+  // Every box gets pages when it has more patients than fit in 2 rows
   private get paged(): boolean {
-    return this.view === 'done' || this.view === 'followup';
+    return true;
   }
 
   // Laptop: 2 rows of 4 = 8. Tablet: 2 rows of 3 = 6. Phone: 3 rows of 2 = 6.
@@ -1398,6 +1405,11 @@ export class Reception implements OnInit, OnDestroy {
       out.push(n);
     });
     return out;
+  }
+
+  // Phones with many pages: "‹ Page 2 of 7 ›" instead of 7 number buttons
+  get compactPager(): boolean {
+    return this.screenWidth <= 760 && this.pageCount > 5;
   }
 
   goPage(n: number): void {
