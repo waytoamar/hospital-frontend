@@ -108,7 +108,33 @@ const emptyForm = (): VisitForm => ({
         border-color: var(--primary);
         color: var(--primary-dark);
       }
+      /* Section headings that open / close their section */
+      .sec-toggle {
+        cursor: pointer;
+        user-select: none;
+      }
+      .sec-toggle:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+        border-radius: 8px;
+      }
+      .sec-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .arrow {
+        display: inline-block;
+        width: 18px;
+        text-align: center;
+        color: var(--muted);
+        transition: transform 0.15s;
+      }
+      .arrow.closed {
+        transform: rotate(-90deg);
+      }
       .fup {
+        margin-top: 16px;
         background: #fff;
         border: 1px solid var(--line);
         border-left: 5px solid #0d9488;
@@ -117,7 +143,7 @@ const emptyForm = (): VisitForm => ({
         margin-bottom: 16px;
       }
       .fup h4 {
-        margin: 0 0 10px;
+        margin: 0;
         font-size: 15px;
         display: flex;
         align-items: center;
@@ -129,6 +155,7 @@ const emptyForm = (): VisitForm => ({
         font-weight: 400;
       }
       .fup-list {
+        margin-top: 10px;
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: 10px;
@@ -521,30 +548,23 @@ const emptyForm = (): VisitForm => ({
       <!-- BOARD -->
       <section *ngIf="tab === 'board'">
         <p class="error" *ngIf="loadError">{{ loadError }}</p>
-        <div class="fup" *ngIf="followUps.length">
-          <h4>
-            📅 Follow-up patients <span class="count">{{ followUps.length }}</span>
-            <small>due today or earlier this week, not yet come back</small>
-          </h4>
-          <div class="fup-list">
-            <div class="fup-item" *ngFor="let f of followUps">
-              <div class="fup-info">
-                <b>{{ f.patientName }}</b>
-                <small>{{ f.patientId }} · {{ f.age }} · {{ f.gender }} · 📞 {{ f.phone }}</small>
-                <span class="fup-due" [class.late]="f.followUpDate < todayStr">{{
-                  f.followUpDate === todayStr ? 'Due today' : 'Due ' + (f.followUpDate | date: 'dd MMM')
-                }}</span>
-              </div>
-              <button class="btn sm" (click)="addFollowUp(f)">＋ Add to queue</button>
-            </div>
-          </div>
-        </div>
-
         <div class="cols">
           <div class="col" *ngFor="let col of columns" [attr.data-tone]="col.tone">
-            <h3>
-              {{ col.label }} <span class="count">{{ col.items.length }}</span>
+            <h3
+              class="sec-toggle"
+              role="button"
+              tabindex="0"
+              [attr.aria-expanded]="!isClosed(col.tone)"
+              (click)="toggle(col.tone)"
+              (keydown.enter)="toggle(col.tone)"
+            >
+              <span class="sec-title">
+                <span class="arrow" [class.closed]="isClosed(col.tone)">▾</span>
+                {{ col.label }}
+              </span>
+              <span class="count">{{ col.items.length }}</span>
             </h3>
+            <ng-container *ngIf="!isClosed(col.tone)">
             <div class="ticket" *ngFor="let v of col.items; trackBy: trackById">
               <span class="tok">{{ v.token }}</span>
               <div class="ticket-info">
@@ -568,23 +588,71 @@ const emptyForm = (): VisitForm => ({
               </div>
             </div>
             <p class="empty" *ngIf="!col.items.length">Nobody here</p>
+            </ng-container>
           </div>
         </div>
 
+        <!-- Follow-ups come after the live queue; click the heading to close / open -->
+        <div class="fup" *ngIf="followUps.length">
+          <h4
+            class="sec-toggle"
+            role="button"
+            tabindex="0"
+            [attr.aria-expanded]="!isClosed('followup')"
+            (click)="toggle('followup')"
+            (keydown.enter)="toggle('followup')"
+          >
+            <span class="arrow" [class.closed]="isClosed('followup')">▾</span>
+            📅 Follow-up patients <span class="count">{{ followUps.length }}</span>
+            <small>due today or earlier this week, not yet come back</small>
+          </h4>
+          <div class="fup-list" *ngIf="!isClosed('followup')">
+            <div class="fup-item" *ngFor="let f of followUps">
+              <div class="fup-info">
+                <b>{{ f.patientName }}</b>
+                <small>{{ f.patientId }} · {{ f.age }} · {{ f.gender }} · 📞 {{ f.phone }}</small>
+                <span class="fup-due" [class.late]="f.followUpDate < todayStr">{{
+                  f.followUpDate === todayStr ? 'Due today' : 'Due ' + (f.followUpDate | date: 'dd MMM')
+                }}</span>
+              </div>
+              <button class="btn sm" (click)="addFollowUp(f)">＋ Add to queue</button>
+            </div>
+          </div>
+        </div>
+
+
         <div class="at-lab" *ngIf="atLab.length">
-          <h4>
+          <h4
+            class="sec-toggle"
+            role="button"
+            tabindex="0"
+            [attr.aria-expanded]="!isClosed('lab')"
+            (click)="toggle('lab')"
+            (keydown.enter)="toggle('lab')"
+          >
+            <span class="arrow" [class.closed]="isClosed('lab')">▾</span>
             🧪 At lab <span class="count">{{ atLab.length }}</span>
           </h4>
+          <ng-container *ngIf="!isClosed('lab')">
           <span class="lab-chip" *ngFor="let v of atLab; trackBy: trackById">
             <b>{{ v.token }}</b> {{ v.patientName }}
           </span>
+          </ng-container>
         </div>
 
         <section class="coll" *ngIf="summary as s">
-          <div class="coll-head">
-            <h3>Today's collection</h3>
+          <div
+            class="coll-head sec-toggle"
+            role="button"
+            tabindex="0"
+            [attr.aria-expanded]="!isClosed('money')"
+            (click)="toggle('money')"
+            (keydown.enter)="toggle('money')"
+          >
+            <h3><span class="arrow" [class.closed]="isClosed('money')">▾</span> Today's collection</h3>
             <span>{{ s.date | date: 'dd MMM yyyy' }}</span>
           </div>
+          <ng-container *ngIf="!isClosed('money')">
           <div class="coll-grid">
             <div class="coll-box">
               <small>Patients</small>
@@ -617,6 +685,7 @@ const emptyForm = (): VisitForm => ({
           <p class="coll-warn" *ngIf="s.notBilled">
             ⚠ {{ s.notBilled }} patient(s) have no bill entered
           </p>
+          </ng-container>
         </section>
       </section>
 
@@ -818,6 +887,8 @@ const emptyForm = (): VisitForm => ({
 })
 export class Reception implements OnInit, OnDestroy {
   tab: 'board' | 'patients' = 'board';
+  // Which board sections are closed. Remembered on this computer / phone.
+  private closed: Record<string, boolean> = Reception.loadClosed();
   columns: Column[] = [];
   followUps: FollowUpHit[] = [];
   todayStr = '';
@@ -870,6 +941,30 @@ export class Reception implements OnInit, OnDestroy {
 
   get name(): string {
     return this.auth.getUsername();
+  }
+
+  private static readonly CLOSED_KEY = 'reception-closed-sections';
+
+  private static loadClosed(): Record<string, boolean> {
+    try {
+      return JSON.parse(localStorage.getItem(Reception.CLOSED_KEY) || '{}') || {};
+    } catch {
+      return {};
+    }
+  }
+
+  isClosed(section: string): boolean {
+    return !!this.closed[section];
+  }
+
+  // Click a section heading: close it, click again: open it
+  toggle(section: string): void {
+    this.closed = { ...this.closed, [section]: !this.closed[section] };
+    try {
+      localStorage.setItem(Reception.CLOSED_KEY, JSON.stringify(this.closed));
+    } catch {
+      // private window etc. - it still works, just isn't remembered
+    }
   }
 
   ngOnInit(): void {
