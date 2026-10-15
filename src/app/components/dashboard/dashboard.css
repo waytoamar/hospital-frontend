@@ -1913,3 +1913,35 @@ button:disabled {
     display: none;
   }
 }
+
+/* ===== Board panels: click the heading to close / open ===== */
+.bd-fold {
+  cursor: pointer;
+  user-select: none;
+  border-radius: 10px;
+}
+.bd-fold:focus-visible {
+  outline: 2px solid var(--tone);
+  outline-offset: 4px;
+}
+.bd-arrow {
+  display: inline-block;
+  width: 16px;
+  text-align: center;
+  color: var(--muted);
+  font-family: var(--sans);
+  transition: transform 0.15s;
+}
+.bd-arrow.closed {
+  transform: rotate(-90deg);
+}
+.bd-fold-count {
+  margin-left: 4px;
+  background: var(--tone-bg);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0 10px;
+  font-size: 13px;
+  line-height: 22px;
+  letter-spacing: 0;
+}

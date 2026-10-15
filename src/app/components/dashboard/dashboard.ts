@@ -742,6 +742,28 @@ readonly timingOptions = [
     return visit._id || String(index);
   }
 
+  // ---- Close / open a board panel (remembered on this computer) ----
+  private folded: Record<string, boolean> = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('doctor-closed-panels') || '{}') || {};
+    } catch {
+      return {};
+    }
+  })();
+
+  isFolded(key: PanelKey): boolean {
+    return !!this.folded[key];
+  }
+
+  toggleFold(key: PanelKey): void {
+    this.folded = { ...this.folded, [key]: !this.folded[key] };
+    try {
+      localStorage.setItem('doctor-closed-panels', JSON.stringify(this.folded));
+    } catch {
+      // private window: still works, just not remembered
+    }
+  }
+
   isExpanded(key: PanelKey): boolean {
     return this.expandedPanels.has(key);
   }

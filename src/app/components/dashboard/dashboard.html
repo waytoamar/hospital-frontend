@@ -116,15 +116,26 @@
           [attr.data-tone]="panel.key"
           [class.has-selection]="selectedQueuePanel === panel.key && selectedQueueVisit"
         >
-          <div class="bd-panel-head">
+          <!-- Click the heading (or the arrow) to close / open this panel -->
+          <div
+            class="bd-panel-head bd-fold"
+            role="button"
+            tabindex="0"
+            [attr.aria-expanded]="!isFolded(panel.key)"
+            (click)="toggleFold(panel.key)"
+            (keydown.enter)="toggleFold(panel.key)"
+          >
             <span class="bd-label">
+              <span class="bd-arrow" [class.closed]="isFolded(panel.key)">▾</span>
               <i></i>
               {{ panel.label }}
+              <b class="bd-fold-count" *ngIf="isFolded(panel.key)">{{ panel.visits.length }}</b>
             </span>
 
-            <em>{{ panel.note }}</em>
+            <em>{{ isFolded(panel.key) ? 'click to open' : panel.note }}</em>
           </div>
 
+          <ng-container *ngIf="!isFolded(panel.key)">
           <div class="bd-big">{{ panel.visits.length }}</div>
 
           <div class="bd-rows" [class.scroll]="boardFilter !== 'all' || isExpanded(panel.key)">
@@ -224,6 +235,7 @@
           <button class="bd-more" *ngIf="hiddenCount(panel) > 0" (click)="togglePanel(panel.key)">
             {{ isExpanded(panel.key) ? 'Show less' : '+' + hiddenCount(panel) + ' more' }}
           </button>
+          </ng-container>
         </article>
       </section>
 
