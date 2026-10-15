@@ -334,9 +334,100 @@ const emptyForm = (): VisitForm => ({
           margin-left: 0;
         }
       }
-      @media (max-width: 480px) {
-        .cards {
-          grid-template-columns: minmax(0, 1fr);
+      /* Page numbers */
+      .pager {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        margin-top: 14px;
+      }
+      .pager button {
+        min-width: 36px;
+        height: 36px;
+        padding: 0 8px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: #fff;
+        font: inherit;
+        font-weight: 700;
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .pager button.on {
+        background: var(--tone);
+        border-color: var(--tone);
+        color: #fff;
+      }
+      .pager button:disabled {
+        color: #b6c4c6;
+        cursor: default;
+      }
+      .pager .gap {
+        color: var(--muted);
+        padding: 0 2px;
+      }
+      .pager-info {
+        margin-left: 10px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      /* Phones: 2 cards in a row, card content stacked */
+      @media (max-width: 760px) {
+        .pcard {
+          position: relative;
+          padding: 10px;
+          gap: 6px;
+        }
+        .pcard-top {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 6px;
+        }
+        .pcard-name {
+          width: 100%;
+        }
+        .pcard-name b {
+          font-size: 14px;
+        }
+        .pcard-name small,
+        .phone {
+          font-size: 11px;
+        }
+        .pcard-foot {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .pcard-actions {
+          margin-left: 0;
+          width: 100%;
+          flex-wrap: wrap;
+        }
+        .pcard-actions button {
+          flex: 1 1 auto;
+          padding: 4px 6px;
+          font-size: 11px;
+        }
+        .pcard.one-action .pcard-actions {
+          width: auto;
+        }
+        .pcard .reports-badge {
+          font-size: 10px;
+        }
+        /* only one button (Edit): put it at the top right, next to the token */
+        .pcard.one-action .pcard-actions {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+        }
+        .pcard .btn.sm {
+          margin-left: 0;
+        }
+        .pager-info {
+          width: 100%;
+          margin: 4px 0 0;
+          text-align: center;
         }
       }
 
@@ -806,6 +897,7 @@ const emptyForm = (): VisitForm => ({
             <input
               class="group-search"
               [(ngModel)]="groupSearch"
+              (ngModelChange)="page = 1"
               [placeholder]="'⌕ Search in ' + current.label.toLowerCase() + '…'"
               aria-label="Search in this list"
             />
@@ -813,7 +905,11 @@ const emptyForm = (): VisitForm => ({
 
           <!-- Waiting / With doctor / Completed / At lab -->
           <div class="cards" *ngIf="view !== 'followup'">
-            <div class="pcard" *ngFor="let v of visibleQueue; trackBy: trackById">
+            <div
+              class="pcard"
+              *ngFor="let v of pagedQueue; trackBy: trackById"
+              [class.one-action]="v.status !== 'Waiting' && view !== 'lab'"
+            >
               <div class="pcard-top">
                 <span class="tok">{{ v.token }}</span>
                 <div class="pcard-name">
@@ -849,7 +945,7 @@ const emptyForm = (): VisitForm => ({
 
           <!-- Follow-ups due -->
           <div class="cards" *ngIf="view === 'followup'">
-            <div class="pcard" *ngFor="let f of visibleFollowUps">
+            <div class="pcard" *ngFor="let f of pagedFollowUps">
               <div class="pcard-top">
                 <span class="tok id-tok">{{ f.patientId }}</span>
                 <div class="pcard-name">
@@ -866,6 +962,29 @@ const emptyForm = (): VisitForm => ({
               </div>
             </div>
           </div>
+
+          <!-- Page numbers (only Completed and Follow-ups, when they don't fit on one page) -->
+          <nav class="pager" *ngIf="pageCount > 1" aria-label="Pages">
+            <button type="button" [disabled]="page === 1" (click)="goPage(page - 1)" aria-label="Previous page">‹</button>
+            <ng-container *ngFor="let n of pageNumbers">
+              <span class="gap" *ngIf="n === 0">…</span>
+              <button
+                type="button"
+                *ngIf="n !== 0"
+                [class.on]="n === page"
+                [attr.aria-current]="n === page ? 'page' : null"
+                (click)="goPage(n)"
+              >
+                {{ n }}
+              </button>
+            </ng-container>
+            <button type="button" [disabled]="page === pageCount" (click)="goPage(page + 1)" aria-label="Next page">›</button>
+            <span class="pager-info"
+              >Showing {{ pageStart + 1 }}–{{ pageStart + pageItemsCount }} of {{ shownCount }}{{
+                view === 'done' ? ' · newest first' : ''
+              }}</span
+            >
+          </nav>
 
           <p class="empty" *ngIf="!shownCount">
             {{ groupSearch ? 'No patient matches "' + groupSearch + '"' : 'Nobody here' }}
@@ -1227,9 +1346,68 @@ export class Reception implements OnInit, OnDestroy {
     return this.view === 'followup' ? this.visibleFollowUps.length : this.visibleQueue.length;
   }
 
+  // ---- Pages for Completed and Follow-ups ----
+  page = 1;
+  private screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1366;
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.screenWidth = window.innerWidth;
+  }
+
+  private get paged(): boolean {
+    return this.view === 'done' || this.view === 'followup';
+  }
+
+  // Laptop: 2 rows of 4 = 8. Tablet: 2 rows of 3 = 6. Phone: 3 rows of 2 = 6.
+  get pageSize(): number {
+    if (!this.paged) return Number.MAX_SAFE_INTEGER;
+    return this.screenWidth > 1100 ? 8 : 6;
+  }
+
+  get pageCount(): number {
+    return this.paged ? Math.max(1, Math.ceil(this.shownCount / this.pageSize)) : 1;
+  }
+
+  get pageStart(): number {
+    return (Math.min(this.page, this.pageCount) - 1) * this.pageSize;
+  }
+
+  get pagedQueue(): QueueItem[] {
+    return this.visibleQueue.slice(this.pageStart, this.pageStart + this.pageSize);
+  }
+
+  get pagedFollowUps(): FollowUpHit[] {
+    return this.visibleFollowUps.slice(this.pageStart, this.pageStart + this.pageSize);
+  }
+
+  get pageItemsCount(): number {
+    return this.view === 'followup' ? this.pagedFollowUps.length : this.pagedQueue.length;
+  }
+
+  // 1 2 3 4 5, or 1 … 4 5 6 … 12 when there are many pages (0 = "…")
+  get pageNumbers(): number[] {
+    const total = this.pageCount;
+    const cur = Math.min(this.page, total);
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const nums = new Set([1, total, cur - 1, cur, cur + 1]);
+    const list = [...nums].filter((n) => n >= 1 && n <= total).sort((a, b) => a - b);
+    const out: number[] = [];
+    list.forEach((n, i) => {
+      if (i && n - list[i - 1] > 1) out.push(0);
+      out.push(n);
+    });
+    return out;
+  }
+
+  goPage(n: number): void {
+    this.page = Math.max(1, Math.min(n, this.pageCount));
+  }
+
   // Click a count box: show that group below
   pick(key: BoardView): void {
     this.view = key;
+    this.page = 1;
     this.groupSearch = '';
     try {
       localStorage.setItem(Reception.VIEW_KEY, key);
@@ -1366,7 +1544,8 @@ export class Reception implements OnInit, OnDestroy {
         this.columns = [
           { label: 'Waiting', tone: 'waiting', items: by('Waiting') },
           { label: 'In consultation', tone: 'consult', items: by('In consultation') },
-          { label: 'Completed', tone: 'done', items: by('Completed') },
+          // newest first: the patient who just finished is on page 1
+          { label: 'Completed', tone: 'done', items: by('Completed').reverse() },
         ];
         this.atLab = by('Lab investigation');
         // Reload the follow-up list only when the queue changed (new visit, no show...)
