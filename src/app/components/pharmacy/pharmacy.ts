@@ -11,6 +11,10 @@ import {
   setPreprintedPaper,
 } from '../../services/prescription-print';
 
+// Date on this computer as YYYY-MM-DD (what <input type="date"> uses)
+const dayStr = (date: Date) => date.toLocaleDateString('en-CA');
+const daysAgo = (n: number) => dayStr(new Date(Date.now() - n * 24 * 60 * 60 * 1000));
+
 @Component({
   selector: 'app-pharmacy',
   standalone: true,
@@ -30,6 +34,41 @@ export class Pharmacy implements OnInit, OnDestroy {
   now = new Date();
   // Print on paper that already has the clinic header: header is not printed
   preprintedPaper = isPreprintedPaper();
+
+  // History tab: From / To dates (default: the last 7 days)
+  readonly today = dayStr(new Date());
+  private historyFrom = daysAgo(6);
+  private historyTo = this.today;
+  rangeError = '';
+
+  get from(): string {
+    return this.historyFrom;
+  }
+  set from(value: string) {
+    this.historyFrom = value;
+    this.rangeChanged();
+  }
+  get to(): string {
+    return this.historyTo;
+  }
+  set to(value: string) {
+    this.historyTo = value;
+    this.rangeChanged();
+  }
+
+  private rangeChanged(): void {
+    const bad = this.historyFrom && this.historyTo && this.historyTo < this.historyFrom;
+    this.rangeError = bad ? "'To' date must be after 'From' date" : '';
+    if (!bad) this.refresh();
+  }
+
+  // Back to the last 7 days
+  resetRange(): void {
+    this.historyFrom = daysAgo(6);
+    this.historyTo = this.today;
+    this.rangeError = '';
+    this.refresh();
+  }
 
   private refreshTimer?: ReturnType<typeof setInterval>;
   private searchTimer?: ReturnType<typeof setTimeout>;
@@ -86,7 +125,13 @@ export class Pharmacy implements OnInit, OnDestroy {
   private refresh(): void {
     this.loading = true;
     const term = this.search.trim();
-    const request = term ? this.api.search(term) : this.api.queue(this.tab);
+    if (!term && this.tab === 'history' && this.rangeError) {
+      this.loading = false;
+      return;
+    }
+    const request = term
+      ? this.api.search(term)
+      : this.api.queue(this.tab, this.historyFrom, this.historyTo);
     request.subscribe({
       next: (rows) => {
         this.loading = false;

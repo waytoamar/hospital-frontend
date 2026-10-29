@@ -110,11 +110,13 @@ export class ReceptionService {
 export class PharmacyService {
   constructor(private http: HttpClient) {}
 
-  queue(scope: 'today' | 'history') {
-    return this.http.get<Visit[]>(`${API}/pharmacy/queue`, {
-      ...options,
-      params: new HttpParams().set('scope', scope),
-    });
+  // History can take From / To dates (YYYY-MM-DD)
+  queue(scope: 'today' | 'history', from = '', to = '') {
+    let params = new HttpParams().set('scope', scope);
+    if (scope === 'history' && from) {
+      params = params.set('from', from).set('to', to || from);
+    }
+    return this.http.get<Visit[]>(`${API}/pharmacy/queue`, { ...options, params });
   }
 
   search(search: string) {

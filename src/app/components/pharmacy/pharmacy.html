@@ -51,7 +51,7 @@
             ? 'Search results'
             : tab === 'today'
               ? 'Completed Consultations'
-              : 'Recent Prescriptions'
+              : 'Prescriptions History'
         }}
       </h1>
       <p class="lead">
@@ -63,6 +63,21 @@
       <button [class.on]="tab === 'history'" (click)="setTab('history')">History</button>
     </div>
   </div>
+
+  <!-- History: From / To dates (the day the doctor completed the visit) -->
+  <div class="range" *ngIf="tab === 'history' && !searching">
+    <label>
+      From
+      <input type="date" [(ngModel)]="from" [max]="today" />
+    </label>
+    <label>
+      To
+      <input type="date" [(ngModel)]="to" [max]="today" />
+    </label>
+    <button type="button" class="range-reset" (click)="resetRange()">Last 7 days</button>
+    <span class="range-count">{{ rows.length }} prescription(s)</span>
+  </div>
+  <p class="error" *ngIf="rangeError">{{ rangeError }}</p>
 
   <p class="error" *ngIf="error">{{ error }}</p>
 
@@ -106,7 +121,7 @@
           ? 'No prescription found'
           : tab === 'today'
             ? 'No completed consultations yet today'
-            : 'No prescriptions yet'
+            : 'No prescriptions on these dates'
       }}
     </p>
   </section>
