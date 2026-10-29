@@ -112,6 +112,9 @@
         <button class="go" (click)="print(v)">
           {{ v.medicines.length ? 'Print prescription' : 'Advice only · print' }}
         </button>
+        <button class="link" *ngIf="hasReferral(v)" (click)="printReferralFor(v)">
+          ▤ Referral
+        </button>
       </div>
     </div>
 
@@ -182,6 +185,9 @@
 
   <footer>
     <button class="ghost" (click)="detail = null">Close</button>
+    <button class="ghost" *ngIf="hasReferral(detail)" (click)="printReferralFor(detail)">
+      Print referral
+    </button>
     <button class="go" (click)="print(detail)">Print prescription</button>
   </footer>
 </section>

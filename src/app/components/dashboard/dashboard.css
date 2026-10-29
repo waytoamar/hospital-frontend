@@ -1986,3 +1986,136 @@ button:disabled {
   background: #fff8e6;
   color: #8a6100;
 }
+
+/* Referral (outside scan / radiologist) fields in the visit form */
+.referral-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+}
+.referral-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.referral-grid .full {
+  grid-column: 1 / -1;
+}
+@media (max-width: 640px) {
+  .referral-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.referral-hint {
+  margin: 6px 0 0;
+  color: #6b7f84;
+  font-size: 12px;
+}
+
+/* Several referrals: one small card each */
+.referral-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background: var(--card);
+}
+.referral-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.link-btn {
+  border: 0;
+  background: none;
+  padding: 4px 0;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 13px;
+}
+.link-btn.danger {
+  color: var(--coral);
+}
+
+/* Outside reports (MRI / CT photos) */
+.outside-upload {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.outside-upload input {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.upload-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+.upload-btn.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.outside-photos {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.outside-photos figure {
+  position: relative;
+  margin: 0;
+  width: 92px;
+}
+.outside-photos img {
+  width: 92px;
+  height: 92px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  cursor: zoom-in;
+}
+.outside-photos figcaption {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.photo-del {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--coral);
+  color: #fff;
+  font-size: 11px;
+  line-height: 22px;
+  padding: 0;
+}
+.referral-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.referral-actions .referral-hint {
+  flex: 1 1 260px;
+  margin: 0;
+}
+.referral-actions .upload-btn {
+  border: 0;
+}

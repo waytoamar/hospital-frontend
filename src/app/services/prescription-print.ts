@@ -1,4 +1,4 @@
-import { Visit } from './visit';
+import { Referral, Visit } from './visit';
 import { LETTERHEAD_LOGO, LETTERHEAD_ORGANS } from '../components/dashboard/letterhead-images';
 
 const EXAM_CHECKS = [
@@ -63,7 +63,13 @@ export function setPreprintedPaper(on: boolean): void {
 
 // The prescription page (A4) as HTML. Used by the Print button and by the WhatsApp PDF.
 // forPdf: always include the digital letterhead (the pre-printed paper setting is only for printing).
-function prescriptionHtml(visit: Visit, forPdf = false): string {
+// kind 'referral': same letterhead, but the page is a referral letter (refIndex = which referral)
+function prescriptionHtml(
+  visit: Visit,
+  forPdf = false,
+  kind: 'prescription' | 'referral' = 'prescription',
+  refIndex = 0,
+): string {
   const escapeHtml = (value: unknown): string =>
     String(value || '').replace(
       /[&<>"']/g,
@@ -194,10 +200,20 @@ function prescriptionHtml(visit: Visit, forPdf = false): string {
   // Investigations are NOT printed: the lab gives its own printed reports to attach.
 
   // ---- Diagnosis ----
+  // "Referred to Cardiologist (Dr. X) for chest pain evaluation" under the diagnosis
+  const refLine = referralsOf(visit)
+    .map((r) => {
+      const who = [r.specialty, has(r.to) ? `(${r.to})` : ''].filter(has).join(' ');
+      return `<p><b>Referred to:</b> ${escapeHtml(who || 'specialist')}${
+        has(r.reason) ? ' — ' + escapeHtml(r.reason) : ''
+      }</p>`;
+    })
+    .join('');
   const diagnosisSection = section(
     'Diagnosis',
     (has(visit.disease) ? `<p><b>Disease:</b> ${escapeHtml(visit.disease)}</p>` : '') +
-      (has(visit.diagnosis) ? `<p>${escapeHtml(visit.diagnosis)}</p>` : ''),
+      (has(visit.diagnosis) ? `<p>${escapeHtml(visit.diagnosis)}</p>` : '') +
+      refLine,
   );
 
   // ---- Medication ----
@@ -239,6 +255,29 @@ function prescriptionHtml(visit: Visit, forPdf = false): string {
     has(visit.comments) ? `<p>${escapeHtml(visit.comments)}</p>` : '',
   );
 
+  // ---- Referral letter (kind 'referral') ----
+  const ref: Partial<Referral> = referralsOf(visit)[refIndex] || {};
+  const refTo = [ref.specialty, ref.to].filter(has).map((v) => escapeHtml(v)).join('<br />');
+  const diagnosisText = [visit.disease, visit.diagnosis].filter(has).join(' — ');
+  const clinicalNotes = has(ref.notes) ? ref.notes : visit.symptoms;
+  const treatment = (visit.medicines || [])
+    .filter((m) => has(m.name))
+    .map((m) => [m.name, m.dosage, m.frequency, m.duration].filter(has).join(' '))
+    .join(', ');
+  const referralSection = `
+    <div class="ref">
+      <h2 class="ref-title">REFERRAL</h2>
+      <p>To,<br /><b>${refTo || 'The Consultant'}</b></p>
+      <p>Respected Sir / Madam,</p>
+      <p>I am referring the above patient to you for your expert opinion and further management.</p>
+      ${has(ref.reason) ? `<p class="ref-test">Reason: ${escapeHtml(ref.reason)}</p>` : ''}
+      ${has(diagnosisText) ? `<p><b>Provisional diagnosis:</b> ${escapeHtml(diagnosisText)}</p>` : ''}
+      ${has(clinicalNotes) ? `<p><b>Clinical details:</b> ${escapeHtml(clinicalNotes)}</p>` : ''}
+      ${has(treatment) ? `<p><b>Treatment given:</b> ${escapeHtml(treatment)}</p>` : ''}
+      ${has(visit.allergies) ? `<p><b>Allergies:</b> ${escapeHtml(visit.allergies)}</p>` : ''}
+      <p>Kindly see the patient and do the needful. Thank you.</p>
+    </div>`;
+
   const followUpSection = has(visit.followUpDate)
     ? `<p class="follow"><b>Follow-up date:</b> ${escapeHtml(formatDate(visit.followUpDate))}</p>`
     : '';
@@ -251,7 +290,7 @@ function prescriptionHtml(visit: Visit, forPdf = false): string {
       <html>
         <head>
           <meta charset="utf-8" />
-          <title>Prescription</title>
+          <title>${kind === 'referral' ? 'Referral' : 'Prescription'}</title>
           <style>
             @page { size: A4; margin: 0; }
 
@@ -411,6 +450,10 @@ function prescriptionHtml(visit: Visit, forPdf = false): string {
 
             .follow { margin: 8px 0; text-align: left; }
 
+            .ref { margin-top: 10px; font-size: 14px; line-height: 1.6; }
+            .ref p { margin: 6px 0; }
+            .ref-title { margin: 4px 0 14px; text-align: center; font-size: 18px; letter-spacing: 4px; text-decoration: underline; }
+            .ref-test { margin: 8px 0 12px; padding: 8px 12px; border: 1px solid #999; border-radius: 4px; font-size: 16px; font-weight: 700; }
             .sign { display: flex; justify-content: flex-end; margin-top: 22mm; }
             .sign div { min-width: 50mm; padding-top: 4px; border-top: 1px solid #777; text-align: center; font-size: 12px; }
 
@@ -474,16 +517,24 @@ function prescriptionHtml(visit: Visit, forPdf = false): string {
                   </div>
                 </div>
 
-                ${symptomsSection}
+                ${
+                  kind === 'referral'
+                    ? referralSection
+                    : `${symptomsSection}
                 ${examSection}
                 ${comoSection}
                 ${diagnosisSection}
                 ${medicineSection}
                 ${adviceSection}
-                ${followUpSection}
+                ${followUpSection}`
+                }
 
                 <div class="sign">
-                  <div>Doctor's signature</div>
+                  <div>${
+                    kind === 'referral'
+                      ? `${escapeHtml(clinic.doctor)}<br />${escapeHtml(clinic.qualification)}`
+                      : "Doctor's signature"
+                  }</div>
                 </div>
               </main>
             </div>
@@ -499,27 +550,68 @@ function prescriptionHtml(visit: Visit, forPdf = false): string {
 }
 
 // Shrink the text area a little (only if needed) so everything fits on ONE A4 page
+// (every page on its own when there are several referral letters)
 function fitToOnePage(doc: Document): void {
-  const page = doc.querySelector('.page') as HTMLElement | null;
-  const main = doc.querySelector('.main') as HTMLElement | null;
-  if (page && main) {
+  doc.querySelectorAll<HTMLElement>('.page').forEach((page) => {
+    const main = page.querySelector('.main') as HTMLElement | null;
+    if (!main) return;
     const maxHeight = (296 / 25.4) * 96; // 296 mm in CSS pixels
     let zoom = 1;
     while (page.getBoundingClientRect().height > maxHeight && zoom > 0.5) {
       zoom = Math.round((zoom - 0.02) * 100) / 100;
       main.style.setProperty('zoom', String(zoom));
     }
-  }
+  });
 }
 
-export function printPrescription(visit: Visit): void {
+// Referrals that have something written (specialty or reason)
+function referralsOf(visit: Visit | null | undefined): Referral[] {
+  return (visit?.referrals || []).filter((r) => r?.specialty?.trim() || r?.reason?.trim());
+}
+
+// Does this visit have a referral to print?
+export function hasReferral(visit: Visit | null | undefined): boolean {
+  return referralsOf(visit).length > 0;
+}
+
+// All referral letters of a visit in one document: one A4 page per referral
+function referralLettersHtml(visit: Visit, forPdf = false): string {
+  const count = Math.max(referralsOf(visit).length, 1);
+  const pages: string[] = [];
+  let first = '';
+  for (let i = 0; i < count; i++) {
+    const html = prescriptionHtml(visit, forPdf, 'referral', i);
+    if (i === 0) first = html;
+    const start = html.indexOf('<body>') + '<body>'.length;
+    pages.push(html.slice(start, html.lastIndexOf('</body>')));
+  }
+  const start = first.indexOf('<body>') + '<body>'.length;
+  return (
+    first.slice(0, start) +
+    `<style>.page{break-after:page;page-break-after:always}.pages>.page:last-child{break-after:auto;page-break-after:auto}</style>` +
+    `<div class="pages">${pages.join('')}</div>` +
+    first.slice(first.lastIndexOf('</body>'))
+  );
+}
+
+// Referral letters to other specialists (same letterhead, one page each)
+export function printReferral(visit: Visit): void {
+  printPrescription(visit, 'referral');
+}
+
+export function printPrescription(
+  visit: Visit,
+  kind: 'prescription' | 'referral' = 'prescription',
+): void {
   const printWindow = window.open('', '_blank', 'width=900,height=900');
 
   if (!printWindow) {
     return;
   }
 
-  printWindow.document.write(prescriptionHtml(visit));
+  printWindow.document.write(
+    kind === 'referral' ? referralLettersHtml(visit) : prescriptionHtml(visit, false, kind),
+  );
   printWindow.document.close();
 
   setTimeout(() => {
@@ -535,7 +627,11 @@ const HTML2PDF_URL = 'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2
 
 // Returns the PDF as base64 text. The page is built in a hidden frame,
 // so its styles never mix with the doctor's screen.
-export async function prescriptionPdfBase64(visit: Visit): Promise<string> {
+// kind 'referral': all referral letters (one page each) instead of the prescription.
+export async function prescriptionPdfBase64(
+  visit: Visit,
+  kind: 'prescription' | 'referral' = 'prescription',
+): Promise<string> {
   const frame = document.createElement('iframe');
   frame.setAttribute('aria-hidden', 'true');
   frame.style.cssText = 'position:fixed;left:-10000px;top:0;width:794px;height:1123px;border:0;';
@@ -547,7 +643,7 @@ export async function prescriptionPdfBase64(visit: Visit): Promise<string> {
     if (!win || !doc) throw new Error('Could not prepare the prescription');
 
     doc.open();
-    doc.write(prescriptionHtml(visit, true));
+    doc.write(kind === 'referral' ? referralLettersHtml(visit, true) : prescriptionHtml(visit, true));
     doc.close();
 
     await new Promise<void>((resolve, reject) => {
@@ -566,13 +662,16 @@ export async function prescriptionPdfBase64(visit: Visit): Promise<string> {
       .html2pdf!()
       .set({
         margin: 0,
-        filename: `Prescription_${name}.pdf`,
+        filename: `${kind === 'referral' ? 'Referral' : 'Prescription'}_${name}.pdf`,
         image: { type: 'jpeg', quality: 0.9 },
         html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all'] },
+        pagebreak:
+          kind === 'referral'
+            ? { mode: ['css'], after: '.pages > .page:not(:last-child)' }
+            : { mode: ['avoid-all'] },
       })
-      .from(doc.querySelector('.page') || doc.body)
+      .from(doc.querySelector(kind === 'referral' ? '.pages' : '.page') || doc.body)
       .outputPdf('datauristring');
 
     return dataUri.slice(dataUri.indexOf(',') + 1);

@@ -6,8 +6,10 @@ import { AuthService } from '../../services/auth';
 import { Medicine, Visit } from '../../services/visit';
 import { PharmacyService } from '../../services/staff';
 import {
+  hasReferral,
   isPreprintedPaper,
   printPrescription,
+  printReferral,
   setPreprintedPaper,
 } from '../../services/prescription-print';
 
@@ -160,6 +162,12 @@ export class Pharmacy implements OnInit, OnDestroy {
   // Opens the full prescription paper (same as the doctor's) and starts printing
   print(visit: Visit): void {
     printPrescription(visit);
+  }
+
+  // Referral letter to another specialist
+  readonly hasReferral = hasReferral;
+  printReferralFor(visit: Visit): void {
+    printReferral(visit);
   }
 
   logout(): void {
