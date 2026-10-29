@@ -91,6 +91,8 @@ export interface Visit {
   visitDate?: string;
   token?: string;
   visitDay?: string;
+  source?: string; // 'WhatsApp' when the patient booked on WhatsApp
+  arrivedAt?: string | null; // WhatsApp patient reached the clinic (reception marks it)
 }
 
 @Injectable({
@@ -163,6 +165,20 @@ export class VisitService {
 
   updateStatus(id: string, status: VisitStatus) {
     return this.http.patch<Visit>(`${this.url}/${id}/status`, { status }, this.options);
+  }
+
+  // Is "send prescription on WhatsApp" switched on in the backend? (404 = WhatsApp not set up)
+  whatsappFeatures() {
+    return this.http.get<{ prescription: boolean }>(`${API_BASE}/whatsapp/features`);
+  }
+
+  // pdf: the prescription PDF as base64 text
+  sendPrescriptionPdf(id: string, pdf: string) {
+    return this.http.post<{ sent: boolean; message: string }>(
+      `${this.url}/${id}/prescription-pdf`,
+      { pdf },
+      this.options,
+    );
   }
 
   // Receptionist: fix name / age / gender / phone / vitals of a visit (page 1 only)

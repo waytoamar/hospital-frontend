@@ -27,6 +27,19 @@ export interface QueueItem {
   visitDay: string;
   visitDate: string;
   vitals: DeskVitals;
+  source?: string; // 'WhatsApp' when the patient booked on WhatsApp
+  arrivedAt?: string | null; // WhatsApp patient reached the clinic
+}
+
+// WhatsApp booking for a coming day
+export interface UpcomingBooking {
+  _id: string;
+  patientName: string;
+  age: string;
+  gender: string;
+  phone: string;
+  token: string;
+  visitDay: string; // YYYY-MM-DD
 }
 
 export interface PatientHit {
@@ -58,6 +71,16 @@ export class ReceptionService {
 
   board() {
     return this.http.get<QueueItem[]>(`${API}/reception/board`, options);
+  }
+
+  // WhatsApp bookings for tomorrow and later
+  upcoming() {
+    return this.http.get<UpcomingBooking[]>(`${API}/reception/upcoming`, options);
+  }
+
+  // WhatsApp patient reached the clinic (arrived = false undoes it)
+  markArrived(id: string, arrived: boolean) {
+    return this.http.patch<QueueItem>(`${API}/reception/visits/${id}/arrived`, { arrived }, options);
   }
 
   patients(search: string) {

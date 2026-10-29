@@ -1,0 +1,420 @@
+<header class="topbar">
+  <div class="brand">
+    <img class="logo-img sm" src="lungs.jpg" alt="" />
+    <div><b>Chest &amp; Allergy Clinic</b><small>Reception</small></div>
+  </div>
+  <div class="who">{{ name }} <button class="ghost" (click)="logout()">Logout</button></div>
+</header>
+
+<main class="page">
+  <section class="calling" [class.idle]="!calling">
+    <span>Now calling</span>
+    <strong>{{ calling ? calling.token : '—' }}</strong>
+    <small>{{ calling ? calling.patientName : 'No one with the doctor right now' }}</small>
+  </section>
+
+  <button class="voice-banner" *ngIf="!voiceEnabled" (click)="toggleVoice()">
+    🔇 Voice is OFF. Click here once to turn on patient calling voice
+  </button>
+
+  <nav class="tabs">
+    <button [class.active]="tab === 'board'" (click)="tab = 'board'">Board</button>
+    <button [class.active]="tab === 'patients'" (click)="tab = 'patients'">Patients</button>
+    <span class="refresh" *ngIf="updated"
+      >Updated {{ updated | date: 'shortTime' }} · auto-refresh 5s</span
+    >
+    <button class="voice-btn" [class.on]="voiceEnabled" (click)="toggleVoice()">
+      {{ voiceEnabled ? '🔊 Voice on' : '🔇 Enable voice' }}
+    </button>
+    <button class="primary-btn" (click)="openForm()">＋ New visit</button>
+  </nav>
+
+  <p class="notice ok" *ngIf="message">{{ message }}</p>
+
+  <!-- BOARD: count boxes on top; the chosen group shows below as cards, 4 in a row -->
+  <section *ngIf="tab === 'board'">
+    <p class="error" *ngIf="loadError">{{ loadError }}</p>
+
+    <div class="stat-row" role="tablist">
+      <button
+        *ngFor="let g of groups"
+        type="button"
+        class="stat"
+        role="tab"
+        [attr.data-tone]="g.key"
+        [class.on]="view === g.key"
+        [attr.aria-selected]="view === g.key"
+        (click)="pick(g.key)"
+      >
+        <small>{{ g.label }}</small>
+        <b>{{ g.count }}</b>
+        <em>{{ view === g.key ? 'showing below' : 'click to see' }}</em>
+      </button>
+    </div>
+
+    <div class="group" [attr.data-tone]="view">
+      <div class="group-head">
+        <h3>
+          {{ current.label }} <span class="count">{{ current.count }}</span>
+        </h3>
+        <input
+          class="group-search"
+          [(ngModel)]="groupSearch"
+          (ngModelChange)="page = 1"
+          [placeholder]="'⌕ Search in ' + current.label.toLowerCase() + '…'"
+          aria-label="Search in this list"
+        />
+      </div>
+
+      <!-- Waiting / With doctor / Completed / At lab -->
+      <div class="cards" *ngIf="view !== 'followup'">
+        <div
+          class="pcard"
+          *ngFor="let v of pagedQueue; trackBy: trackById"
+          [class.one-action]="v.status !== 'Waiting' && view !== 'lab'"
+        >
+          <div class="pcard-top">
+            <span class="tok">{{ v.token }}</span>
+            <div class="pcard-name">
+              <b>{{ v.patientName }}</b>
+              <small>{{ v.age }} · {{ v.gender }}</small>
+            </div>
+          </div>
+          <div class="wa-row" *ngIf="v.source === 'WhatsApp'">
+            <span class="wa-badge">💬 WhatsApp booking</span>
+            <button
+              *ngIf="v.status === 'Waiting'"
+              type="button"
+              class="arrive-btn"
+              [class.done]="v.arrivedAt"
+              [disabled]="busyId === v._id"
+              (click)="markArrived(v)"
+              [title]="v.arrivedAt ? 'Tap to undo' : 'Patient has reached the clinic'"
+            >
+              {{ v.arrivedAt ? '✓ Arrived ' + (v.arrivedAt | date: 'h:mm a') : 'Mark arrived' }}
+            </button>
+          </div>
+          <span class="reports-badge" *ngIf="isReportsReady(v)">🧪 Reports ready</span>
+          <div class="pcard-foot">
+            <span class="phone">📞 {{ v.phone }}</span>
+            <span class="pcard-actions">
+              <button
+                class="edit-btn"
+                *ngIf="view !== 'lab'"
+                (click)="openEdit(v)"
+                aria-label="Edit patient details"
+              >
+                ✎ Edit
+              </button>
+              <button
+                class="noshow-btn"
+                *ngIf="v.status === 'Waiting'"
+                [disabled]="busyId === v._id"
+                (click)="markNoShow(v)"
+                title="Patient did not come"
+              >
+                ✕ No show
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Follow-ups due -->
+      <div class="cards" *ngIf="view === 'followup'">
+        <div class="pcard" *ngFor="let f of pagedFollowUps">
+          <div class="pcard-top">
+            <span class="tok id-tok">{{ f.patientId }}</span>
+            <div class="pcard-name">
+              <b>{{ f.patientName }}</b>
+              <small>{{ f.age }} · {{ f.gender }}</small>
+            </div>
+          </div>
+          <span class="fup-due" [class.late]="f.followUpDate < todayStr">{{
+            f.followUpDate === todayStr ? 'Due today' : 'Due ' + (f.followUpDate | date: 'dd MMM')
+          }}</span>
+          <div class="pcard-foot">
+            <span class="phone">📞 {{ f.phone }}</span>
+            <button class="btn sm" (click)="addFollowUp(f)">＋ Add to queue</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page numbers (any box, when its patients don't fit on one page) -->
+      <nav class="pager" *ngIf="pageCount > 1" aria-label="Pages">
+        <button type="button" [disabled]="page === 1" (click)="goPage(page - 1)" aria-label="Previous page">‹</button>
+        <span class="page-of" *ngIf="compactPager">Page {{ page }} of {{ pageCount }}</span>
+        <ng-container *ngFor="let n of compactPager ? [] : pageNumbers">
+          <span class="gap" *ngIf="n === 0">…</span>
+          <button
+            type="button"
+            *ngIf="n !== 0"
+            [class.on]="n === page"
+            [attr.aria-current]="n === page ? 'page' : null"
+            (click)="goPage(n)"
+          >
+            {{ n }}
+          </button>
+        </ng-container>
+        <button type="button" [disabled]="page === pageCount" (click)="goPage(page + 1)" aria-label="Next page">›</button>
+        <span class="pager-info"
+          >Showing {{ pageStart + 1 }}–{{ pageStart + pageItemsCount }} of {{ shownCount }}{{
+            view === 'done' ? ' · newest first' : view === 'waiting' ? ' · next in line first' : ''
+          }}</span
+        >
+      </nav>
+
+      <p class="empty" *ngIf="!shownCount">
+        {{ groupSearch ? 'No patient matches "' + groupSearch + '"' : 'Nobody here' }}
+      </p>
+    </div>
+
+    <section class="coll" *ngIf="summary as s">
+      <div
+        class="coll-head sec-toggle"
+        role="button"
+        tabindex="0"
+        [attr.aria-expanded]="!isClosed('money')"
+        (click)="toggle('money')"
+        (keydown.enter)="toggle('money')"
+      >
+        <h3><span class="arrow" [class.closed]="isClosed('money')">▾</span> Today's collection</h3>
+        <span>{{ s.date | date: 'dd MMM yyyy' }}</span>
+      </div>
+      <ng-container *ngIf="!isClosed('money')">
+      <div class="coll-grid">
+        <div class="coll-box">
+          <small>Patients</small>
+          <b>{{ s.patients }}</b>
+        </div>
+        <div class="coll-box">
+          <small>Cash</small>
+          <b>₹{{ s.cash.amount }}</b>
+          <em>{{ s.cash.count }} patients</em>
+        </div>
+        <div class="coll-box">
+          <small>UPI</small>
+          <b>₹{{ s.upi.amount }}</b>
+          <em>{{ s.upi.count }} patients</em>
+        </div>
+        <div class="coll-box total">
+          <small>Total</small>
+          <b>₹{{ s.total.amount }}</b>
+          <em>{{ s.total.count }} billed</em>
+        </div>
+      </div>
+      <div class="coll-services">
+        <span *ngFor="let item of feeItems">
+          {{ item.label }}: <b>{{ s.services[item.key]?.count || 0 }}</b> · ₹{{
+            s.services[item.key]?.amount || 0
+          }}
+        </span>
+        <span *ngIf="s.split">Split (cash + UPI): <b>{{ s.split }}</b></span>
+      </div>
+      <p class="coll-warn" *ngIf="s.notBilled">
+        ⚠ {{ s.notBilled }} patient(s) have no bill entered
+      </p>
+      </ng-container>
+    </section>
+
+    <!-- WhatsApp bookings for tomorrow and later -->
+    <app-upcoming-bookings></app-upcoming-bookings>
+
+    <!-- Clinic closed days (holidays): reception and doctor can add them -->
+    <app-holidays></app-holidays>
+  </section>
+
+  <!-- PATIENTS -->
+  <section *ngIf="tab === 'patients'" class="card">
+    <h2>Find old patient</h2>
+    <input
+      placeholder="Name, phone or PT-ID"
+      [(ngModel)]="search"
+      (ngModelChange)="onSearch()"
+    />
+    <p class="error" *ngIf="phoneError">{{ phoneError }}</p>
+    <p class="empty" *ngIf="searched && !hits.length">No patient found</p>
+    <div class="hit" *ngFor="let p of hits">
+      <div class="hit-info">
+        <b>{{ p.patientName }}</b>
+        <small
+          >{{ p.patientId }} · {{ p.age }} · {{ p.gender }} · last visit
+          {{ p.lastVisit | date: 'dd/MM/yyyy' }}</small
+        >
+        <ng-container *ngIf="phoneEdit?.id !== p.patientId; else editing">
+          <small
+            >📞 {{ p.phone }}
+            <a class="link" (click)="phoneEdit = { id: p.patientId, value: p.phone }"
+              >Fix number</a
+            ></small
+          >
+        </ng-container>
+        <ng-template #editing>
+          <div class="inline">
+            <input [(ngModel)]="phoneEdit!.value" maxlength="10" inputmode="numeric" />
+            <button class="btn sm" (click)="savePhone(p)">Save</button>
+            <button class="ghost" (click)="phoneEdit = null">Cancel</button>
+          </div>
+        </ng-template>
+      </div>
+      <button class="btn sm" (click)="openForm(p)">New visit</button>
+    </div>
+  </section>
+</main>
+
+<!-- NEW / EDIT VISIT MODAL -->
+<div class="overlay" *ngIf="formOpen" (click)="closeForm()"></div>
+<section class="visit-modal" *ngIf="formOpen" role="dialog" aria-modal="true">
+  <header>
+    <div>
+      <small>{{ editingId ? 'EDIT RECORD' : 'NEW RECORD' }}</small>
+      <h2>{{ editingId ? 'Edit patient details' : 'New patient visit' }}</h2>
+    </div>
+    <button class="icon-btn" (click)="closeForm()" aria-label="Close">×</button>
+  </header>
+
+  <div class="modal-body">
+    <div class="form-section">
+      <div class="lookup-row" *ngIf="!editingId; else phoneOnly">
+        <label
+          >Phone number *
+          <input
+            [(ngModel)]="form.phone"
+            (ngModelChange)="onPhoneTyped()"
+            maxlength="10"
+            inputmode="numeric"
+            placeholder="10-digit mobile"
+          />
+        </label>
+        <button class="outline-btn" (click)="findPatient()">Find patient</button>
+      </div>
+      <ng-template #phoneOnly>
+        <label
+          >Phone number *
+          <input
+            [(ngModel)]="form.phone"
+            maxlength="10"
+            inputmode="numeric"
+            placeholder="10-digit mobile"
+          />
+        </label>
+      </ng-template>
+
+      <p class="found" *ngIf="lookupMsg">{{ lookupMsg }}</p>
+      <div class="chip-list" *ngIf="matches.length">
+        <button *ngFor="let m of matches" class="pick" (click)="usePatient(m)">
+          {{ m.patientName }} · {{ m.age }} · {{ m.gender }} · {{ m.patientId }}
+        </button>
+        <button class="pick" (click)="newOnSamePhone()">+ New patient on this number</button>
+      </div>
+
+      <label
+        >Patient name *
+        <input
+          [(ngModel)]="form.patientName"
+          (ngModelChange)="onNameTyped()"
+          placeholder="Full name"
+        />
+      </label>
+
+      <div class="form-grid">
+        <label
+          >Age *
+          <input [(ngModel)]="form.age" inputmode="numeric" maxlength="3" placeholder="Years" />
+        </label>
+        <label
+          >Gender *
+          <select [(ngModel)]="form.gender">
+            <option value="">Select</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+        </label>
+      </div>
+
+      <h4 class="sub-head">Vitals</h4>
+      <div class="form-grid three">
+        <label>BP<input [(ngModel)]="form.vitals.bloodPressure" placeholder="120/80" /></label>
+        <label>SpO2<input [(ngModel)]="form.vitals.spo2" placeholder="%" /></label>
+        <label
+          >Temperature<input [(ngModel)]="form.vitals.temperature" placeholder="98.6 °F"
+        /></label>
+        <label>RBS<input [(ngModel)]="form.vitals.bloodSugar" placeholder="mg/dL" /></label>
+        <label>Weight<input [(ngModel)]="form.vitals.weight" placeholder="kg" /></label>
+        <label>Heart rate<input [(ngModel)]="form.vitals.heartRate" placeholder="bpm" /></label>
+      </div>
+
+      <h4 class="sub-head">Billing (₹)</h4>
+      <div class="bill-card">
+        <div class="bill-grid">
+          <div class="bill-field" *ngFor="let item of feeItems" (click)="amt.focus()">
+            <span class="bill-name">{{ item.label }}</span>
+            <span class="bill-rs">₹</span>
+            <input
+              #amt
+              [(ngModel)]="form.fees[item.key]"
+              inputmode="numeric"
+              maxlength="7"
+              placeholder="0"
+            />
+          </div>
+          <div class="bill-due">
+            <small>TOTAL DUE</small>
+            <b>₹ {{ billTotal | number: '1.2-2' }}</b>
+          </div>
+        </div>
+
+        <div class="pay-row">
+          <span class="pay-label">PAID BY</span>
+          <button
+            type="button"
+            class="pay-pill"
+            [class.on]="form.payCash"
+            (click)="form.payCash = !form.payCash"
+          >
+            <i></i>Cash
+          </button>
+          <button
+            type="button"
+            class="pay-pill"
+            [class.on]="form.payUpi"
+            (click)="form.payUpi = !form.payUpi"
+          >
+            <i></i>UPI
+          </button>
+        </div>
+
+        <div class="split-row" *ngIf="form.payCash && form.payUpi">
+          <div class="bill-field" (click)="cashIn.focus()">
+            <span class="bill-name">Cash given</span>
+            <span class="bill-rs">₹</span>
+            <input
+              #cashIn
+              [(ngModel)]="form.cashPart"
+              inputmode="numeric"
+              maxlength="7"
+              placeholder="0"
+            />
+          </div>
+          <div class="split-upi">
+            <small>UPI (remaining)</small>
+            <b>₹ {{ upiAmount | number: '1.2-2' }}</b>
+          </div>
+        </div>
+        <p class="pay-hint" *ngIf="billTotal > 0 && !(form.payCash && form.payUpi)">
+          Part cash, part UPI? Select both.
+        </p>
+      </div>
+
+      <p class="error" *ngIf="formError">{{ formError }}</p>
+    </div>
+  </div>
+
+  <footer>
+    <button class="outline-btn" (click)="closeForm()">Cancel</button>
+    <button class="primary-btn" [disabled]="saving" (click)="submit()">
+      {{ saving ? 'Saving…' : editingId ? 'Save changes' : 'Register & get token' }}
+    </button>
+  </footer>
+</section>

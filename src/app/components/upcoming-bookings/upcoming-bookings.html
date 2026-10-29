@@ -1,0 +1,34 @@
+<section class="upcoming">
+  <button class="head" type="button" (click)="open = !open" [attr.aria-expanded]="open">
+    <span class="arrow" [class.closed]="!open">▾</span>
+    <h3>💬 Upcoming WhatsApp bookings</h3>
+    <span class="count">{{ total }}</span>
+    <small class="next" *ngIf="!open && groups.length">
+      <span *ngFor="let g of groups; let last = last">
+        {{ g.label }}: {{ g.bookings.length }}{{ last ? '' : ' · ' }}
+      </span>
+    </small>
+  </button>
+
+  <div class="body" *ngIf="open">
+    <p class="err" *ngIf="error">⚠️ {{ error }}</p>
+
+    <div class="day" *ngFor="let g of groups">
+      <h4>
+        {{ g.label }} <small>{{ g.bookings.length }} booking(s)</small>
+      </h4>
+      <ul>
+        <li *ngFor="let b of g.bookings">
+          <span class="tok">{{ b.token }}</span>
+          <span class="name">
+            <b>{{ b.patientName }}</b>
+            <small>{{ b.age }} · {{ b.gender }}</small>
+          </span>
+          <a class="phone" [href]="'tel:' + b.phone">📞 {{ b.phone }}</a>
+        </li>
+      </ul>
+    </div>
+
+    <p class="empty" *ngIf="!groups.length && !error">No WhatsApp bookings for the coming days yet.</p>
+  </div>
+</section>

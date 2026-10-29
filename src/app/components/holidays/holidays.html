@@ -1,0 +1,58 @@
+<section class="holidays">
+  <button class="head" type="button" (click)="open = !open" [attr.aria-expanded]="open">
+    <span class="arrow" [class.closed]="!open">▾</span>
+    <h3>📅 Clinic closed days</h3>
+    <span class="count" *ngIf="list.length">{{ list.length }}</span>
+    <small class="next" *ngIf="!open && list.length">
+      Next: {{ label(list[0].day) }} · {{ list[0].reason }}
+    </small>
+  </button>
+
+  <div class="body" *ngIf="open">
+    <p class="hint">
+      Add a holiday or a day the doctor is not available. Patients on WhatsApp will be told, and
+      cannot book that day.
+    </p>
+
+    <form class="add" (ngSubmit)="add()">
+      <label>
+        Date
+        <input type="date" name="day" [(ngModel)]="day" [min]="today" required />
+      </label>
+      <label class="grow">
+        Reason
+        <input
+          type="text"
+          name="reason"
+          [(ngModel)]="reason"
+          maxlength="100"
+          placeholder="e.g. Diwali celebrations"
+        />
+      </label>
+      <button class="save" type="submit" [disabled]="busy">
+        {{ busy ? 'Saving…' : '+ Add closed day' }}
+      </button>
+    </form>
+
+    <div class="quick">
+      <button type="button" *ngFor="let r of quickReasons" (click)="reason = r">{{ r }}</button>
+    </div>
+
+    <p class="msg ok" *ngIf="message">✅ {{ message }}</p>
+    <p class="msg err" *ngIf="error">⚠️ {{ error }}</p>
+
+    <ul class="list" *ngIf="list.length; else none">
+      <li *ngFor="let h of list">
+        <span class="date">{{ label(h.day) }}</span>
+        <span class="reason">{{ h.reason }}</span>
+        <small class="by" *ngIf="h.addedBy">by {{ h.addedBy }}</small>
+        <button type="button" class="remove" (click)="remove(h)" aria-label="Remove this closed day">
+          ✕
+        </button>
+      </li>
+    </ul>
+    <ng-template #none>
+      <p class="empty">No closed days coming up.</p>
+    </ng-template>
+  </div>
+</section>

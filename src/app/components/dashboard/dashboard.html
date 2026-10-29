@@ -160,6 +160,13 @@
                   <span class="ready-badge" *ngIf="visit.labReady && visit.status !== 'Completed'"
                     >🧪 Reports ready</span
                   >
+                  <!-- Booked on WhatsApp: has the patient reached the clinic yet? -->
+                  <span
+                    class="wa-badge"
+                    [class.waiting]="!visit.arrivedAt"
+                    *ngIf="visit.source === 'WhatsApp' && visit.status === 'Waiting'"
+                    >{{ visit.arrivedAt ? '💬 Arrived' : '💬 Not arrived yet' }}</span
+                  >
 
                   <span class="bd-agesex">{{ ageSex(visit) }}</span>
                 </div>
@@ -364,6 +371,9 @@
           </div>
         </div>
       </section>
+
+      <!-- Clinic closed days (holidays): reception and doctor can add them -->
+      <app-holidays></app-holidays>
     </ng-container>
 
     <ng-container *ngIf="activeView === 'patients'">
@@ -1231,4 +1241,9 @@
 
 <div class="photo-viewer" *ngIf="photoView" (click)="photoView = null">
   <img [src]="photoView" alt="Lab report" />
+</div>
+
+<!-- WhatsApp: prescription sent / not sent -->
+<div class="wa-toast" *ngIf="waNotice" [class.error]="waNoticeError" role="status">
+  {{ waNoticeError ? '⚠️' : '✅' }} {{ waNotice }}
 </div>

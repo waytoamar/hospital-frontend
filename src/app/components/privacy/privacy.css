@@ -1,0 +1,68 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #e6f1f1;
+  color: #10262f;
+  font-family: 'Inter', 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+.privacy {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 20px 48px;
+  line-height: 1.6;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fff;
+}
+h1 {
+  margin: 0;
+  font-size: 28px;
+}
+.sub {
+  margin: 0;
+  color: #6b7f84;
+}
+.updated {
+  color: #6b7f84;
+  font-size: 13px;
+}
+
+h2 {
+  margin: 28px 0 8px;
+  font-size: 18px;
+  color: #1f7a4d;
+}
+ul {
+  padding-left: 20px;
+}
+li {
+  margin: 6px 0;
+}
+
+address {
+  font-style: normal;
+  padding: 14px 16px;
+  border: 1px solid #cfe1e1;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.back {
+  display: inline-block;
+  margin-top: 28px;
+  color: #1f7a4d;
+  font-weight: 600;
+  text-decoration: none;
+}

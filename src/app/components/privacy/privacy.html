@@ -1,0 +1,96 @@
+<main class="privacy">
+  <header>
+    <img src="lungs.jpg" alt="" class="logo" />
+    <div>
+      <h1>Privacy Policy</h1>
+      <p class="sub">{{ clinic.name }} · {{ clinic.doctor }}</p>
+    </div>
+  </header>
+
+  <p class="updated">Last updated: {{ updated }}</p>
+
+  <p>
+    This page explains what information {{ clinic.name }} ("we") collects about patients, why we
+    collect it and how we keep it safe. It applies to visits at the clinic, our patient record
+    system and our WhatsApp number.
+  </p>
+
+  <h2>1. Information we collect</h2>
+  <ul>
+    <li><b>Your details:</b> name, age, gender and mobile number.</li>
+    <li>
+      <b>Health information from your visit:</b> symptoms, diagnosis, vitals, medical history,
+      lab test results, photos of lab reports and prescriptions.
+    </li>
+    <li>
+      <b>On WhatsApp:</b> your WhatsApp number and the messages you send us to book or change an
+      appointment.
+    </li>
+  </ul>
+
+  <h2>2. Why we use it</h2>
+  <ul>
+    <li>To register your visit, give you a token number and treat you.</li>
+    <li>To prepare your lab reports and prescriptions.</li>
+    <li>
+      To send you WhatsApp messages about <b>your own visit</b>: booking confirmation, token
+      number, a reminder on the day of the visit, "reports ready", your prescription (PDF) and
+      days the clinic is closed.
+    </li>
+  </ul>
+  <p>We do <b>not</b> send advertisements, and we do not sell your information to anyone.</p>
+
+  <h2>3. WhatsApp</h2>
+  <p>
+    Our WhatsApp messages are sent through the official WhatsApp Business Platform of Meta. Messages
+    you exchange with us are also handled by WhatsApp under its own terms and privacy policy. Our
+    WhatsApp assistant only books appointments and shares clinic information. It does not give
+    medical advice. In an emergency, call the clinic or go to the nearest hospital.
+  </p>
+
+  <h2>4. Who can see your information</h2>
+  <ul>
+    <li>
+      Clinic staff, only what their work needs (for example, reception does not see your diagnosis
+      or medicines).
+    </li>
+    <li>
+      Service providers that run our system for us: secure cloud database and hosting, WhatsApp
+      (Meta) and storage for lab report photos. They may use the information only to provide
+      their service to us.
+    </li>
+    <li>Government authorities, only when the law requires it.</li>
+  </ul>
+
+  <h2>5. How we keep it safe</h2>
+  <p>
+    Staff sign in with a password or PIN, connections are encrypted (HTTPS), and each person can
+    only open the screens for their role. Medical records are kept for as long as needed for your
+    care and as required by law.
+  </p>
+
+  <h2>6. Your choices</h2>
+  <ul>
+    <li>You can ask to see or correct your details.</li>
+    <li>
+      You can ask us to <b>stop WhatsApp messages</b> at any time: tell the reception or call us.
+    </li>
+    <li>
+      You can ask us to delete your information where the law allows (Digital Personal Data
+      Protection Act, 2023).
+    </li>
+  </ul>
+  <p>Details of patients under 18 are given by a parent or guardian.</p>
+
+  <h2>7. Changes</h2>
+  <p>If we change this policy, we will update this page and the date at the top.</p>
+
+  <h2>8. Contact us</h2>
+  <address>
+    <b>{{ clinic.name }}</b> ({{ clinic.doctor }})<br />
+    {{ clinic.address }}<br />
+    Phone: {{ clinic.phones }}
+  </address>
+
+  <a routerLink="/welcome" class="back">← Back</a>
+</main>

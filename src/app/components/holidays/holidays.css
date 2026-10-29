@@ -1,0 +1,173 @@
+.holidays {
+  margin-top: 18px;
+  padding: 16px 20px;
+  border: 1px solid #cfe1e1;
+  border-radius: 18px;
+  background: #fff;
+  color: #10262f;
+  font-family: 'Inter', 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+/* Header row: click to open / close */
+.head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  flex-wrap: wrap;
+}
+.head h3 {
+  margin: 0;
+  font-size: 18px;
+}
+.arrow {
+  font-size: 12px;
+  transition: transform 0.15s;
+}
+.arrow.closed {
+  transform: rotate(-90deg);
+}
+.count {
+  min-width: 24px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #fff4e0;
+  color: #a86500;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+.next {
+  color: #6b7f84;
+  font-size: 13px;
+}
+
+.hint {
+  margin: 12px 0;
+  color: #6b7f84;
+  font-size: 13px;
+}
+
+/* Add form */
+.add {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.add label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.add label.grow {
+  flex: 1 1 220px;
+}
+.add input {
+  padding: 10px 12px;
+  border: 1px solid #cfe1e1;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 400;
+  background: #fff;
+}
+.add input:focus {
+  outline: none;
+  border-color: #1f7a4d;
+}
+.save {
+  padding: 11px 18px;
+  border: 0;
+  border-radius: 10px;
+  background: #1f7a4d;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.save:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Quick reason chips */
+.quick {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.quick button {
+  padding: 5px 12px;
+  border: 1px solid #cfe1e1;
+  border-radius: 999px;
+  background: #f4f9f9;
+  color: #10262f;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.msg {
+  margin: 12px 0 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+.msg.ok {
+  background: #e7f8ee;
+  color: #0f7a3d;
+}
+.msg.err {
+  background: #fdecea;
+  color: #b3261e;
+}
+
+/* List of closed days */
+.list {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid #e6f1f1;
+  flex-wrap: wrap;
+}
+.date {
+  min-width: 140px;
+  font-weight: 700;
+}
+.reason {
+  flex: 1;
+}
+.by {
+  color: #6b7f84;
+  font-size: 12px;
+}
+.remove {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #f5c2bd;
+  border-radius: 8px;
+  background: #fff;
+  color: #b3261e;
+  cursor: pointer;
+}
+.empty {
+  margin: 14px 0 0;
+  color: #6b7f84;
+  font-size: 13px;
+}

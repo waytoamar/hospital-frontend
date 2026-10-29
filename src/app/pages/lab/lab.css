@@ -504,3 +504,60 @@ button:disabled {
     grid-template-columns: 1fr 1fr;
   }
 }
+/* From / To dates */
+.range {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+  margin: 18px 0 0;
+}
+.range label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #6b7f84;
+  font-size: 14px;
+  font-weight: 700;
+}
+.range input {
+  min-width: 200px;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid #d5e3e1;
+  border-radius: 12px;
+  background: #fff;
+  color: #10262f;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+}
+.range input:focus {
+  outline: none;
+  border-color: #1f7a4d;
+}
+.range-reset {
+  height: 46px;
+  padding: 0 16px;
+  border: 1px solid #d5e3e1;
+  border-radius: 12px;
+  background: #fff;
+  color: #1f7a4d;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.range-note {
+  margin: 8px 0 0;
+  color: #6b7f84;
+  font-size: 13px;
+}
+@media (max-width: 560px) {
+  .range label {
+    flex: 1 1 140px;
+  }
+  .range input {
+    min-width: 0;
+    width: 100%;
+  }
+}

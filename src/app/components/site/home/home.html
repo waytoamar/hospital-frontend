@@ -1,0 +1,80 @@
+<app-site-shell>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="glow glow-left"></div>
+    <div class="glow glow-right"></div>
+
+    <div class="wrap hero-grid">
+      <div>
+        <p class="tag">Pulmonologist · {{ clinic.city }}</p>
+        <h1>Breathe easier, <span class="gold">live better.</span></h1>
+        <p class="lead">
+          {{ clinic.doctor }} — {{ clinic.degree }}. Specialist care for asthma, allergy, COPD, TB,
+          sleep and ICU.
+        </p>
+
+        <div class="book">
+          <p class="book-label">📞 Call to book</p>
+          <div class="actions">
+            @for (phone of clinic.phones; track phone) {
+              <a class="btn gold-btn" [href]="'tel:' + phone">{{ phone }}</a>
+            }
+            <a class="btn line-btn" routerLink="/about">About the doctor</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="photo-box">
+        <img
+          class="photo"
+          src="dr-mahesh.jpg"
+          [alt]="clinic.doctor + ', Pulmonologist'"
+          width="896"
+          height="1024"
+        />
+        <div class="name-card">
+          <p class="name">{{ clinic.doctor }}</p>
+          <p class="role">Chest &amp; Allergy Specialist</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Credentials strip -->
+  <section class="creds">
+    <div class="wrap creds-grid">
+      @for (c of credentials; track c.top) {
+        <div class="cred">
+          <p class="cred-top">{{ c.top }}</p>
+          <p class="cred-sub">{{ c.sub }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- What we treat -->
+  <section class="wrap treat">
+    <p class="eyebrow">Specialities</p>
+    <h2>What we treat</h2>
+    <div class="services">
+      @for (s of services; track s.title) {
+        <div class="service">
+          <span class="service-icon">{{ s.icon }}</span>
+          <h3>{{ s.title }}</h3>
+          <p>{{ s.text }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Staff -->
+  <section class="staff">
+    <div class="wrap staff-row">
+      <div>
+        <h2>Clinic staff?</h2>
+        <p>Doctor, receptionist, pharmacist and lab can sign in here.</p>
+      </div>
+      <a class="btn primary-btn" routerLink="/welcome">Staff Login →</a>
+    </div>
+  </section>
+</app-site-shell>

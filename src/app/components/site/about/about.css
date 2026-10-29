@@ -1,0 +1,88 @@
+/* Colours and fonts come from the site shell (site-shell.css) */
+.about {
+  max-width: 896px;
+  margin: 0 auto;
+  padding: 80px 20px;
+}
+h1,
+h2 {
+  font-family: var(--display);
+}
+.eyebrow {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+h1 {
+  margin: 8px 0 0;
+  font-size: 48px;
+}
+.lead {
+  margin: 20px 0 0;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.card {
+  margin-top: 40px;
+  padding: 32px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+.card h2 {
+  margin: 0;
+  font-size: 24px;
+  color: var(--primary);
+}
+ul {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+li {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.dot {
+  color: var(--gold);
+}
+
+.book {
+  margin-top: 24px;
+}
+.phones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+.phones a {
+  padding: 12px 24px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--on-gold);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+@media (max-width: 760px) {
+  .about {
+    padding: 48px 20px;
+  }
+  h1 {
+    font-size: 36px;
+  }
+  .lead {
+    font-size: 16px;
+  }
+  .card {
+    padding: 24px;
+  }
+}

@@ -1,0 +1,70 @@
+<header class="top">
+  <div class="wrap top-row">
+    <a routerLink="/" class="brand">
+      <span class="brand-icon">🫁</span>
+      Chest &amp; Allergy Clinic
+    </a>
+    <nav class="nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+      <a routerLink="/about" routerLinkActive="active">About Us</a>
+      <a routerLink="/welcome" class="login-btn">Staff Login</a>
+    </nav>
+  </div>
+</header>
+
+<main class="content">
+  <ng-content></ng-content>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-grid">
+    <div>
+      <p class="brand light">
+        <span class="brand-icon gold">🫁</span>
+        Chest &amp; Allergy Clinic
+      </p>
+      <p class="about">
+        Specialist care for asthma, allergy, COPD, TB, sleep disorders and critical lung care — led
+        by {{ clinic.doctor }}, {{ clinic.degree }}.
+      </p>
+      <div class="doc-chip">
+        <span class="gold-text">{{ clinic.doctor }}</span> — Pulmonologist &amp; Intensivist
+      </div>
+    </div>
+
+    <div>
+      <p class="label">Quick links</p>
+      <ul class="links">
+        <li><a routerLink="/">Home</a></li>
+        <li><a routerLink="/about">About the doctor</a></li>
+        <li><a routerLink="/welcome">Staff Login</a></li>
+        <li><a routerLink="/privacy">Privacy Policy</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <p class="label">Visit us</p>
+      <p class="address">
+        @for (line of clinic.address; track line) {
+          {{ line }}<br />
+        }
+      </p>
+      <p class="phones">
+        ☎
+        @for (phone of clinic.phones; track phone; let last = $last) {
+          <a [href]="'tel:' + phone">{{ phone }}</a>
+          @if (!last) {
+            <span class="dot"> · </span>
+          }
+        }
+      </p>
+    </div>
+  </div>
+
+  <div class="foot-bottom">
+    <div class="wrap foot-bottom-row">
+      <p>© {{ year }} Chest &amp; Allergy Clinic, {{ clinic.city }}. All rights reserved.</p>
+      <p>M.B.B.S. · DNB (Pulmonology) · Fellowship in Respiratory ICU</p>
+    </div>
+  </div>
+</footer>

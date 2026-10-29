@@ -1,61 +1,62 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService, Role, homeFor } from '../../services/auth';
 
+interface RoleCard {
+  role: Role;
+  title: string;
+  text: string;
+  action: string; // link text at the bottom of the card
+  loginPath: string;
+  tone: 'green' | 'blue' | 'red' | 'purple';
+}
+
+// Staff portal: "Who is signing in?" (/welcome)
 @Component({
   selector: 'app-welcome',
   standalone: true,
-  imports: [CommonModule],
-  styleUrl: '../staff-shared.css',
-  template: `
-    <div class="center-page">
-      <img class="logo-img big" src="lungs.jpg" alt="Chest & Allergy Clinic" />
-      <h1 class="hero">Chest &amp; Allergy Clinic</h1>
-      <p class="sub">Who is signing in?</p>
-
-      <div class="role-cards">
-        <button class="role-card" (click)="open('doctor', '/login')">
-          <span class="icon">🩺</span>
-          <b>Doctor</b>
-          <small>{{
-            signedInAs === 'doctor' ? 'Signed in · tap to continue' : 'Username & password'
-          }}</small>
-        </button>
-
-        <button class="role-card" (click)="open('receptionist', '/pin/receptionist')">
-          <span class="icon">📋</span>
-          <b>Receptionist</b>
-          <small>{{
-            signedInAs === 'receptionist'
-              ? 'Signed in · tap to continue'
-              : 'Register patients & manage queue'
-          }}</small>
-        </button>
-
-        <button class="role-card" (click)="open('pharmacist', '/pin/pharmacist')">
-          <span class="icon">💊</span>
-          <b>Pharmacist</b>
-          <small>{{
-            signedInAs === 'pharmacist'
-              ? 'Signed in · tap to continue'
-              : 'Find & print prescriptions'
-          }}</small>
-        </button>
-
-        <button class="role-card" (click)="open('lab', '/pin/lab')">
-          <span class="icon">🧪</span>
-          <b>Lab</b>
-          <small>{{
-            signedInAs === 'lab' ? 'Signed in · tap to continue' : 'Enter test results & reports'
-          }}</small>
-        </button>
-      </div>
-    </div>
-  `,
+  imports: [CommonModule, RouterLink],
+  styleUrl: './welcome.css',
+  templateUrl: './welcome.html',
 })
 export class Welcome implements OnInit {
   signedInAs: Role | null = null;
+
+  readonly cards: RoleCard[] = [
+    {
+      role: 'doctor',
+      title: 'Doctor',
+      text: 'Consult patients, write prescriptions and review history.',
+      action: 'Sign in',
+      loginPath: '/login',
+      tone: 'green',
+    },
+    {
+      role: 'receptionist',
+      title: 'Receptionist',
+      text: 'Register patients and manage the daily queue.',
+      action: 'Open desk',
+      loginPath: '/pin/receptionist',
+      tone: 'blue',
+    },
+    {
+      role: 'pharmacist',
+      title: 'Pharmacist',
+      text: 'Find and print prescriptions for dispensing.',
+      action: 'Open pharmacy',
+      loginPath: '/pin/pharmacist',
+      tone: 'red',
+    },
+    {
+      role: 'lab',
+      title: 'Lab',
+      text: 'Enter test results and upload reports.',
+      action: 'Open lab',
+      loginPath: '/pin/lab',
+      tone: 'purple',
+    },
+  ];
 
   constructor(
     private router: Router,
@@ -71,7 +72,7 @@ export class Welcome implements OnInit {
   }
 
   // Already signed in as that role: go straight in. Otherwise: go to its login.
-  open(role: Role, loginPath: string): void {
-    this.router.navigate([this.signedInAs === role ? homeFor(role) : loginPath]);
+  open(card: RoleCard): void {
+    this.router.navigate([this.signedInAs === card.role ? homeFor(card.role) : card.loginPath]);
   }
 }

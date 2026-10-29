@@ -1,0 +1,92 @@
+<header class="topbar">
+  <div class="brand">
+    <img class="logo-img sm" src="lungs.jpg" alt="" />
+    <div><b>Chest &amp; Allergy Clinic</b><small>Staff access</small></div>
+  </div>
+  <div class="who">
+    <button class="ghost" (click)="back()">← Back to dashboard</button>
+  </div>
+</header>
+
+<main class="page narrow">
+  <div class="card">
+    <h2>Add a staff member</h2>
+    <small>
+      Each person gets their own 4-digit PIN. Tell them the PIN yourself. When someone
+      leaves, remove them and their access stops immediately.
+    </small>
+
+    <div class="row">
+      <label>
+        Name
+        <input
+          [(ngModel)]="newName"
+          placeholder="e.g. Sudhakar"
+          maxlength="60"
+          autocomplete="off"
+        />
+      </label>
+      <label>
+        Role
+        <select [(ngModel)]="newRole">
+          <option value="receptionist">Receptionist</option>
+          <option value="pharmacist">Pharmacist</option>
+          <option value="lab">Lab</option>
+        </select>
+      </label>
+    </div>
+
+    <label>
+      4-digit PIN
+      <input
+        [ngModel]="newPin"
+        (ngModelChange)="newPin = digits($event)"
+        inputmode="numeric"
+        maxlength="4"
+        placeholder="1234"
+        autocomplete="off"
+      />
+    </label>
+
+    <p class="error" *ngIf="addError">{{ addError }}</p>
+    <button class="btn" (click)="add()" [disabled]="busy">Add</button>
+  </div>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <div class="card" *ngFor="let group of groups">
+    <h2>{{ group.title }}</h2>
+    <p class="empty" *ngIf="!group.people.length">No one added yet</p>
+
+    <div class="hit" *ngFor="let person of group.people; trackBy: trackById">
+      <div class="hit-info">
+        <b>{{ person.name }}</b>
+        <small>Added {{ person.createdAt | date: 'd MMM yyyy' }}</small>
+
+        <div class="inline" *ngIf="editing === person._id">
+          <input [(ngModel)]="editName" placeholder="Name" maxlength="60" />
+          <input
+            [ngModel]="editPin"
+            (ngModelChange)="editPin = digits($event)"
+            inputmode="numeric"
+            maxlength="4"
+            placeholder="New PIN (optional)"
+            autocomplete="off"
+          />
+        </div>
+        <p class="error" *ngIf="editing === person._id && editError">{{ editError }}</p>
+      </div>
+
+      <div class="person-actions">
+        <ng-container *ngIf="editing !== person._id">
+          <button class="ghost" (click)="startEdit(person)">Edit / New PIN</button>
+          <button class="ghost" (click)="remove(person)">Remove</button>
+        </ng-container>
+        <ng-container *ngIf="editing === person._id">
+          <button class="btn sm" (click)="saveEdit(person)" [disabled]="busy">Save</button>
+          <button class="ghost" (click)="editing = ''">Cancel</button>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</main>

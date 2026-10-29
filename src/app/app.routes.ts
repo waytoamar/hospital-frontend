@@ -4,7 +4,16 @@ import { roleGuard } from './guards/role-guard';
 // Each page is downloaded only when someone opens it, so the receptionist's / pharmacist's
 // phone does not download the doctor's screens (and the Excel library) it never uses.
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'welcome' },
+  // Public website: Home and About Us. Staff sign in from /welcome.
+  {
+    path: '',
+    pathMatch: 'full',
+    loadComponent: () => import('./components/site/home/home').then((m) => m.Home),
+  },
+  {
+    path: 'about',
+    loadComponent: () => import('./components/site/about/about').then((m) => m.About),
+  },
   {
     path: 'welcome',
     loadComponent: () => import('./components/welcome/welcome').then((m) => m.Welcome),
@@ -51,6 +60,11 @@ export const routes: Routes = [
     canActivate: [roleGuard('doctor')],
     loadComponent: () =>
       import('./components/staff-manager/staff-manager').then((m) => m.StaffManager),
+  },
+  {
+    // Public (no login). Meta needs this link for WhatsApp Business.
+    path: 'privacy',
+    loadComponent: () => import('./components/privacy/privacy').then((m) => m.Privacy),
   },
   { path: '**', redirectTo: 'welcome' },
 ];

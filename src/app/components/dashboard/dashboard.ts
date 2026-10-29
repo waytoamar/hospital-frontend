@@ -16,8 +16,10 @@ import {
   Vitals,
 } from '../../services/visit';
 import { ExcelExportService } from '../../excel-export.service';
+import { Holidays } from '../holidays/holidays';
 import {
   isPreprintedPaper,
+  prescriptionPdfBase64,
   printPrescription,
   setPreprintedPaper,
 } from '../../services/prescription-print';
@@ -107,7 +109,7 @@ interface BoardPanel {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Holidays],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -126,6 +128,12 @@ export class Dashboard implements OnInit, OnDestroy {
   selectedQueueVisit: Visit | null = null;
   selectedQueuePanel: PanelKey = 'waiting';
   queueBusy = false;
+
+  // WhatsApp: send the prescription PDF to the patient when the visit is completed
+  waPrescription = false;
+  waNotice = '';
+  waNoticeError = false;
+  private waNoticeTimer: ReturnType<typeof setTimeout> | null = null;
   prefilledFrom = '';
 
   @ViewChild('queueStage') private queueStage?: ElementRef<HTMLElement>;
@@ -378,6 +386,10 @@ readonly timingOptions = [
   ngOnInit(): void {
     this.loadVisits();
     this.loadSummary();
+    this.visitService.whatsappFeatures().subscribe({
+      next: (features) => (this.waPrescription = !!features.prescription),
+      error: () => (this.waPrescription = false), // WhatsApp not set up
+    });
     this.pulseTimer = setInterval(() => this.checkForChanges(), 10000);
 
     this.clockTimer = setInterval(() => {
@@ -391,6 +403,9 @@ readonly timingOptions = [
     }
     if (this.pulseTimer) {
       clearInterval(this.pulseTimer);
+    }
+    if (this.waNoticeTimer) {
+      clearTimeout(this.waNoticeTimer);
     }
   }
 
@@ -709,6 +724,7 @@ readonly timingOptions = [
 
         if (nextStatus === 'Completed') {
           this.selectedQueuePanel = 'done';
+          this.sendPrescriptionOnWhatsApp(updatedVisit);
           return;
         }
 
@@ -1075,12 +1091,17 @@ readonly timingOptions = [
       : this.visitService.addVisit(visit);
 
     request.subscribe({
-      next: () => {
+      next: (saved) => {
         localStorage.removeItem(this.draftKey);
         this.formOpen = false;
         this.clearForm();
         this.refreshVisits();
         this.loadNextPatientId();
+        // Saved with status "Completed" from the form: send the prescription too
+        // (the backend makes sure it is sent only once per visit)
+        if (saved?.status === 'Completed') {
+          this.sendPrescriptionOnWhatsApp(saved);
+        }
       },
       error: (error) => alert(error?.error?.message || 'Visit could not be saved.'),
     });
@@ -1125,9 +1146,38 @@ readonly timingOptions = [
         if (this.selectedQueueVisit?._id === visit._id) {
           this.selectedQueueVisit = visit;
         }
+        if (status === 'Completed') {
+          this.sendPrescriptionOnWhatsApp(updatedVisit);
+        }
       },
       error: () => alert('Status could not be updated.'),
     });
+  }
+
+  // Runs in the background after "Complete": makes the PDF and the backend sends it on WhatsApp.
+  // Only when medicines were written, so an empty prescription is never sent.
+  private async sendPrescriptionOnWhatsApp(visit: Visit): Promise<void> {
+    if (!this.waPrescription || !visit._id || !(visit.medicines || []).length) {
+      return;
+    }
+    const id = visit._id;
+    try {
+      const pdf = await prescriptionPdfBase64(visit);
+      this.visitService.sendPrescriptionPdf(id, pdf).subscribe({
+        next: (result) => this.showWaNotice(result.message, !result.sent),
+        error: (err) =>
+          this.showWaNotice(err?.error?.message || 'Prescription could not be sent on WhatsApp', true),
+      });
+    } catch (error) {
+      this.showWaNotice((error as Error).message || 'Prescription PDF could not be made', true);
+    }
+  }
+
+  private showWaNotice(message: string, isError: boolean): void {
+    this.waNotice = message;
+    this.waNoticeError = isError;
+    if (this.waNoticeTimer) clearTimeout(this.waNoticeTimer);
+    this.waNoticeTimer = setTimeout(() => (this.waNotice = ''), 6000);
   }
 
   toggleExam(key: ExamCheckKey): void {

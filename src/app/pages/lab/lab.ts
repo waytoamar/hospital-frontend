@@ -12,6 +12,13 @@ const API = API_BASE;
 
 type DoneVisit = Visit & { labReadyAt?: string };
 
+// Same as the backend: after this many days without reports a patient leaves the lab list
+const LAB_PENDING_DAYS = 10;
+
+// Date on this computer as YYYY-MM-DD (what <input type="date"> uses)
+const dayStr = (date: Date) => date.toLocaleDateString('en-CA');
+const daysAgo = (n: number) => dayStr(new Date(Date.now() - n * 24 * 60 * 60 * 1000));
+
 interface LabCard {
   visit: Visit;
   results: LabResult[];
@@ -25,184 +32,7 @@ interface LabCard {
   standalone: true,
   imports: [CommonModule, FormsModule],
   styleUrl: './lab.css',
-  template: `
-    <div class="desk-banner"><span class="ico">🧪</span> Lab Desk</div>
-
-    <header class="topbar">
-      <div class="brand">
-        <img class="logo-img" src="lungs.jpg" alt="" />
-        <div><b>Chest &amp; Allergy Clinic</b><small>Lab Desk</small></div>
-      </div>
-      <label class="search">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        >
-          <circle cx="11" cy="11" r="7"></circle>
-          <path d="M20 20l-3.5-3.5"></path>
-        </svg>
-        <input placeholder="Search token, patient name or phone…" [(ngModel)]="search" />
-      </label>
-
-      <div class="who">
-        <b>{{ name }}</b>
-        <button class="logout" (click)="logout()">Logout ⇥</button>
-      </div>
-    </header>
-
-    <main class="page">
-      <div class="head">
-        <div>
-          <p class="date">{{ now | date: 'EEEE, d MMMM' }}</p>
-          <h1>
-            Lab Investigations <span class="count">{{ cards.length }}</span>
-          </h1>
-          <p class="lead">
-            Patients sent by the doctor for tests. Enter results, add report photos, then press
-            "Reports ready".
-          </p>
-        </div>
-      </div>
-
-      <div class="tabs">
-        <button [class.active]="tab === 'pending'" (click)="tab = 'pending'">
-          Pending <span class="n">{{ cards.length }}</span>
-        </button>
-        <button [class.active]="tab === 'completed'" (click)="tab = 'completed'">
-          Completed <span class="n">{{ completed.length }}</span>
-        </button>
-      </div>
-
-      <p class="error" *ngIf="error">{{ error }}</p>
-
-      <!-- COMPLETED -->
-      <ng-container *ngIf="tab === 'completed'">
-        <p class="empty" *ngIf="!shownCompleted.length">
-          {{ searching ? 'No matching patient' : 'No completed reports yet today' }}
-        </p>
-
-        <section class="card done" *ngFor="let v of shownCompleted; trackBy: trackDone">
-          <div class="card-head">
-            <span class="tok">{{ v.token || '—' }}</span>
-            <div class="who-pt">
-              <b>{{ v.patientName }}</b>
-              <small>{{ v.age }} · {{ v.gender }} · {{ v.phone }}</small>
-            </div>
-            <span class="since ok"
-              >✓ Reports ready{{
-                v.labReadyAt ? ' · ' + (v.labReadyAt | date: 'shortTime') : ''
-              }}</span
-            >
-          </div>
-
-          <p class="ordered"><b>Doctor ordered:</b> {{ v.labInvestigations || '—' }}</p>
-
-          <div class="res" *ngIf="v.labResults?.length">
-            <div class="r-head">
-              <span>Test</span><span>Result</span><span>Normal range</span><span>Status</span>
-            </div>
-            <div class="r-row" *ngFor="let r of v.labResults">
-              <span>{{ r.name }}</span>
-              <span [class.bad]="abnormal(r)">{{ r.result || '—' }}</span>
-              <span>{{ r.range || '—' }}</span>
-              <span class="st" [class.ok]="r.done">{{ r.done ? '✓ Done' : '… Pending' }}</span>
-            </div>
-          </div>
-
-          <div class="photos" *ngIf="v.labPhotos?.length">
-            <div class="ph" *ngFor="let p of v.labPhotos">
-              <img [src]="p.data" alt="Report photo" (click)="view = p.data" />
-            </div>
-          </div>
-        </section>
-      </ng-container>
-
-      <!-- PENDING -->
-      <p class="empty" *ngIf="tab === 'pending' && !shownCards.length && !loading">
-        {{ searching ? 'No matching patient' : 'No patients waiting for tests 🎉' }}
-      </p>
-
-      <ng-container *ngIf="tab === 'pending'">
-        <section class="card" *ngFor="let c of shownCards; trackBy: trackById">
-          <div class="card-head">
-            <span class="tok">{{ c.visit.token || '—' }}</span>
-            <div class="who-pt">
-              <b>{{ c.visit.patientName }}</b>
-              <small>{{ c.visit.age }} · {{ c.visit.gender }} · {{ c.visit.phone }}</small>
-            </div>
-            <span class="since" [class.late]="minutes(c.visit) >= 45"
-              >⏱ Sent to lab {{ ago(c.visit) }}</span
-            >
-          </div>
-
-          <p class="ordered"><b>Doctor ordered:</b> {{ c.visit.labInvestigations || '—' }}</p>
-
-          <div class="tests">
-            <div class="t-head">
-              <span>Test</span><span>Result</span><span>Normal range</span><span>Status</span
-              ><span></span>
-            </div>
-            <div class="t-row" *ngFor="let r of c.results; let i = index">
-              <input [(ngModel)]="r.name" (ngModelChange)="touch(c)" placeholder="Test name" />
-              <input
-                [(ngModel)]="r.result"
-                (ngModelChange)="touch(c)"
-                placeholder="Result"
-                [class.bad]="abnormal(r)"
-              />
-              <input [(ngModel)]="r.range" (ngModelChange)="touch(c)" placeholder="e.g. 4-11" />
-              <button class="chip" [class.done]="r.done" (click)="r.done = !r.done; touch(c)">
-                {{ r.done ? '✓ Done' : '… Pending' }}
-              </button>
-              <button class="x" (click)="c.results.splice(i, 1); touch(c)" aria-label="Remove test">
-                ✕
-              </button>
-            </div>
-            <button
-              class="add"
-              (click)="c.results.push({ name: '', result: '', range: '', done: false }); touch(c)"
-            >
-              ＋ Add test
-            </button>
-          </div>
-
-          <div class="photos">
-            <div class="ph" *ngFor="let p of c.visit.labPhotos || []">
-              <img [src]="p.data" alt="Report photo" (click)="view = p.data" />
-              <button class="x" (click)="deletePhoto(c, p._id)" aria-label="Delete photo">✕</button>
-            </div>
-            <label class="ph add-ph" *ngIf="(c.visit.labPhotos?.length || 0) < 8">
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                multiple
-                hidden
-                (change)="addPhotos(c, $event)"
-              />
-              <span>📷<br />Add report photo</span>
-            </label>
-          </div>
-
-          <footer>
-            <span class="msg" [class.err]="c.message.startsWith('⚠')">{{ c.message }}</span>
-            <span class="progress">{{ doneCount(c) }}/{{ c.results.length }} done</span>
-            <button class="ghost" [disabled]="c.busy" (click)="save(c)">Save</button>
-            <button class="go" [disabled]="c.busy" (click)="ready(c)">✓ Reports ready</button>
-          </footer>
-        </section>
-      </ng-container>
-    </main>
-
-    <div class="viewer" *ngIf="view" (click)="view = null">
-      <img [src]="view" alt="Report photo" />
-    </div>
-  `,
+  templateUrl: './lab.html',
 })
 export class Lab implements OnInit, OnDestroy {
   tab: 'pending' | 'completed' = 'pending';
@@ -214,6 +44,55 @@ export class Lab implements OnInit, OnDestroy {
   search = '';
   view: string | null = null;
   private timer?: ReturnType<typeof setInterval>;
+
+  // From / To dates. Pending: when sent to the lab (default: the last 10 days).
+  // Completed: when the reports were made ready (default: today).
+  readonly today = dayStr(new Date());
+  private range = {
+    pending: { from: daysAgo(LAB_PENDING_DAYS - 1), to: this.today },
+    completed: { from: this.today, to: this.today },
+  };
+  rangeError = '';
+
+  get from(): string {
+    return this.range[this.tab].from;
+  }
+  set from(value: string) {
+    this.range[this.tab].from = value;
+    this.rangeChanged();
+  }
+  get to(): string {
+    return this.range[this.tab].to;
+  }
+  set to(value: string) {
+    this.range[this.tab].to = value;
+    this.rangeChanged();
+  }
+
+  private rangeChanged(): void {
+    const { from, to } = this.range[this.tab];
+    this.rangeError = from && to && to < from ? "'To' date must be after 'From' date" : '';
+    if (!this.rangeError && this.tab === 'completed') this.loadCompleted();
+  }
+
+  // Back to the default dates of the open tab
+  resetRange(): void {
+    this.range.pending = { from: daysAgo(LAB_PENDING_DAYS - 1), to: this.today };
+    this.range.completed = { from: this.today, to: this.today };
+    this.rangeError = '';
+    this.loadCompleted();
+  }
+
+  // Day the patient was sent to the lab (YYYY-MM-DD)
+  private sentDay(v: Visit): string {
+    return dayStr(new Date(v.labSentAt || v.updatedAt || v.visitDate || Date.now()));
+  }
+
+  private inRange(v: Visit): boolean {
+    const { from, to } = this.range.pending;
+    const day = this.sentDay(v);
+    return (!from || day >= from) && (!to || day <= to);
+  }
 
   constructor(
     private api: LabService,
@@ -241,7 +120,7 @@ export class Lab implements OnInit, OnDestroy {
   }
 
   get shownCards(): LabCard[] {
-    return this.cards.filter((c) => this.matches(c.visit));
+    return this.cards.filter((c) => this.matches(c.visit) && this.inRange(c.visit));
   }
 
   get shownCompleted(): DoneVisit[] {
@@ -292,12 +171,19 @@ export class Lab implements OnInit, OnDestroy {
   }
 
   private loadCompleted(): void {
-    this.http.get<DoneVisit[]>(`${API}/lab/completed`, { withCredentials: true }).subscribe({
-      next: (list) => (this.completed = list),
-      error: (err) => {
-        if (err.status === 401 || err.status === 403) this.router.navigate(['/welcome']);
-      },
-    });
+    const { from, to } = this.range.completed;
+    if (from && to && to < from) return;
+    this.http
+      .get<DoneVisit[]>(`${API}/lab/completed`, {
+        withCredentials: true,
+        params: { from: from || this.today, to: to || from || this.today },
+      })
+      .subscribe({
+        next: (list) => (this.completed = list),
+        error: (err) => {
+          if (err.status === 401 || err.status === 403) this.router.navigate(['/welcome']);
+        },
+      });
   }
 
   private refresh(): void {

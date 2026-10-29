@@ -1,0 +1,26 @@
+<div class="center-page">
+  <div class="pin-card">
+    <img class="logo-img" src="lungs.jpg" alt="Chest & Allergy Clinic" />
+    <h1 class="title">{{ roleTitle }}</h1>
+    <p class="sub">Enter your 4-digit PIN</p>
+
+    <div class="dots">
+      <span *ngFor="let i of [0, 1, 2, 3]" [class.on]="i < pin.length"></span>
+    </div>
+    <p class="error" *ngIf="error">{{ error }}</p>
+
+    <div class="pad">
+      <button
+        *ngFor="let key of keys"
+        class="key"
+        [class.blank]="key === ''"
+        [disabled]="busy || key === ''"
+        (click)="press(key)"
+      >
+        {{ key }}
+      </button>
+    </div>
+
+    <a class="link" routerLink="/welcome">← Back</a>
+  </div>
+</div>

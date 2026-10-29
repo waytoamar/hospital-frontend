@@ -1,0 +1,60 @@
+<main class="portal">
+  <img class="logo" src="lungs.jpg" alt="Chest & Allergy Clinic" />
+  <p class="badge"><span class="live-dot"></span>Staff portal</p>
+  <h1>Chest &amp; <span class="grad">Allergy Clinic</span></h1>
+  <p class="sub">Welcome back. Who is signing in?</p>
+
+  <div class="cards">
+    @for (card of cards; track card.role) {
+      <button type="button" [class]="'card ' + card.tone" (click)="open(card)">
+        <span class="icon">
+          @switch (card.role) {
+            @case ('doctor') {
+              <!-- stethoscope -->
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 3v5a5 5 0 0 0 10 0V3" />
+                <path d="M11 13v2a5 5 0 0 0 10 0v-1" />
+                <circle cx="21" cy="12" r="2" />
+              </svg>
+            }
+            @case ('receptionist') {
+              <!-- clipboard -->
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="5" y="4" width="14" height="17" rx="2" />
+                <path d="M9 4h6v3H9z" />
+                <path d="M9 12h6M9 16h4" />
+              </svg>
+            }
+            @case ('pharmacist') {
+              <!-- pill -->
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="2.5" y="8.5" width="19" height="7" rx="3.5" transform="rotate(-45 12 12)" />
+                <path d="M8.5 8.5l7 7" />
+              </svg>
+            }
+            @case ('lab') {
+              <!-- flask -->
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3" />
+                <path d="M7.5 15h9" />
+              </svg>
+            }
+          }
+        </span>
+        <b class="title">{{ card.title }}</b>
+        <span class="text">{{ card.text }}</span>
+        <span class="action">
+          {{ signedInAs === card.role ? 'Continue' : card.action }} →
+        </span>
+        @if (signedInAs === card.role) {
+          <span class="signed">● Signed in</span>
+        }
+      </button>
+    }
+  </div>
+
+  <p class="bottom-links">
+    <a routerLink="/">← Clinic website</a>
+    <a routerLink="/privacy">Privacy Policy</a>
+  </p>
+</main>

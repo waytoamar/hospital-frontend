@@ -1,0 +1,29 @@
+<app-site-shell>
+  <section class="about">
+    <p class="eyebrow">About Us</p>
+    <h1>{{ clinic.doctor }}</h1>
+    <p class="lead">
+      Chest &amp; Allergy Clinic provides complete care for lung and chest diseases — asthma, COPD,
+      ILD, pneumonia, TB, cough, allergy, sleep problems — along with BP, sugar, thyroid and heart
+      care.
+    </p>
+
+    <div class="card">
+      <h2>Qualifications &amp; experience</h2>
+      <ul>
+        @for (c of credentials; track c) {
+          <li><span class="dot">●</span>{{ c }}</li>
+        }
+      </ul>
+    </div>
+
+    <div class="card book">
+      <h2>Call to book</h2>
+      <div class="phones">
+        @for (phone of clinic.phones; track phone) {
+          <a [href]="'tel:' + phone">📞 {{ phone }}</a>
+        }
+      </div>
+    </div>
+  </section>
+</app-site-shell>

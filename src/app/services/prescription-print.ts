@@ -61,7 +61,9 @@ export function setPreprintedPaper(on: boolean): void {
   }
 }
 
-export function printPrescription(visit: Visit): void {
+// The prescription page (A4) as HTML. Used by the Print button and by the WhatsApp PDF.
+// forPdf: always include the digital letterhead (the pre-printed paper setting is only for printing).
+function prescriptionHtml(visit: Visit, forPdf = false): string {
   const escapeHtml = (value: unknown): string =>
     String(value || '').replace(
       /[&<>"']/g,
@@ -241,17 +243,11 @@ export function printPrescription(visit: Visit): void {
     ? `<p class="follow"><b>Follow-up date:</b> ${escapeHtml(formatDate(visit.followUpDate))}</p>`
     : '';
 
-  const preprinted = isPreprintedPaper();
+  const preprinted = forPdf ? false : isPreprintedPaper();
 
   const visitDate = visit.visitDate ? new Date(visit.visitDate).toLocaleDateString('en-IN') : '';
 
-  const printWindow = window.open('', '_blank', 'width=900,height=900');
-
-  if (!printWindow) {
-    return;
-  }
-
-  printWindow.document.write(`
+  return `
       <html>
         <head>
           <meta charset="utf-8" />
@@ -499,22 +495,88 @@ export function printPrescription(visit: Visit): void {
           </div>
         </body>
       </html>
-    `);
+    `;
+}
 
+// Shrink the text area a little (only if needed) so everything fits on ONE A4 page
+function fitToOnePage(doc: Document): void {
+  const page = doc.querySelector('.page') as HTMLElement | null;
+  const main = doc.querySelector('.main') as HTMLElement | null;
+  if (page && main) {
+    const maxHeight = (296 / 25.4) * 96; // 296 mm in CSS pixels
+    let zoom = 1;
+    while (page.getBoundingClientRect().height > maxHeight && zoom > 0.5) {
+      zoom = Math.round((zoom - 0.02) * 100) / 100;
+      main.style.setProperty('zoom', String(zoom));
+    }
+  }
+}
+
+export function printPrescription(visit: Visit): void {
+  const printWindow = window.open('', '_blank', 'width=900,height=900');
+
+  if (!printWindow) {
+    return;
+  }
+
+  printWindow.document.write(prescriptionHtml(visit));
   printWindow.document.close();
 
   setTimeout(() => {
-    // Shrink the text area a little (only if needed) so everything fits on ONE A4 page
-    const page = printWindow.document.querySelector('.page') as HTMLElement | null;
-    const main = printWindow.document.querySelector('.main') as HTMLElement | null;
-    if (page && main) {
-      const maxHeight = (296 / 25.4) * 96; // 296 mm in CSS pixels
-      let zoom = 1;
-      while (page.getBoundingClientRect().height > maxHeight && zoom > 0.5) {
-        zoom = Math.round((zoom - 0.02) * 100) / 100;
-        main.style.setProperty('zoom', String(zoom));
-      }
-    }
+    fitToOnePage(printWindow.document);
     printWindow.print();
   }, 500);
+}
+
+// ---- Prescription as a PDF file (sent to the patient on WhatsApp) ----
+
+// html2pdf.js turns the page into a PDF inside the browser. It is loaded only when needed.
+const HTML2PDF_URL = 'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js';
+
+// Returns the PDF as base64 text. The page is built in a hidden frame,
+// so its styles never mix with the doctor's screen.
+export async function prescriptionPdfBase64(visit: Visit): Promise<string> {
+  const frame = document.createElement('iframe');
+  frame.setAttribute('aria-hidden', 'true');
+  frame.style.cssText = 'position:fixed;left:-10000px;top:0;width:794px;height:1123px;border:0;';
+  document.body.appendChild(frame);
+
+  try {
+    const win = frame.contentWindow as (Window & { html2pdf?: any }) | null;
+    const doc = frame.contentDocument;
+    if (!win || !doc) throw new Error('Could not prepare the prescription');
+
+    doc.open();
+    doc.write(prescriptionHtml(visit, true));
+    doc.close();
+
+    await new Promise<void>((resolve, reject) => {
+      const script = doc.createElement('script');
+      script.src = HTML2PDF_URL;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Could not load the PDF tool (check the internet)'));
+      doc.head.appendChild(script);
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 300)); // let images and fonts settle
+    fitToOnePage(doc);
+
+    const name = String(visit.patientName || 'patient').replace(/[^a-z0-9]+/gi, '_');
+    const dataUri: string = await win
+      .html2pdf!()
+      .set({
+        margin: 0,
+        filename: `Prescription_${name}.pdf`,
+        image: { type: 'jpeg', quality: 0.9 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all'] },
+      })
+      .from(doc.querySelector('.page') || doc.body)
+      .outputPdf('datauristring');
+
+    return dataUri.slice(dataUri.indexOf(',') + 1);
+  } finally {
+    frame.remove();
+  }
 }
