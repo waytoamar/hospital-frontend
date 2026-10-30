@@ -6,10 +6,8 @@ import { AuthService } from '../../services/auth';
 import { Medicine, Visit } from '../../services/visit';
 import { PharmacyService } from '../../services/staff';
 import {
-  hasReferral,
   isPreprintedPaper,
   printPrescription,
-  printReferral,
   setPreprintedPaper,
 } from '../../services/prescription-print';
 
@@ -141,7 +139,9 @@ export class Pharmacy implements OnInit, OnDestroy {
         this.rows = rows;
         this.updated = new Date();
         this.now = new Date();
-        if (!term && this.tab === 'today') this.todayCount = rows.length;
+        if (!term && this.tab === 'today') {
+          this.todayCount = rows.filter((v) => v.status === 'Completed').length;
+        }
       },
       error: (err) => {
         this.loading = false;
@@ -159,15 +159,14 @@ export class Pharmacy implements OnInit, OnDestroy {
     setPreprintedPaper(this.preprintedPaper);
   }
 
+  // Patient sent for tests (MRI, scan, lab) — visit not completed yet
+  isLab(visit: Visit): boolean {
+    return visit.status === 'Lab investigation';
+  }
+
   // Opens the full prescription paper (same as the doctor's) and starts printing
   print(visit: Visit): void {
     printPrescription(visit);
-  }
-
-  // Referral letter to another specialist
-  readonly hasReferral = hasReferral;
-  printReferralFor(visit: Visit): void {
-    printReferral(visit);
   }
 
   logout(): void {

@@ -62,20 +62,6 @@ export interface Comorbidities {
   alcoholic?: YesNo;
 }
 
-export interface Referral {
-  specialty: string; // e.g. Cardiologist
-  to: string; // doctor / hospital (optional)
-  reason: string; // e.g. MRI Brain, chest pain evaluation
-  notes: string; // clinical details for them (optional)
-}
-
-export interface OutsideReport {
-  _id: string;
-  title?: string;
-  data: string; // link to the photo
-  uploadedAt?: string;
-}
-
 export interface Visit {
   _id?: string;
   patientId?: string;
@@ -91,10 +77,6 @@ export interface Visit {
   examination?: Examination;
   comorbidities?: Comorbidities;
   labInvestigations?: string;
-  // Referrals to other specialists outside the clinic (Cardiologist, Radiologist, Surgeon ...)
-  referrals?: Referral[];
-  // Photos of reports the patient brought from outside (MRI, CT, other hospital)
-  outsideReports?: OutsideReport[];
   labResults?: LabResult[];
   labPhotos?: LabPhoto[];
   labSentAt?: string;
@@ -188,31 +170,6 @@ export class VisitService {
   // Is "send prescription on WhatsApp" switched on in the backend? (404 = WhatsApp not set up)
   whatsappFeatures() {
     return this.http.get<{ prescription: boolean }>(`${API_BASE}/whatsapp/features`);
-  }
-
-  // pdf: all referral letters of the visit as one PDF (base64 text)
-  sendReferralPdf(id: string, pdf: string) {
-    return this.http.post<{ sent: boolean; message: string }>(
-      `${this.url}/${id}/referral-pdf`,
-      { pdf },
-      this.options,
-    );
-  }
-
-  // Outside report photo (compressed JPEG data URL). Returns the visit's outside reports.
-  addOutsideReport(id: string, data: string, title: string) {
-    return this.http.post<OutsideReport[]>(
-      `${this.url}/${id}/outside-reports`,
-      { data, title },
-      this.options,
-    );
-  }
-
-  deleteOutsideReport(id: string, photoId: string) {
-    return this.http.delete<OutsideReport[]>(
-      `${this.url}/${id}/outside-reports/${photoId}`,
-      this.options,
-    );
   }
 
   // pdf: the prescription PDF as base64 text

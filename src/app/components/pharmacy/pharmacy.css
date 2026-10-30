@@ -533,3 +533,10 @@ h1 {
     width: 100%;
   }
 }
+
+.c-status.lab {
+  color: #6d4fd8;
+}
+.c-status.lab i {
+  background: #7a5af0;
+}

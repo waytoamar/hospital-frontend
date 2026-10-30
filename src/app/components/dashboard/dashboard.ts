@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { isAbnormal } from '../../services/visit';
@@ -11,8 +10,6 @@ import {
   Comorbidities,
   Examination,
   Medicine,
-  OutsideReport,
-  Referral,
   Visit,
   VisitService,
   VisitStatus,
@@ -22,10 +19,8 @@ import { ExcelExportService } from '../../excel-export.service';
 import { Holidays } from '../holidays/holidays';
 import {
   isPreprintedPaper,
-  hasReferral,
   prescriptionPdfBase64,
   printPrescription,
-  printReferral,
   setPreprintedPaper,
 } from '../../services/prescription-print';
 
@@ -174,30 +169,6 @@ export class Dashboard implements OnInit, OnDestroy {
   examination: ExamForm = this.emptyExamination();
   comorbidities: ComorbidityForm = this.emptyComorbidities();
   labInvestigations = '';
-  // Referrals to specialists outside the clinic (each one prints as its own letter)
-  referrals: Referral[] = [this.emptyReferral()];
-  // Photos of reports the patient brought from outside (MRI, CT, other hospital)
-  outsideReports: OutsideReport[] = [];
-  outsideTitle = '';
-  outsideBusy = false;
-  outsideMessage = '';
-  readonly referralSpecialties = [
-    'Radiologist (MRI / CT / USG)',
-    'General Physician (Medicine)',
-    'General Surgeon',
-    'Cardiologist',
-    'Neurologist',
-    'Gastroenterologist',
-    'Nephrologist',
-    'Endocrinologist',
-    'Orthopaedic Surgeon',
-    'ENT Surgeon',
-    'Gynaecologist',
-    'Paediatrician',
-    'Oncologist',
-    'Psychiatrist',
-    'Thoracic Surgeon',
-  ];
   comments = '';
   medicines: Medicine[] = [this.emptyMedicine()];
   followUpDate = '';
@@ -1093,46 +1064,9 @@ readonly timingOptions = [
       return;
     }
 
-    const visit = this.formVisit();
-
-    const request = this.editingId
-      ? this.visitService.updateVisit(this.editingId, visit)
-      : this.visitService.addVisit(visit);
-
-    request.subscribe({
-      next: (saved) => {
-        localStorage.removeItem(this.draftKey);
-        this.formOpen = false;
-        this.clearForm();
-        this.refreshVisits();
-        this.loadNextPatientId();
-        // Prescription goes on WhatsApp when saved as "Completed"; referral letters go as soon
-        // as the visit has referrals (patient needs them at the scan centre before coming back).
-        // The backend makes sure each one is sent only once per visit.
-        if (saved) {
-          this.sendPrescriptionOnWhatsApp(saved);
-        }
-      },
-      error: (error) => alert(error?.error?.message || 'Visit could not be saved.'),
-    });
-  }
-
-  // Referral letter straight from the form, before the visit is completed
-  // (patient goes for MRI / to another doctor and comes back later)
-  printReferralFromForm(): void {
-    if (!this.hasReferralInForm) {
-      alert('Write the specialist or the reason first.');
-      return;
-    }
-    const visit = this.formVisit();
-    printReferral({ ...visit, visitDate: new Date().toISOString() });
-  }
-
-  // The visit as written in the form now
-  private formVisit(): Visit {
     const medicines = this.medicines.filter((medicine) => medicine.name.trim());
 
-    return {
+    const visit: Visit = {
       patientId: this.patientId.trim(),
       phone: this.phone.trim(),
       patientName: this.patientName.trim(),
@@ -1146,19 +1080,31 @@ readonly timingOptions = [
       examination: { ...this.examination },
       comorbidities: { ...this.comorbidities },
       labInvestigations: this.labInvestigations.trim(),
-      referrals: this.referrals
-        .map((r) => ({
-          specialty: r.specialty.trim(),
-          to: r.to.trim(),
-          reason: r.reason.trim(),
-          notes: r.notes.trim(),
-        }))
-        .filter((r) => r.specialty || r.reason),
       comments: this.comments.trim(),
       medicines,
       followUpDate: this.followUpDate || undefined,
       status: this.status,
     };
+
+    const request = this.editingId
+      ? this.visitService.updateVisit(this.editingId, visit)
+      : this.visitService.addVisit(visit);
+
+    request.subscribe({
+      next: (saved) => {
+        localStorage.removeItem(this.draftKey);
+        this.formOpen = false;
+        this.clearForm();
+        this.refreshVisits();
+        this.loadNextPatientId();
+        // Saved with status "Completed" from the form: send the prescription too
+        // (the backend makes sure it is sent only once per visit)
+        if (saved?.status === 'Completed') {
+          this.sendPrescriptionOnWhatsApp(saved);
+        }
+      },
+      error: (error) => alert(error?.error?.message || 'Visit could not be saved.'),
+    });
   }
 
   editVisit(visit: Visit): void {
@@ -1208,133 +1154,23 @@ readonly timingOptions = [
     });
   }
 
-  // Runs in the background after "Complete": makes the PDFs and the backend sends them on WhatsApp.
-  // Prescription only when medicines were written (an empty prescription is never sent).
-  // Referral letters (one PDF, a page per referral) when the visit has referrals.
-  // The backend sends each one only once per visit.
+  // Runs in the background after "Complete": makes the PDF and the backend sends it on WhatsApp.
+  // Only when medicines were written, so an empty prescription is never sent.
   private async sendPrescriptionOnWhatsApp(visit: Visit): Promise<void> {
-    if (!this.waPrescription || !visit._id) {
+    if (!this.waPrescription || !visit._id || !(visit.medicines || []).length) {
       return;
     }
     const id = visit._id;
-    const messages: string[] = [];
-    let failed = false;
-
-    if (visit.status === 'Completed' && (visit.medicines || []).length) {
-      try {
-        const pdf = await prescriptionPdfBase64(visit);
-        const result = await firstValueFrom(this.visitService.sendPrescriptionPdf(id, pdf));
-        messages.push(result.message);
-        failed = failed || !result.sent;
-      } catch (err: any) {
-        messages.push(err?.error?.message || err?.message || 'Prescription could not be sent on WhatsApp');
-        failed = true;
-      }
+    try {
+      const pdf = await prescriptionPdfBase64(visit);
+      this.visitService.sendPrescriptionPdf(id, pdf).subscribe({
+        next: (result) => this.showWaNotice(result.message, !result.sent),
+        error: (err) =>
+          this.showWaNotice(err?.error?.message || 'Prescription could not be sent on WhatsApp', true),
+      });
+    } catch (error) {
+      this.showWaNotice((error as Error).message || 'Prescription PDF could not be made', true);
     }
-
-    if (hasReferral(visit)) {
-      try {
-        const pdf = await prescriptionPdfBase64(visit, 'referral');
-        const result = await firstValueFrom(this.visitService.sendReferralPdf(id, pdf));
-        messages.push(result.message);
-        failed = failed || !result.sent;
-      } catch (err: any) {
-        messages.push(err?.error?.message || err?.message || 'Referral letter could not be sent on WhatsApp');
-        failed = true;
-      }
-    }
-
-    if (messages.length) this.showWaNotice(messages.join(' · '), failed);
-  }
-
-  // ---- Referrals (form) ----
-  private emptyReferral(): Referral {
-    return { specialty: '', to: '', reason: '', notes: '' };
-  }
-
-  addReferral(): void {
-    if (this.referrals.length < 5) this.referrals = [...this.referrals, this.emptyReferral()];
-  }
-
-  removeReferral(index: number): void {
-    this.referrals = this.referrals.filter((_, i) => i !== index);
-    if (!this.referrals.length) this.referrals = [this.emptyReferral()];
-    this.saveDraft();
-  }
-
-  get hasReferralInForm(): boolean {
-    return this.referrals.some((r) => r.specialty.trim() || r.reason.trim());
-  }
-
-  // ---- Outside reports (photos of MRI / CT / other hospital reports) ----
-  async addOutsideReports(event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement;
-    const files = Array.from(input.files || []);
-    input.value = '';
-    if (!files.length || !this.editingId) return;
-
-    const id = this.editingId;
-    this.outsideBusy = true;
-    for (const file of files) {
-      this.outsideMessage = 'Uploading photo…';
-      try {
-        const data = await this.compressPhoto(file);
-        const reports = await firstValueFrom(
-          this.visitService.addOutsideReport(id, data, this.outsideTitle.trim()),
-        );
-        this.setOutsideReports(id, reports);
-        this.outsideMessage = 'Photo added ✓';
-      } catch (err: any) {
-        this.outsideMessage = '⚠ ' + (err?.error?.message || 'Photo could not be uploaded');
-        break;
-      }
-    }
-    this.outsideTitle = '';
-    this.outsideBusy = false;
-  }
-
-  deleteOutsideReport(report: OutsideReport): void {
-    if (!this.editingId || !confirm('Delete this report photo?')) return;
-    const id = this.editingId;
-    this.outsideBusy = true;
-    this.visitService.deleteOutsideReport(id, report._id).subscribe({
-      next: (reports) => {
-        this.setOutsideReports(id, reports);
-        this.outsideBusy = false;
-        this.outsideMessage = '';
-      },
-      error: (err) => {
-        this.outsideBusy = false;
-        this.outsideMessage = '⚠ ' + (err?.error?.message || 'Photo could not be deleted');
-      },
-    });
-  }
-
-  private setOutsideReports(visitId: string, reports: OutsideReport[]): void {
-    if (this.editingId === visitId) this.outsideReports = reports;
-    this.visits = this.visits.map((v) => (v._id === visitId ? { ...v, outsideReports: reports } : v));
-  }
-
-  // Shrinks phone photos (~4 MB) to a readable JPEG (~200-400 KB)
-  private compressPhoto(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const url = URL.createObjectURL(file);
-      const img = new Image();
-      img.onload = () => {
-        const scale = Math.min(1, 1400 / Math.max(img.width, img.height));
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
-        URL.revokeObjectURL(url);
-        resolve(canvas.toDataURL('image/jpeg', 0.75));
-      };
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        reject({ error: { message: 'This file is not a photo' } });
-      };
-      img.src = url;
-    });
   }
 
   private showWaNotice(message: string, isError: boolean): void {
@@ -1509,12 +1345,6 @@ readonly timingOptions = [
   // Same print layout as the pharmacist's page (one shared function)
   printVisit(visit: Visit): void {
     printPrescription(visit);
-  }
-
-  // Referral letter to another specialist
-  readonly hasReferral = hasReferral;
-  printReferralFor(visit: Visit): void {
-    printReferral(visit);
   }
 
   // Every 10 seconds ask the server "did anything change?" (a tiny request).
@@ -1816,11 +1646,6 @@ readonly timingOptions = [
     };
 
     this.labInvestigations = visit.labInvestigations || '';
-    this.referrals = visit.referrals?.length
-      ? visit.referrals.map((r) => ({ ...this.emptyReferral(), ...r }))
-      : [this.emptyReferral()];
-    this.outsideReports = visit.outsideReports || [];
-    this.outsideMessage = '';
 
     this.comments = visit.comments || '';
 
@@ -1851,10 +1676,6 @@ readonly timingOptions = [
     this.examination = this.emptyExamination();
     this.comorbidities = this.emptyComorbidities();
     this.labInvestigations = '';
-    this.referrals = [this.emptyReferral()];
-    this.outsideReports = [];
-    this.outsideTitle = '';
-    this.outsideMessage = '';
     this.comments = '';
     this.medicines = [this.emptyMedicine()];
     this.followUpDate = '';
@@ -1872,7 +1693,6 @@ readonly timingOptions = [
       this.symptoms ||
       this.diagnosis ||
       this.labInvestigations ||
-      this.hasReferralInForm ||
       this.comments ||
       Object.values(this.vitals).some((value) => value) ||
       Object.values(this.examination).some((value) => value) ||
@@ -1902,7 +1722,6 @@ readonly timingOptions = [
         examination: this.examination,
         comorbidities: this.comorbidities,
         labInvestigations: this.labInvestigations,
-        referrals: this.referrals,
         comments: this.comments,
         medicines: this.medicines,
         followUpDate: this.followUpDate,

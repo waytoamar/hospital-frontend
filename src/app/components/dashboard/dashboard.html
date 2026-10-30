@@ -224,19 +224,11 @@
                   </button>
 
                   <button
-                    *ngIf="panel.key === 'done'"
+                    *ngIf="panel.key === 'done' || panel.key === 'lab'"
                     (click)="printVisit(visit); $event.stopPropagation()"
-                    title="Print prescription"
+                    [title]="panel.key === 'lab' ? 'Print the tests for the patient' : 'Print prescription'"
                   >
                     Print ▤
-                  </button>
-
-                  <button
-                    *ngIf="hasReferral(visit)"
-                    (click)="printReferralFor(visit); $event.stopPropagation()"
-                    title="Print referral letter"
-                  >
-                    Referral ▤
                   </button>
                 </div>
               </div>
@@ -524,14 +516,6 @@
                     <button title="Edit" (click)="editVisit(visit)">✎</button>
 
                     <button title="Print" (click)="printVisit(visit)">▤</button>
-
-                    <button
-                      *ngIf="hasReferral(visit)"
-                      title="Print referral letter"
-                      (click)="printReferralFor(visit)"
-                    >
-                      Ref
-                    </button>
 
                     <button class="danger" title="Delete" (click)="deleteVisit(visit._id)">
                       ⌫
@@ -951,113 +935,6 @@
           </span>
         </div>
 
-        <!-- Referrals to specialists outside the clinic (each prints as its own letter) -->
-        <h4 class="sub-head">Refer to another doctor</h4>
-        <div class="referral-card" *ngFor="let ref of referrals; let i = index">
-          <div class="referral-card-head" *ngIf="referrals.length > 1 || ref.specialty || ref.reason">
-            <b>Referral {{ i + 1 }}</b>
-            <button type="button" class="link-btn danger" (click)="removeReferral(i)">✕ Remove</button>
-          </div>
-          <div class="referral-grid">
-            <label>
-              Specialist
-              <input
-                [(ngModel)]="ref.specialty"
-                list="referral-specialties"
-                placeholder="Cardiologist, General Surgeon, Radiologist..."
-                autocomplete="off"
-              />
-            </label>
-            <label>
-              Doctor / hospital name
-              <input
-                [(ngModel)]="ref.to"
-                placeholder="Optional, e.g. Dr. Sharma, City Hospital"
-                autocomplete="off"
-              />
-            </label>
-            <label class="full">
-              Reason for referral
-              <input
-                [(ngModel)]="ref.reason"
-                placeholder="e.g. MRI Brain, chest pain evaluation, surgical opinion"
-                autocomplete="off"
-              />
-            </label>
-            <label class="full">
-              Clinical details for them
-              <textarea
-                [(ngModel)]="ref.notes"
-                rows="2"
-                placeholder="Optional. If empty, the symptoms are printed."
-              ></textarea>
-            </label>
-          </div>
-        </div>
-        <datalist id="referral-specialties">
-          <option *ngFor="let sp of referralSpecialties" [value]="sp"></option>
-        </datalist>
-        <button
-          type="button"
-          class="link-btn"
-          *ngIf="referrals.length < 5"
-          (click)="addReferral()"
-        >
-          + Add another referral
-        </button>
-        <div class="referral-actions" *ngIf="hasReferralInForm">
-          <button type="button" class="upload-btn" (click)="printReferralFromForm()">
-            ▤ Print referral now
-          </button>
-          <p class="referral-hint">
-            Give this to the patient for the scan centre / other doctor. No need to complete the
-            visit: save it as "Lab investigation" and continue when the patient comes back with the
-            report. The letter is also sent on WhatsApp after saving.
-          </p>
-        </div>
-
-        <!-- Photos of reports the patient brought from outside (MRI, CT, other hospital) -->
-        <h4 class="sub-head">Outside reports (MRI / CT / other hospital)</h4>
-        <ng-container *ngIf="editingId; else saveFirst">
-          <div class="outside-upload">
-            <input
-              [(ngModel)]="outsideTitle"
-              placeholder="Name, e.g. MRI Brain, CT Chest (optional)"
-              autocomplete="off"
-            />
-            <label class="upload-btn" [class.disabled]="outsideBusy || outsideReports.length >= 10">
-              📷 Add photo
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                hidden
-                [disabled]="outsideBusy || outsideReports.length >= 10"
-                (change)="addOutsideReports($event)"
-              />
-            </label>
-          </div>
-          <p class="referral-hint" *ngIf="outsideMessage">{{ outsideMessage }}</p>
-          <div class="outside-photos" *ngIf="outsideReports.length">
-            <figure *ngFor="let r of outsideReports">
-              <img [src]="r.data" [alt]="r.title || 'Outside report'" (click)="photoView = r.data" />
-              <figcaption>{{ r.title || 'Report' }}</figcaption>
-              <button
-                type="button"
-                class="photo-del"
-                title="Delete"
-                [disabled]="outsideBusy"
-                (click)="deleteOutsideReport(r)"
-              >
-                ✕
-              </button>
-            </figure>
-          </div>
-        </ng-container>
-        <ng-template #saveFirst>
-          <p class="referral-hint">Save the visit first, then open it again to add report photos.</p>
-        </ng-template>
-
         <!-- 5. Diagnosis -->
         <h4 class="sub-head">Diagnosis</h4>
 
@@ -1352,24 +1229,10 @@
           </div>
         </div>
 
-        <div class="lab-box" *ngIf="visit.outsideReports?.length">
-          <p class="lab-title">📁 Outside reports</p>
-          <div class="outside-photos">
-            <figure *ngFor="let r of visit.outsideReports">
-              <img [src]="r.data" [alt]="r.title || 'Outside report'" (click)="photoView = r.data" />
-              <figcaption>{{ r.title || 'Report' }}</figcaption>
-            </figure>
-          </div>
-        </div>
-
         <div class="row-actions">
           <button (click)="editVisit(visit); closePatient()">✎ Edit</button>
 
           <button (click)="printVisit(visit)">▤ Print</button>
-
-          <button *ngIf="hasReferral(visit)" (click)="printReferralFor(visit)">
-            ▤ Referral
-          </button>
         </div>
       </article>
     </div>

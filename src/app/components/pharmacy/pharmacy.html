@@ -55,7 +55,8 @@
         }}
       </h1>
       <p class="lead">
-        Doctor-completed prescriptions appear here automatically. View the details and print.
+        Doctor-completed prescriptions, and patients sent for tests, appear here automatically.
+        View the details and print.
       </p>
     </div>
     <div class="toggle">
@@ -106,14 +107,19 @@
             : 'No medicines'
         }}</span>
       </div>
-      <div class="c-status"><i></i>Ready to dispense</div>
+      <div class="c-status" [class.lab]="isLab(v)">
+        <i></i>{{ isLab(v) ? 'Tests advised' : 'Ready to dispense' }}
+      </div>
       <div class="c-actions">
         <button class="link" (click)="detail = v">👁 View details</button>
         <button class="go" (click)="print(v)">
-          {{ v.medicines.length ? 'Print prescription' : 'Advice only · print' }}
-        </button>
-        <button class="link" *ngIf="hasReferral(v)" (click)="printReferralFor(v)">
-          ▤ Referral
+          {{
+            isLab(v)
+              ? 'Print tests'
+              : v.medicines.length
+                ? 'Print prescription'
+                : 'Advice only · print'
+          }}
         </button>
       </div>
     </div>
@@ -167,6 +173,11 @@
     <p class="label" *ngIf="detail.allergies">Allergies</p>
     <p *ngIf="detail.allergies">{{ detail.allergies }}</p>
 
+    <ng-container *ngIf="isLab(detail) && detail.labInvestigations">
+      <p class="label">Investigations advised</p>
+      <p>{{ detail.labInvestigations }}</p>
+    </ng-container>
+
     <p class="label">Medicines</p>
     <p *ngIf="!detail.medicines.length">No medicines — advice only</p>
     <div class="med" *ngFor="let m of detail.medicines; let i = index">
@@ -185,9 +196,8 @@
 
   <footer>
     <button class="ghost" (click)="detail = null">Close</button>
-    <button class="ghost" *ngIf="hasReferral(detail)" (click)="printReferralFor(detail)">
-      Print referral
+    <button class="go" (click)="print(detail)">
+      {{ isLab(detail) ? 'Print tests' : 'Print prescription' }}
     </button>
-    <button class="go" (click)="print(detail)">Print prescription</button>
   </footer>
 </section>
