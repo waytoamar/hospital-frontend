@@ -1,74 +1,48 @@
 <div class="login-page">
-  <div class="login-card">
-    <img class="doctor-photo" [src]="'lungs.jpg'" [alt]="'Doctor'" />
+  <span class="spark s1"></span><span class="spark s2"></span><span class="spark s3"></span>
 
-    <h1 class="title">Chest & Allergy Clinic</h1>
-    <p class="subtitle">Doctor access only</p>
+  <div class="ring-wrap">
+    <div class="ring"></div>
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <label class="field-label" for="username">Username</label>
-      <input
-        id="username"
-        type="text"
-        formControlName="username"
-        autocomplete="username"
-        [title]="form.get('username')?.value"
-      />
+    <div class="login-card">
+      <img class="logo" src="lungs.jpg" alt="Chest & Allergy Clinic" />
+      <h1 class="title">WELCOME</h1>
+      <p class="subtitle">Doctor login · Chest &amp; Allergy Clinic</p>
 
-      <label class="field-label" for="password">Password</label>
-      <div class="password-wrapper">
+      <form [formGroup]="form" (ngSubmit)="submit()">
         <input
-          id="password"
-          [type]="showPassword ? 'text' : 'password'"
-          formControlName="password"
-          autocomplete="current-password"
+          id="username"
+          type="text"
+          formControlName="username"
+          autocomplete="username"
+          placeholder="Username"
+          aria-label="Username"
         />
-        <button
-          type="button"
-          class="toggle-password"
-          (click)="togglePassword()"
-          [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
-        >
-          <svg
-            *ngIf="!showPassword"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-          <svg
-            *ngIf="showPassword"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path
-              d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
-            ></path>
-            <line x1="1" y1="1" x2="23" y2="23"></line>
-          </svg>
+
+        <div class="password-wrapper">
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            autocomplete="current-password"
+            placeholder="Password"
+            aria-label="Password"
+          />
+          <button type="button" class="show-btn" (click)="togglePassword()">
+            {{ showPassword ? 'HIDE' : 'SHOW' }}
+          </button>
+        </div>
+
+        <a class="forgot-link" routerLink="/forgot-password">Forgot password?</a>
+
+        <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+        <button type="submit" class="login-btn" [disabled]="loading">
+          {{ loading ? 'LOGGING IN…' : 'LOGIN' }}
         </button>
-      </div>
 
-      <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
-
-      <button type="submit" class="login-btn" [disabled]="loading">
-        {{ loading ? 'Logging in…' : 'Login' }}
-      </button>
-
-      <a class="forgot-link" routerLink="/forgot-password">Forgot password?</a>
-    </form>
+        <a class="back-link" routerLink="/welcome">← Staff portal</a>
+      </form>
+    </div>
   </div>
 </div>
