@@ -317,28 +317,34 @@ h1 {
   }
 }
 
-/* ===== Stylish touches: button fill, card hover, sections appear on scroll ===== */
+/* ===== Stylish touches ===== */
+/* Buttons: colour fills from the left, button lifts */
 .btn {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  transition: transform 0.2s ease, box-shadow 0.25s ease, color 0.3s ease;
+  letter-spacing: 1px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, color 0.35s ease;
 }
 .btn::before {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateX(-101%);
-  transition: transform 0.4s ease;
+  background: #fff;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
 }
 .btn:hover {
   transform: translateY(-3px);
   box-shadow: 0 14px 28px -12px oklch(0.2 0.05 170 / 0.55);
 }
 .btn:hover::before {
-  transform: translateX(0);
+  transform: scaleX(1);
+}
+.gold-btn:hover {
+  color: var(--ink);
 }
 .line-btn::before {
   background: var(--gold);
@@ -346,76 +352,94 @@ h1 {
 .line-btn:hover {
   color: var(--ink);
 }
+.primary-btn::before {
+  background: var(--gold);
+}
+.primary-btn:hover {
+  color: var(--ink);
+}
 
-/* Photo: slight zoom */
+/* Doctor photo: slow zoom */
 .photo-box {
   overflow: hidden;
 }
 .photo {
-  transition: transform 0.6s ease;
+  transition: transform 0.8s ease;
 }
 .photo-box:hover .photo {
-  transform: scale(1.04);
+  transform: scale(1.05);
 }
 
 /* Credentials: lift */
 .cred {
-  transition: transform 0.25s ease;
+  transition: transform 0.3s ease;
 }
 .cred:hover {
   transform: translateY(-4px);
 }
 
-/* "What we treat" cards */
+/* "What we treat" cards (like a featured product card) */
 .service {
   position: relative;
-  isolation: isolate;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-}
-.service::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--primary), var(--gold));
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.35s ease;
+  isolation: isolate;
+  outline: 1px solid transparent;
+  outline-offset: 4px;
+  transition: transform 0.35s ease, box-shadow 0.35s ease, outline-color 0.35s ease;
 }
 .service:hover {
   transform: translateY(-8px);
-  box-shadow: 0 24px 40px -18px oklch(0.3 0.07 170 / 0.45);
-  border-color: var(--gold);
+  box-shadow: 0 26px 44px -20px oklch(0.3 0.07 170 / 0.5);
+  outline-color: var(--gold);
 }
-.service:hover::before {
-  transform: scaleX(1);
+/* light shine passing over the card */
+.service::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent, rgb(255 255 255 / 0.65), transparent);
+  transform: skewX(-20deg);
+}
+.service:hover::after {
+  animation: shine 0.9s ease;
 }
 .service-icon {
-  transition: transform 0.5s ease, background 0.3s ease;
+  transition: transform 0.6s ease, background 0.3s ease;
 }
 .service:hover .service-icon {
-  transform: rotate(360deg) scale(1.1);
+  transform: rotateY(360deg);
 }
 .service-cta {
-  display: inline-block;
-  margin-top: 10px;
-  font-size: 13px;
+  display: inline-flex;
+  margin-top: 14px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1.5px solid var(--primary);
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
   color: var(--primary);
   text-decoration: none;
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: translateY(10px);
+  transition: opacity 0.35s ease, transform 0.35s ease, background 0.3s ease, color 0.3s ease;
 }
 .service:hover .service-cta,
 .service:focus-within .service-cta {
   opacity: 1;
   transform: translateY(0);
 }
-/* Phones have no hover: always show the link */
+.service-cta:hover {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+/* Phones have no hover: always show the button */
 @media (hover: none) {
   .service-cta {
     opacity: 1;
@@ -431,7 +455,8 @@ h1 {
 .hero-grid > div:first-child > *:nth-child(3) { animation-delay: 0.2s; }
 .hero-grid > div:first-child > *:nth-child(4) { animation-delay: 0.3s; }
 
-/* Cards appear while scrolling (browsers that support it; others show them normally) */
+/* Cards appear while scrolling (browsers that support it; others show them normally).
+   Uses "translate", not "transform", so the hover lift still works. */
 @supports (animation-timeline: view()) {
   .service,
   .cred,
@@ -442,27 +467,16 @@ h1 {
   }
 }
 
-/* uses "translate" (not "transform") so the hover lift still works */
 @keyframes appear {
-  from {
-    opacity: 0;
-    translate: 0 24px;
-  }
-  to {
-    opacity: 1;
-    translate: 0 0;
-  }
+  from { opacity: 0; translate: 0 24px; }
+  to { opacity: 1; translate: 0 0; }
 }
-
 @keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes shine {
+  to { left: 125%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -470,6 +484,9 @@ h1 {
   .service,
   .cred,
   .staff-row {
+    animation: none;
+  }
+  .service:hover::after {
     animation: none;
   }
 }

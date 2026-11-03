@@ -19,7 +19,8 @@
     <nav class="nav">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
       <a routerLink="/about" routerLinkActive="active">About Us</a>
-      <a routerLink="/welcome" class="login-btn">Staff Login</a>
+      <a class="pill pill-line" [href]="'tel:' + clinic.phones[0]">Call Us</a>
+      <a routerLink="/welcome" class="pill pill-fill login-btn">Staff Login</a>
     </nav>
   </div>
 </header>
@@ -28,55 +29,70 @@
   <ng-content></ng-content>
 </main>
 
-<footer class="foot">
-  <div class="wrap foot-grid">
-    <div>
-      <p class="brand light">
-        <span class="brand-icon gold">🫁</span>
-        Chest &amp; Allergy Clinic
-      </p>
-      <p class="about">
-        Specialist care for asthma, allergy, COPD, TB, sleep disorders and critical lung care — led
-        by {{ clinic.doctor }}, {{ clinic.degree }}.
-      </p>
-      <div class="doc-chip">
-        <span class="gold-text">{{ clinic.doctor }}</span> — Pulmonologist &amp; Intensivist
+<footer class="pf">
+  <div class="wrap pf-grid">
+    <div class="pf-brand">
+      <p class="pf-logo">Chest &amp; Allergy Clinic</p>
+      <p class="pf-tag">Specialist lung, allergy &amp; critical care</p>
+      <p class="pf-doc">{{ clinic.doctor }} · {{ clinic.degree }}</p>
+      <div class="pf-icons">
+        <a [href]="'tel:' + clinic.phones[0]" aria-label="Call the clinic" title="Call">
+          <svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+        </a>
+        <a [href]="mapLink" target="_blank" rel="noopener" aria-label="Open in Google Maps" title="Directions">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </a>
+        <a routerLink="/about" aria-label="About the doctor" title="About the doctor">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        </a>
       </div>
     </div>
 
     <div>
-      <p class="label">Quick links</p>
-      <ul class="links">
+      <p class="pf-head">Clinic</p>
+      <ul class="pf-links">
         <li><a routerLink="/">Home</a></li>
-        <li><a routerLink="/about">About the doctor</a></li>
+        <li><a routerLink="/about">About the Doctor</a></li>
         <li><a routerLink="/welcome">Staff Login</a></li>
         <li><a routerLink="/privacy">Privacy Policy</a></li>
       </ul>
     </div>
 
     <div>
-      <p class="label">Visit us</p>
-      <p class="address">
-        @for (line of clinic.address; track line) {
-          {{ line }}<br />
-        }
-      </p>
-      <p class="phones">
-        ☎
-        @for (phone of clinic.phones; track phone; let last = $last) {
-          <a [href]="'tel:' + phone">{{ phone }}</a>
-          @if (!last) {
-            <span class="dot"> · </span>
-          }
-        }
-      </p>
+      <p class="pf-head">Treatments</p>
+      <ul class="pf-links plain">
+        <li>Asthma &amp; Allergy</li>
+        <li>COPD &amp; ILD</li>
+        <li>TB &amp; Pneumonia</li>
+        <li>Sleep Disorders</li>
+        <li>ICU &amp; Ventilator Care</li>
+      </ul>
+    </div>
+
+    <div>
+      <p class="pf-head">Visit Us</p>
+      <ul class="pf-contact">
+        <li>
+          <svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+          <span>
+            @for (phone of clinic.phones; track phone; let last = $last) {
+              <a [href]="'tel:' + phone">{{ phone }}</a>@if (!last) {<br />}
+            }
+          </span>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <a class="pf-addr" [href]="mapLink" target="_blank" rel="noopener">{{ clinic.address.join(' ') }}</a>
+        </li>
+      </ul>
+      <a class="pill pill-gold pf-call" [href]="'tel:' + clinic.phones[0]">Call to Book</a>
     </div>
   </div>
 
-  <div class="foot-bottom">
-    <div class="wrap foot-bottom-row">
+  <div class="pf-bottom">
+    <div class="wrap pf-bottom-row">
       <p>© {{ year }} Chest &amp; Allergy Clinic, {{ clinic.city }}. All rights reserved.</p>
-      <p>M.B.B.S. · DNB (Pulmonology) · Fellowship in Respiratory ICU</p>
+      <p><a routerLink="/privacy">Privacy Policy</a> · <a routerLink="/welcome">Staff Login</a></p>
     </div>
   </div>
 </footer>

@@ -13,4 +13,7 @@ import { CLINIC } from '../clinic-info';
 export class SiteShell {
   readonly clinic = CLINIC;
   readonly year = new Date().getFullYear();
+  readonly mapLink =
+    'https://www.google.com/maps/search/?api=1&query=' +
+    encodeURIComponent(`${CLINIC.name}, ${CLINIC.address.join(' ')}`);
 }
