@@ -228,3 +228,137 @@
     display: none;
   }
 }
+
+/* ===== Stylish touches (moving strip, menu underline, button fill, footer links) ===== */
+.ticker {
+  overflow: hidden;
+  background: oklch(0.28 0.07 175);
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.ticker-track {
+  display: inline-flex;
+  gap: 48px;
+  padding: 8px 0;
+  animation: ticker 28s linear infinite;
+}
+.ticker:hover .ticker-track {
+  animation-play-state: paused;
+}
+@keyframes ticker {
+  to { transform: translateX(-50%); }
+}
+
+.top {
+  transition: box-shadow 0.25s ease;
+}
+.top:hover {
+  box-shadow: 0 8px 24px -12px oklch(0.3 0.07 170 / 0.35);
+}
+
+.brand-icon {
+  transition: transform 0.4s ease;
+}
+.brand:hover .brand-icon {
+  transform: rotate(-12deg) scale(1.12);
+}
+
+/* Menu: a line slides in under the link */
+.nav a:not(.login-btn) {
+  position: relative;
+}
+.nav a:not(.login-btn)::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+.nav a:not(.login-btn):hover::after,
+.nav a.active::after {
+  transform: scaleX(1);
+}
+
+/* Staff Login: colour fills from left to right */
+.nav a.login-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.nav a.login-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s ease;
+}
+.nav a.login-btn:hover {
+  color: var(--ink);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -10px oklch(0.3 0.07 170 / 0.5);
+}
+.nav a.login-btn:hover::before {
+  transform: scaleX(1);
+}
+
+/* Footer */
+.foot {
+  position: relative;
+}
+.foot::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.links a {
+  display: inline-block;
+  transition: transform 0.25s ease, color 0.25s ease;
+}
+.links a:hover {
+  transform: translateX(6px);
+  color: var(--gold);
+}
+.links a::before {
+  content: '› ';
+  color: var(--gold);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.links a:hover::before {
+  opacity: 1;
+}
+.phones a {
+  transition: color 0.2s ease;
+}
+.phones a:hover {
+  color: var(--gold);
+}
+.doc-chip {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.doc-chip:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px -12px oklch(0.2 0.05 170 / 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track { animation: none; }
+}

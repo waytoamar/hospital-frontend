@@ -1,3 +1,15 @@
+<!-- Moving strip on top -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    @for (n of [1, 2]; track n) {
+      <span>🫁 Asthma · Allergy · COPD · TB · Sleep · ICU care</span>
+      <span>✦ {{ clinic.doctor }} — {{ clinic.degree }}</span>
+      <span>✦ Call to book: {{ clinic.phones.join(' / ') }}</span>
+      <span>✦ {{ clinic.address.join(' ') }}</span>
+    }
+  </div>
+</div>
+
 <header class="top">
   <div class="wrap top-row">
     <a routerLink="/" class="brand">

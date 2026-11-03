@@ -7,7 +7,7 @@ import { AuthService, Role, homeFor } from '../../services/auth';
   selector: 'app-pin-login',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  styleUrl: '../staff-shared.css',
+  styleUrl: './pin-login.css',
   templateUrl: './pin-login.html',
 })
 export class PinLogin {
