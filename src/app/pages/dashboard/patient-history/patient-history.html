@@ -1,0 +1,88 @@
+<div class="overlay" (click)="store.closePatient()"></div>
+
+<aside class="drawer">
+  <header>
+    <div>
+      <small>PATIENT HISTORY</small>
+      <h2>{{ patient?.patientName }}</h2>
+      <p>{{ patient?.patientId || 'No ID' }} · {{ patient?.phone }}</p>
+    </div>
+    <button class="icon-btn" aria-label="Close" (click)="store.closePatient()">×</button>
+  </header>
+
+  <button class="primary-btn full" (click)="store.openNewVisit(patient)">＋ Start new visit</button>
+
+  <div class="allergy">
+    <b>Allergies</b>
+    <span>{{ allergySummary(patient) }}</span>
+  </div>
+
+  <div class="timeline">
+    @for (visit of visits; track visit._id ?? $index) {
+      <article>
+        <i></i>
+        <time>{{ visit.visitDate | date: 'dd MMM yyyy, hh:mm a' }}</time>
+        <h3>{{ visit.diagnosis || visit.disease || 'Consultation' }}</h3>
+
+        <p><b>Symptoms:</b> {{ visit.symptoms || '-' }}</p>
+        <p><b>Vitals:</b> {{ vitalsSummary(visit.vitals) }}</p>
+        <p>
+          <b>Medicines:</b>
+          @for (medicine of visit.medicines; track $index; let last = $last) {
+            {{ medicine.name }} {{ medicine.frequency }}{{ last ? '' : ', ' }}
+          } @empty {
+            -
+          }
+        </p>
+        <p><b>Labs:</b> {{ visit.labInvestigations || '-' }}</p>
+
+        @if (visit.labResults?.length || visit.labPhotos?.length) {
+          <div class="lab">
+            <p class="lab-title">
+              🧪 Lab reports
+              @if (visit.labReadyAt) {
+                <small>· ready {{ visit.labReadyAt | date: 'h:mm a' }}</small>
+              }
+            </p>
+
+            @if (visit.labResults?.length) {
+              <table>
+                <tr>
+                  <th>Test</th>
+                  <th>Result</th>
+                  <th>Range</th>
+                  <th></th>
+                </tr>
+                @for (r of visit.labResults; track $index) {
+                  <tr>
+                    <td>{{ r.name }}</td>
+                    <td [class.bad]="isAbnormal(r.result, r.range)">{{ r.result || '-' }}</td>
+                    <td>{{ r.range || '-' }}</td>
+                    <td>{{ r.done ? '✓' : 'Pending' }}</td>
+                  </tr>
+                }
+              </table>
+            }
+
+            <div class="photos">
+              @for (p of visit.labPhotos; track p._id) {
+                <img [src]="p.data" alt="Lab report" (click)="photo = p.data" />
+              }
+            </div>
+          </div>
+        }
+
+        <div class="row-actions">
+          <button (click)="edit(visit)">✎ Edit</button>
+          <button (click)="store.print(visit)">▤ Print</button>
+        </div>
+      </article>
+    }
+  </div>
+</aside>
+
+@if (photo) {
+  <div class="photo-viewer" (click)="photo = null">
+    <img [src]="photo" alt="Lab report" />
+  </div>
+}

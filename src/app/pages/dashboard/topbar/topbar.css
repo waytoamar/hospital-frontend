@@ -1,0 +1,180 @@
+* {
+  box-sizing: border-box;
+}
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 32px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.menu-btn {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.title {
+  display: flex;
+  flex-direction: column;
+  margin-right: auto;
+}
+
+.title strong {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.title small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.paper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.clock {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 15px;
+}
+
+.calling {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.calling i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f0b429;
+}
+
+.calling b {
+  font-size: 20px;
+  letter-spacing: 0.02em;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--c-consult);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* Laptops */
+@media (max-width: 1440px) {
+  .bar {
+    gap: 16px;
+    padding: 12px 24px;
+  }
+
+  .right {
+    gap: 10px;
+  }
+
+  .calling {
+    padding: 10px 16px;
+  }
+
+  .calling b {
+    font-size: 18px;
+  }
+}
+
+/* Tablets and phones: ☰ opens the left menu */
+@media (max-width: 900px) {
+  .menu-btn {
+    display: inline-grid;
+    place-items: center;
+  }
+
+  .title strong {
+    font-size: 16px;
+  }
+}
+
+/* Phones */
+@media (max-width: 720px) {
+  .bar {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 14px;
+  }
+
+  .right {
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .paper {
+    order: 5;
+    width: 100%;
+  }
+
+  .clock {
+    display: none;
+  }
+
+  .calling {
+    gap: 6px;
+    margin-right: auto;
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  .calling b {
+    font-size: 15px;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 400px) {
+  .avatar {
+    display: none;
+  }
+}

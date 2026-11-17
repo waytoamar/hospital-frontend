@@ -1,0 +1,236 @@
+.pf {
+  position: relative;
+  background: oklch(0.24 0.05 175);
+  color: oklch(0.9 0.02 160);
+}
+
+.pf::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.pf-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1.3fr;
+  gap: 40px;
+  padding-top: 56px;
+  padding-bottom: 44px;
+}
+
+/* ---- Clinic name and round icons ---- */
+.pf-logo {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 24px;
+  color: #fff;
+}
+
+.pf-tag {
+  margin: 8px 0 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.pf-doc {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gold);
+}
+
+.pf-icons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pf-icons a {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid oklch(1 0 0 / 0.25);
+  color: #fff;
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+.pf-icons a:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--ink);
+  transform: translateY(-3px);
+}
+
+.pf svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---- Columns ---- */
+.pf-head {
+  margin: 4px 0 18px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.pf-links {
+  display: grid;
+  gap: 11px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.pf-links a {
+  display: inline-block;
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+
+.pf-links a:hover {
+  color: var(--gold);
+  transform: translateX(5px);
+}
+
+.pf-links.plain li {
+  opacity: 0.85;
+}
+
+.pf-contact {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.pf-contact li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.pf-contact svg {
+  margin-top: 3px;
+  color: var(--gold);
+}
+
+.pf-contact a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+
+.pf-contact a:hover {
+  color: var(--gold);
+}
+
+/* "Call to Book" pill: white fills in from the left on hover */
+.pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 20px;
+  border-radius: 999px;
+  border: 1.5px solid var(--gold);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.pill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: #fff;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px -12px oklch(0 0 0 / 0.55);
+}
+
+.pill:hover::before {
+  transform: scaleX(1);
+}
+
+.pf-call {
+  margin-top: 22px;
+  background: var(--gold);
+  color: var(--ink);
+}
+
+/* ---- Bottom line ---- */
+.pf-bottom {
+  border-top: 1px solid oklch(1 0 0 / 0.12);
+}
+
+.pf-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.pf-bottom-row p {
+  margin: 0;
+}
+
+.pf-bottom-row a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.pf-bottom-row a:hover {
+  color: var(--gold);
+}
+
+@media (max-width: 900px) {
+  .pf-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .pf-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .pf-bottom-row {
+    flex-direction: column;
+  }
+}

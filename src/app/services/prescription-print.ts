@@ -1,5 +1,5 @@
 import { Visit } from './visit';
-import { LETTERHEAD_LOGO, LETTERHEAD_ORGANS } from '../components/dashboard/letterhead-images';
+import { LETTERHEAD_LOGO, LETTERHEAD_ORGANS } from './letterhead-images';
 
 const EXAM_CHECKS = [
   { key: 'anaemia', label: 'Anaemia' },

@@ -1,0 +1,6 @@
+/* Shared by the public website parts (header, footer, pages). */
+.wrap {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 20px;
+}

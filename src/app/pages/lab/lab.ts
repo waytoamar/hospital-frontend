@@ -1,4 +1,4 @@
-import { API_BASE } from '../../api';
+import { API_BASE } from '../../services/api';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

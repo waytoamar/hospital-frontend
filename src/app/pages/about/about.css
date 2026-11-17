@@ -1,0 +1,103 @@
+/* Colours and fonts come from the site layout (site-layout.css). */
+.about {
+  max-width: 896px;
+  margin: 0 auto;
+  padding: 24px 20px 56px;
+}
+
+h1,
+h2 {
+  font-family: var(--display);
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+h1 {
+  margin: 8px 0 0;
+  font-size: 42px;
+}
+
+.lead {
+  margin: 12px 0 0;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.card {
+  margin-top: 24px;
+  padding: 22px 32px 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 22px;
+  color: var(--primary);
+}
+
+ul {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 4px;
+  line-height: 1.45;
+}
+
+.dot {
+  color: var(--gold);
+}
+
+/* ---- Call to book ---- */
+.book {
+  margin-top: 24px;
+}
+
+.phones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.phones a {
+  padding: 12px 24px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--on-gold);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+@media (max-width: 760px) {
+  .about {
+    padding: 20px 20px 40px;
+  }
+
+  h1 {
+    font-size: 36px;
+  }
+
+  .lead {
+    font-size: 16px;
+  }
+
+  .card {
+    padding: 24px;
+  }
+}

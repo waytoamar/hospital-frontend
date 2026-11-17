@@ -1,0 +1,80 @@
+@if (summary; as s) {
+  <section class="card">
+    <div class="head">
+      <h3>Collections</h3>
+      <input type="date" [(ngModel)]="date" (change)="load()" />
+    </div>
+
+    <div class="totals">
+      <div class="box">
+        <small>Patients</small>
+        <b>{{ s.patients }}</b>
+      </div>
+      <div class="box">
+        <small>Cash</small>
+        <b>₹{{ s.cash.amount }}</b>
+        <em>{{ s.cash.count }} patients</em>
+      </div>
+      <div class="box">
+        <small>UPI</small>
+        <b>₹{{ s.upi.amount }}</b>
+        <em>{{ s.upi.count }} patients</em>
+      </div>
+      <div class="box total">
+        <small>Total</small>
+        <b>₹{{ s.total.amount }}</b>
+        <em>{{ s.total.count }} billed</em>
+      </div>
+    </div>
+
+    <div class="services">
+      @for (item of services; track item.key) {
+        <span>
+          {{ item.label }}: <b>{{ s.services[item.key]?.count || 0 }}</b> ·
+          ₹{{ s.services[item.key]?.amount || 0 }}
+        </span>
+      }
+      @if (s.split) {
+        <span>Split (cash + UPI): <b>{{ s.split }}</b></span>
+      }
+    </div>
+
+    @if (s.notBilled) {
+      <p class="warn">⚠ {{ s.notBilled }} patient(s) have no bill entered</p>
+    }
+
+    @if (s.feeChanges) {
+      <div class="changes">
+        <button type="button" (click)="showChanges = !showChanges">
+          🕵 {{ s.feeChanges }} bill change(s) by reception · {{ showChanges ? 'hide' : 'view' }}
+        </button>
+
+        @if (showChanges) {
+          <div class="change-list">
+            @for (c of feeChanges; track c.visitId + c.at) {
+              <div class="change">
+                <div class="change-top">
+                  <b>{{ c.patientName }}</b>
+                  <small>
+                    {{ c.token }} · {{ c.patientId }} · {{ c.at | date: 'h:mm a' }} · by
+                    {{ c.by || 'Receptionist' }}
+                  </small>
+                  <span class="kind" [attr.data-kind]="c.kind">{{ c.kind }}</span>
+                </div>
+                <div class="amount">₹{{ c.beforeTotal }} → <b>₹{{ c.afterTotal }}</b></div>
+                @if (itemDiff(c)) {
+                  <small>{{ itemDiff(c) }}</small>
+                }
+                @if (payChanged(c)) {
+                  <small>
+                    Paid: {{ payText(c.beforeCash, c.beforeUpi) }} → {{ payText(c.afterCash, c.afterUpi) }}
+                  </small>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </section>
+}

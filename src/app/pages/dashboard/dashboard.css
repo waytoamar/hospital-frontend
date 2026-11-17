@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+/* Colours and fonts of the doctor dashboard. Every part inside it uses these variables. */
+:host {
+  --primary: #1f7a4d;
+  --primary-dark: #17603c;
+  --primary-soft: #e6f4ec;
+  --coral: #ef6f55;
+  --coral-soft: #fdece8;
+  --ink: #10262f;
+  --muted: #6b7f84;
+  --line: #cfe1e1;
+  --bg: #e6f1f1;
+  --card: #ffffff;
+  --gold: #f0c75e;
+
+  --sans: 'Inter', 'Segoe UI', Roboto, Arial, sans-serif;
+  --mono: 'Space Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --c-waiting: #d9a21b;
+  --c-consult: #e0552b;
+  --c-followup: #16a3aa;
+  --c-lab: #7a5af0;
+  --c-done: #2fae5b;
+
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+}
+
+.main-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 22px 24px 80px;
+}
+
+/* WhatsApp message at the bottom of the screen */
+.notice {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 1000;
+  max-width: calc(100vw - 32px);
+  padding: 10px 18px;
+  border: 1px solid #b9e6cb;
+  border-radius: 999px;
+  background: #e7f8ee;
+  color: #0f7a3d;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  transform: translateX(-50%);
+}
+
+.notice.error {
+  border-color: #f5c2bd;
+  background: #fdecea;
+  color: #b3261e;
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 18px 14px 60px;
+  }
+}

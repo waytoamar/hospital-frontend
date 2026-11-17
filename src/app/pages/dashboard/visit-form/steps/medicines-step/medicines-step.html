@@ -1,0 +1,73 @@
+<div class="head">
+  <h3>Medicines</h3>
+  <button class="outline-btn" (click)="add()">＋ Add medicine</button>
+</div>
+
+<p class="hint">
+  Pick a medicine you have used before — its dose, frequency, duration and food timing fill
+  automatically. Change anything if needed.
+</p>
+
+@for (medicine of form.medicines; track $index; let i = $index) {
+  <div class="row">
+    <input
+      class="name"
+      [(ngModel)]="medicine.name"
+      (change)="fillFromLastTime(medicine)"
+      list="medicine-suggestions"
+      autocomplete="off"
+      placeholder="Medicine name"
+    />
+
+    <select [(ngModel)]="medicine.dosage">
+      <option value="">Dose</option>
+      @if (isCustom(medicine.dosage, dosageOptions)) {
+        <option [value]="medicine.dosage">{{ medicine.dosage }}</option>
+      }
+      @for (option of dosageOptions; track option) {
+        <option>{{ option }}</option>
+      }
+    </select>
+
+    <select [(ngModel)]="medicine.frequency">
+      <option value="">Frequency</option>
+      @if (isCustom(medicine.frequency, frequencyOptions)) {
+        <option [value]="medicine.frequency">{{ medicine.frequency }}</option>
+      }
+      @for (option of frequencyOptions; track option) {
+        <option>{{ option }}</option>
+      }
+    </select>
+
+    <input
+      [(ngModel)]="medicine.duration"
+      list="duration-suggestions"
+      autocomplete="off"
+      placeholder="Duration"
+    />
+
+    <select [(ngModel)]="medicine.timing">
+      <option value="">Food timing</option>
+      @if (isCustom(medicine.timing, timingOptions)) {
+        <option [value]="medicine.timing">{{ medicine.timing }}</option>
+      }
+      @for (option of timingOptions; track option) {
+        <option>{{ option }}</option>
+      }
+    </select>
+
+    <button class="remove" aria-label="Remove medicine" (click)="remove(i)">×</button>
+  </div>
+}
+
+<datalist id="medicine-suggestions">
+  @for (value of store.pastValues('medicineName'); track value) {
+    <option [value]="value"></option>
+  }
+</datalist>
+
+<datalist id="duration-suggestions">
+  @for (value of store.pastValues('medicineDuration'); track value) {
+    <option [value]="value"></option>
+  }
+</datalist>

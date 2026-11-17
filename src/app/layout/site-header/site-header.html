@@ -1,0 +1,27 @@
+<!-- Moving strip (the list is repeated so the loop has no gap) -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    @for (n of [1, 2]; track n) {
+      <span>🫁 Asthma · Allergy · COPD · TB · Sleep · ICU care</span>
+      <span>✦ {{ clinic.doctor }} — {{ clinic.degree }}</span>
+      <span>✦ Call to book: {{ clinic.phones.join(' / ') }}</span>
+      <span>✦ {{ clinic.address.join(' ') }}</span>
+    }
+  </div>
+</div>
+
+<header class="top">
+  <div class="wrap top-row">
+    <a routerLink="/" class="brand">
+      <span class="brand-icon">🫁</span>
+      Chest &amp; Allergy Clinic
+    </a>
+
+    <nav class="nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+      <a routerLink="/about" routerLinkActive="active">About Us</a>
+      <a class="pill pill-line" [href]="'tel:' + clinic.phones[0]">Call Us</a>
+      <a routerLink="/welcome" class="pill pill-fill">Staff Login</a>
+    </nav>
+  </div>
+</header>

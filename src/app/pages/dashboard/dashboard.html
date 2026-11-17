@@ -1,0 +1,55 @@
+<app-doctor-sidebar
+  [active]="store.activeView"
+  [todayCount]="todayCount"
+  [backupBusy]="store.backupBusy"
+  [open]="menuOpen"
+  (navigate)="store.showView($event); menuOpen = false"
+  (staff)="store.openStaff()"
+  (backup)="store.downloadBackup()"
+  (logout)="store.logout()"
+  (close)="menuOpen = false"
+></app-doctor-sidebar>
+
+<div class="main-col">
+  <app-topbar (menu)="menuOpen = true"></app-topbar>
+
+  <main class="page">
+    <app-toolbar></app-toolbar>
+
+    @switch (store.activeView) {
+      @case ('board') {
+        <app-queue-board (patientSelected)="scrollToQueue()"></app-queue-board>
+        @if (store.selectedQueueVisit) {
+          <app-queue-stage #queueStage></app-queue-stage>
+        }
+        <app-collections></app-collections>
+      }
+      @case ('patients') {
+        <app-patients-list></app-patients-list>
+      }
+      @case ('records') {
+        <app-records-list></app-records-list>
+      }
+      @case ('holidays') {
+        <app-holidays></app-holidays>
+      }
+    }
+  </main>
+</div>
+
+@if (store.formRequest) {
+  <app-visit-form
+    [request]="store.formRequest"
+    (closed)="store.closeForm()"
+    (saved)="store.visitSaved($event)"
+  ></app-visit-form>
+}
+
+@if (store.selectedPatientKey) {
+  <app-patient-history></app-patient-history>
+}
+
+<!-- WhatsApp: prescription sent / not sent (goes away by itself) -->
+@if (store.notice) {
+  <div class="notice" [class.error]="store.noticeIsError" role="status">{{ store.notice }}</div>
+}

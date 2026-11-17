@@ -1,0 +1,47 @@
+<div class="page-head">
+  <div>
+    <h1>Patients</h1>
+    <p>Search once and reopen complete patient history.</p>
+  </div>
+</div>
+
+<section class="table-panel">
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>ID</th>
+          <th>Phone</th>
+          <th>Last visit</th>
+          <th>Diagnosis</th>
+          <th></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (patient of store.patients; track patient._id ?? $index) {
+          <tr>
+            <td class="name-cell">
+              <button class="patient-link" (click)="store.openPatient(patient)">
+                {{ patient.patientName }}
+              </button>
+              <small>{{ patient.age }} · {{ patient.gender }}</small>
+            </td>
+            <td class="nowrap">{{ patient.patientId || '-' }}</td>
+            <td class="nowrap">{{ patient.phone }}</td>
+            <td class="nowrap">{{ patient.visitDate | date: 'dd MMM yyyy' }}</td>
+            <td>{{ patient.diagnosis || patient.disease || '-' }}</td>
+            <td>
+              <button class="outline-btn" (click)="store.openNewVisit(patient)">New visit</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (!store.patients.length) {
+    <div class="empty-state">No patients found.</div>
+  }
+</section>

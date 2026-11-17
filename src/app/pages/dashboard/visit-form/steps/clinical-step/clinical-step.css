@@ -1,0 +1,92 @@
+/* ---- Tick-box chips ---- */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chips > .others {
+  flex: 1;
+  width: auto;
+  min-width: 240px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid #d3dcd7;
+  border-radius: 999px;
+  background: #fbfdfc;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.chip:hover {
+  border-color: var(--primary);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.chip .box {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #9fb3aa;
+  border-radius: 4px;
+  background: #fff;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.chip.on {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+
+.chip.on .box {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+/* "Yes" answers are shown in red */
+.chip.yes.on {
+  border-color: var(--coral);
+  background: var(--coral-soft);
+  color: #b8402b;
+}
+
+/* ---- Yes / No questions ---- */
+.yes-no {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.yes-no > b {
+  min-width: 190px;
+  color: #2b4137;
+  font-size: 13px;
+}
+
+.yes-no > .detail {
+  flex: 1;
+  width: auto;
+  min-width: 200px;
+}
+
+@media (max-width: 720px) {
+  .yes-no > b {
+    min-width: 100%;
+  }
+}

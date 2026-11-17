@@ -1,0 +1,158 @@
+.card {
+  margin: 16px 0;
+  padding: 14px 16px;
+  border: 1px solid #e3e8ee;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.head h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+/* ---- Four total boxes ---- */
+.totals {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid #e3e8ee;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.box small {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.box b {
+  font-size: 22px;
+}
+
+.box em {
+  color: #64748b;
+  font-size: 12px;
+  font-style: normal;
+}
+
+.box.total {
+  border-color: #9ad6b0;
+  background: #e3f6ea;
+}
+
+.services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 12px;
+  color: #475569;
+  font-size: 13px;
+}
+
+.warn {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border: 1px solid #f0c4be;
+  border-radius: 10px;
+  background: #fff5f4;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ---- Bill changes by reception (doctor only) ---- */
+.changes {
+  margin-top: 10px;
+}
+
+.changes > button {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #f1d27a;
+  border-radius: 10px;
+  background: #fff8e1;
+  color: #7a5200;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.change-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.change {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid #e3e8ee;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.change-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.change small {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.amount {
+  font-size: 15px;
+}
+
+.kind {
+  margin-left: auto;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #eef2f6;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.kind[data-kind='reduced'],
+.kind[data-kind='removed'] {
+  background: #fdecea;
+  color: #b42318;
+}
+
+.kind[data-kind='increased'],
+.kind[data-kind='added'] {
+  background: #e3f6ea;
+  color: #0f7a3d;
+}
+
+@media (max-width: 720px) {
+  .totals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

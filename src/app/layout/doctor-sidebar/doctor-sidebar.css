@@ -1,0 +1,236 @@
+* {
+  box-sizing: border-box;
+}
+
+:host {
+  display: contents;
+}
+
+.side {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 232px;
+  height: 100vh;
+  padding: 18px 12px;
+  background: linear-gradient(180deg, #123f3a, #17603c);
+  color: #e6f4ec;
+  transition: width 0.25s ease;
+}
+
+.side.collapsed {
+  width: 72px;
+}
+
+/* ---- Clinic name ---- */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px 18px;
+  border-bottom: 1px solid rgb(255 255 255 / 0.12);
+}
+
+.brand img {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #fff;
+  object-fit: cover;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.brand-text strong {
+  color: #fff;
+  font-size: 15px;
+}
+
+.brand-text small {
+  color: var(--gold);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* ---- Menu ---- */
+.menu {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 14px;
+  overflow-y: auto;
+}
+
+.label {
+  margin: 12px 10px 6px;
+  color: rgb(255 255 255 / 0.45);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.1);
+  transform: translateX(3px);
+}
+
+button.active {
+  background: #fff;
+  color: var(--primary-dark);
+  box-shadow: 0 8px 18px -10px rgb(0 0 0 / 0.5);
+}
+
+button.active::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 0;
+  width: 4px;
+  border-radius: 4px;
+  background: var(--gold);
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 22px;
+  font-size: 16px;
+  text-align: center;
+}
+
+.count {
+  min-width: 22px;
+  margin-left: auto;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #123f3a;
+  font-size: 11px;
+  text-align: center;
+}
+
+/* ---- Collapse and logout ---- */
+.foot {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 12px;
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+}
+
+.logout:hover:not(:disabled) {
+  background: rgb(239 111 85 / 0.25);
+}
+
+/* ---- Collapsed: icons only ---- */
+.collapsed .text,
+.collapsed .brand-text,
+.collapsed .label {
+  display: none;
+}
+
+.collapsed button {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.collapsed .brand {
+  justify-content: center;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.collapsed .count {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 18px;
+  padding: 0 5px;
+  font-size: 10px;
+}
+
+.backdrop {
+  display: none;
+}
+
+/* ---- Tablets and phones: the menu slides in from the left ---- */
+@media (max-width: 900px) {
+  .side,
+  .side.collapsed {
+    position: fixed;
+    left: 0;
+    width: 250px;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+
+  .side.open {
+    transform: translateX(0);
+  }
+
+  .collapsed .text,
+  .collapsed .brand-text,
+  .collapsed .label {
+    display: initial;
+  }
+
+  .collapsed button {
+    justify-content: flex-start;
+    padding: 10px 12px;
+  }
+
+  .collapsed .count {
+    position: static;
+  }
+
+  .collapse {
+    display: none;
+  }
+
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    display: block;
+    background: rgb(16 38 47 / 0.45);
+  }
+}

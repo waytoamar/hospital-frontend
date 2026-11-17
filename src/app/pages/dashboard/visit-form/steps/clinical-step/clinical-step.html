@@ -1,0 +1,158 @@
+<!-- 1. Symptoms -->
+<label>
+  Symptoms
+  <app-suggest-field
+    multiline
+    [rows]="3"
+    placeholder="Patient symptoms"
+    acceptOnTab
+    [(value)]="form.symptoms"
+    [options]="store.pastValues('symptoms')"
+    (picked)="changed.emit()"
+  ></app-suggest-field>
+</label>
+
+<!-- 2. Clinical examination -->
+<h4 class="sub-head">Clinical examination</h4>
+
+<div class="chips">
+  @for (item of examChecks; track item.key) {
+    <button
+      type="button"
+      class="chip"
+      [class.on]="form.examination[item.key]"
+      [attr.aria-pressed]="form.examination[item.key]"
+      (click)="toggleExam(item.key)"
+    >
+      <span class="box">{{ form.examination[item.key] ? '✓' : '' }}</span>
+      {{ item.label }}
+    </button>
+  }
+
+  @if (form.examination.others) {
+    <input
+      class="others"
+      [(ngModel)]="form.examination.othersNote"
+      placeholder="Other examination findings (write here)"
+      aria-label="Other examination findings"
+    />
+  }
+</div>
+
+<div class="grid">
+  @for (note of examNotes; track note.key) {
+    <label>
+      {{ note.label }}
+      <app-suggest-field
+        [placeholder]="note.label + ' findings'"
+        [(value)]="form.examination[note.key]"
+        [options]="store.pastValues(note.key)"
+        (picked)="changed.emit()"
+      ></app-suggest-field>
+    </label>
+  }
+</div>
+
+<!-- 3. Comorbidities -->
+<h4 class="sub-head">Comorbidities</h4>
+
+<div class="chips">
+  @for (item of comorbidityChecks; track item.key) {
+    <button
+      type="button"
+      class="chip"
+      [class.on]="form.comorbidities[item.key]"
+      [attr.aria-pressed]="form.comorbidities[item.key]"
+      (click)="toggleComorbidity(item.key)"
+    >
+      <span class="box">{{ form.comorbidities[item.key] ? '✓' : '' }}</span>
+      {{ item.label }}
+    </button>
+  }
+
+  @if (form.comorbidities.others) {
+    <input
+      class="others"
+      [(ngModel)]="form.comorbidities.othersNote"
+      placeholder="Other disease / comorbidity (write here)"
+      aria-label="Other comorbidity"
+    />
+  }
+</div>
+
+@for (question of yesNoQuestions; track question.field) {
+  <div class="yes-no">
+    <b>{{ question.label }}</b>
+
+    <button
+      type="button"
+      class="chip yes"
+      [class.on]="form.comorbidities[question.field] === 'Yes'"
+      (click)="setYesNo(question.field, 'Yes')"
+    >
+      Yes
+    </button>
+    <button
+      type="button"
+      class="chip"
+      [class.on]="form.comorbidities[question.field] === 'No'"
+      (click)="setYesNo(question.field, 'No')"
+    >
+      No
+    </button>
+
+    @if (question.field === 'drugAllergy' && form.comorbidities.drugAllergy === 'Yes') {
+      <app-suggest-field
+        class="detail"
+        placeholder="Which drug / reaction"
+        [(value)]="form.comorbidities.drugAllergyDetails"
+        [options]="store.pastValues('drugAllergyDetails')"
+        (picked)="changed.emit()"
+      ></app-suggest-field>
+    }
+
+    @if (question.field === 'surgicalComplications' && form.comorbidities.surgicalComplications) {
+      <app-suggest-field
+        class="detail"
+        [placeholder]="
+          form.comorbidities.surgicalComplications === 'Yes' ? 'Describe the complication' : 'Note (optional)'
+        "
+        [(value)]="form.comorbidities.surgicalComplicationsNote"
+        [options]="store.pastValues('surgicalComplicationsNote')"
+        (picked)="changed.emit()"
+      ></app-suggest-field>
+    }
+  </div>
+}
+
+<!-- 4. Investigations -->
+<h4 class="sub-head">Investigations</h4>
+
+<app-suggest-field
+  multiline
+  [rows]="2"
+  label="Investigations"
+  placeholder="CBC, blood sugar, X-ray..."
+  [(value)]="form.labInvestigations"
+  [options]="store.pastValues('labInvestigations')"
+  (picked)="changed.emit()"
+></app-suggest-field>
+
+<!-- 5. Diagnosis (medicines are the next step) -->
+<h4 class="sub-head">Diagnosis</h4>
+
+<label>
+  Disease
+  <input
+    [(ngModel)]="form.disease"
+    list="disease-suggestions"
+    autocomplete="off"
+    placeholder="e.g. Viral fever"
+  />
+</label>
+
+<datalist id="disease-suggestions">
+  @for (value of store.pastValues('disease'); track value) {
+    <option [value]="value"></option>
+  }
+</datalist>

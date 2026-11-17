@@ -1,0 +1,224 @@
+/* ---- Moving strip ---- */
+.ticker {
+  overflow: hidden;
+  background: oklch(0.26 0.06 175);
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ticker-track {
+  display: inline-flex;
+  gap: 48px;
+  padding: 8px 0;
+  animation: ticker 30s linear infinite;
+}
+
+.ticker:hover .ticker-track {
+  animation-play-state: paused;
+}
+
+/* ---- Header bar ---- */
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in oklch, var(--bg) 90%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.brand-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary);
+  font-size: 18px;
+  transition: transform 0.4s ease;
+}
+
+.brand:hover .brand-icon {
+  transform: rotate(-12deg) scale(1.1);
+}
+
+/* ---- Menu ---- */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.nav a {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+/* Text links: a gold line slides in underneath */
+.nav a:not(.pill) {
+  position: relative;
+  padding: 4px 0;
+}
+
+.nav a:not(.pill)::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.35s ease;
+}
+
+.nav a:not(.pill):hover,
+.nav a.active {
+  color: var(--primary);
+}
+
+.nav a:not(.pill):hover::after,
+.nav a.active::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Pill buttons: colour fills from the left on hover */
+.pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 20px;
+  border-radius: 999px;
+  border: 1.5px solid var(--primary);
+  overflow: hidden;
+  isolation: isolate;
+  transition: color 0.35s ease, border-color 0.35s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.pill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px -12px oklch(0.3 0.07 170 / 0.55);
+}
+
+.pill:hover::before {
+  transform: scaleX(1);
+}
+
+.nav .pill-line {
+  color: var(--primary);
+}
+
+.pill-line::before {
+  background: var(--primary);
+}
+
+.nav .pill-line:hover {
+  color: var(--on-primary);
+}
+
+.nav .pill-fill {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.pill-fill::before {
+  background: var(--gold);
+}
+
+.nav .pill-fill:hover {
+  color: var(--ink);
+  border-color: var(--gold);
+}
+
+@keyframes ticker {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ---- Tablets and phones ---- */
+@media (max-width: 760px) {
+  .brand {
+    font-size: 16px;
+  }
+
+  .brand-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+  }
+
+  .nav {
+    gap: 14px;
+  }
+
+  .nav a {
+    letter-spacing: 1px;
+  }
+
+  .pill {
+    padding: 7px 12px;
+  }
+}
+
+@media (max-width: 560px) {
+  .nav .pill-line {
+    display: none;
+  }
+}
+
+/* Very small phones: keep only the logo and Staff Login */
+@media (max-width: 420px) {
+  .nav a:not(.pill) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+  }
+}

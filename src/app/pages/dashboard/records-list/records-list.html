@@ -1,0 +1,69 @@
+<div class="page-head">
+  <div>
+    <h1>Visit records</h1>
+    <p>Compact view of every saved consultation.</p>
+  </div>
+  <button class="outline-btn" (click)="exportToExcel()">⇩ Export Excel</button>
+</div>
+
+<div class="filters">
+  <label>
+    From
+    <input type="date" [(ngModel)]="from" />
+  </label>
+  <label>
+    To
+    <input type="date" [(ngModel)]="to" />
+  </label>
+  @if (from || to) {
+    <button class="text-btn" (click)="clearDates()">Clear dates</button>
+  }
+</div>
+
+<section class="table-panel">
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Patient</th>
+          <th>Phone</th>
+          <th>Disease / diagnosis</th>
+          <th>Status</th>
+          <th>Follow-up</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (visit of visits; track visit._id ?? $index) {
+          <tr>
+            <td class="nowrap">{{ visit.visitDate | date: 'dd MMM yyyy' }}</td>
+            <td class="name-cell">
+              <button class="patient-link" (click)="store.openPatient(visit)">{{ visit.patientName }}</button>
+              <small>{{ visit.patientId || 'No ID' }}</small>
+            </td>
+            <td class="nowrap">{{ visit.phone }}</td>
+            <td>
+              {{ visit.disease || '-' }}
+              <small>{{ visit.diagnosis || 'No diagnosis' }}</small>
+            </td>
+            <td><span class="status">{{ visit.status }}</span></td>
+            <td>{{ (visit.followUpDate | date: 'dd MMM yyyy') || '-' }}</td>
+            <td>
+              <div class="row-actions">
+                <button title="Edit" (click)="store.editVisit(visit)">✎</button>
+                <button title="Print" (click)="store.print(visit)">▤</button>
+                <button class="danger" title="Delete" (click)="store.deleteVisit(visit)">⌫</button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (!visits.length) {
+    <div class="empty-state">No matching visits found.</div>
+  }
+</section>

@@ -1,0 +1,58 @@
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.head h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+/* One medicine per row: name, dose, frequency, duration, timing, remove */
+.row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 0.9fr 1.1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.row input,
+.row select {
+  padding: 9px 10px;
+  font-size: 13px;
+}
+
+.remove {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 8px;
+  background: var(--coral-soft);
+  color: var(--coral);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.remove:hover {
+  background: var(--coral);
+  color: #fff;
+}
+
+@media (max-width: 720px) {
+  .row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .row .name {
+    grid-column: 1 / -1;
+  }
+
+  .remove {
+    justify-self: end;
+  }
+}

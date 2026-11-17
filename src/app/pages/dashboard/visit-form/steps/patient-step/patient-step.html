@@ -1,0 +1,67 @@
+<div class="lookup">
+  <label>
+    Patient ID
+    <input [(ngModel)]="form.patientId" placeholder="Auto: {{ nextPatientId || 'PT-…' }}" />
+    @if (!form.patientId) {
+      <small class="hint">Leave empty — {{ nextPatientId || 'next number' }} is assigned automatically.</small>
+    }
+  </label>
+
+  <label>
+    Phone number *
+    <input [(ngModel)]="form.phone" maxlength="10" placeholder="10-digit mobile" />
+  </label>
+
+  <button class="outline-btn find" (click)="findPatient()">Find patient</button>
+</div>
+
+<label>
+  Patient name *
+  <input [(ngModel)]="form.patientName" placeholder="Full name" />
+</label>
+
+<div class="grid">
+  <label>
+    Age *
+    <input [(ngModel)]="form.age" inputmode="numeric" placeholder="Years" />
+  </label>
+
+  <label>
+    Gender *
+    <select [(ngModel)]="form.gender">
+      <option value="">Select</option>
+      <option>Male</option>
+      <option>Female</option>
+      <option>Other</option>
+    </select>
+  </label>
+</div>
+
+<h4 class="sub-head">Vitals</h4>
+
+<div class="grid three">
+  <label>
+    BP
+    <input [(ngModel)]="form.vitals.bloodPressure" placeholder="120/80" />
+  </label>
+  <label>
+    SpO2
+    <input [(ngModel)]="form.vitals.spo2" placeholder="%" />
+  </label>
+  <label>
+    Temperature
+    <input [(ngModel)]="form.vitals.temperature" placeholder="98.6 °F" />
+  </label>
+  <label>
+    RBS
+    <input [(ngModel)]="form.vitals.bloodSugar" placeholder="mg/dL" />
+  </label>
+  <label>
+    Weight
+    <input [(ngModel)]="form.vitals.weight" placeholder="kg" />
+  </label>
+  <label>
+    Heart rate
+    <input [(ngModel)]="form.vitals.heartRate" placeholder="bpm" />
+  </label>
+</div>

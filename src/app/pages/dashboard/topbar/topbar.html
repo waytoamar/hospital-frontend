@@ -1,0 +1,25 @@
+<header class="bar">
+  <button class="menu-btn" aria-label="Open menu" (click)="menu.emit()">☰</button>
+
+  <div class="title">
+    <strong>{{ title }}</strong>
+    <small>{{ store.now | date: 'EEEE, d MMMM' }}</small>
+  </div>
+
+  <div class="right">
+    <label class="paper" title="Tick when printing on paper that already has the clinic header">
+      <input type="checkbox" [checked]="store.preprintedPaper" (change)="onPaperChange($event)" />
+      Letterhead paper
+    </label>
+
+    <span class="clock">{{ store.now | date: 'HH:mm' }}</span>
+
+    <div class="calling">
+      <i></i>
+      NOW CALLING
+      <b>{{ store.nowCalling }}</b>
+    </div>
+
+    <div class="avatar" [title]="store.username">{{ initial }}</div>
+  </div>
+</header>

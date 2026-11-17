@@ -1,0 +1,54 @@
+<div class="overlay" (click)="close()"></div>
+
+<section class="modal" role="dialog" aria-modal="true">
+  <header>
+    <div>
+      <small>{{ editingId ? 'EDIT RECORD' : 'NEW RECORD' }}</small>
+      <h2>{{ editingId ? 'Edit patient visit' : 'New patient visit' }}</h2>
+    </div>
+    <button class="icon-btn" aria-label="Close" (click)="close()">×</button>
+  </header>
+
+  <nav class="steps">
+    @for (name of steps; track name; let i = $index) {
+      <button [class.active]="step === i + 1" [class.done]="step > i + 1" (click)="openStep(i + 1)">
+        <b>{{ i + 1 }}</b>
+        <span>{{ name }}</span>
+      </button>
+    }
+  </nav>
+
+  <!-- Every key press is saved to the draft -->
+  <div class="body" (input)="saveDraft()">
+    @if (copiedFrom) {
+      <p class="hint">Loaded from last visit ({{ copiedFrom | date: 'dd MMM yyyy' }}) — edit as needed.</p>
+    }
+
+    @switch (step) {
+      @case (1) {
+        <app-patient-step [form]="form" [nextPatientId]="nextPatientId"></app-patient-step>
+      }
+      @case (2) {
+        <app-clinical-step [form]="form" (changed)="saveDraft()"></app-clinical-step>
+      }
+      @case (3) {
+        <app-medicines-step [form]="form" (changed)="saveDraft()"></app-medicines-step>
+      }
+      @case (4) {
+        <app-review-step [form]="form" [nextPatientId]="nextPatientId" (changed)="saveDraft()"></app-review-step>
+      }
+    }
+  </div>
+
+  <footer>
+    <button class="outline-btn" [disabled]="step === 1" (click)="back()">← Back</button>
+
+    @if (step < steps.length) {
+      <button class="primary-btn" (click)="next()">Continue →</button>
+    } @else {
+      <button class="primary-btn" [disabled]="saving" (click)="save()">
+        {{ editingId ? 'Update visit' : 'Save visit' }}
+      </button>
+    }
+  </footer>
+</section>

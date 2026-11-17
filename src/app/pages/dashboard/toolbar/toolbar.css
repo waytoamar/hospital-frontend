@@ -1,0 +1,108 @@
+/* Chips never get cut: the search box shrinks first, then everything wraps to a new line */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.search {
+  display: flex;
+  flex: 1 1 260px;
+  align-items: center;
+  gap: 8px;
+  min-width: 220px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+}
+
+.search:focus-within {
+  border-color: var(--ink);
+}
+
+.search span {
+  color: var(--muted);
+  font-size: 18px;
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.chips {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-width: 0;
+  padding: 2px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.chip:hover {
+  background: #f4fafa;
+}
+
+.chip.active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.chip b {
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.chip b[data-tone='waiting'] {
+  color: var(--c-waiting);
+}
+
+.chip b[data-tone='consult'] {
+  color: var(--c-consult);
+}
+
+.chip b[data-tone='followup'] {
+  color: var(--c-followup);
+}
+
+.chip b[data-tone='done'] {
+  color: var(--c-done);
+}
+
+.new-visit {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 13px 22px;
+  border-radius: 999px;
+  background: var(--ink);
+  white-space: nowrap;
+}
+
+.new-visit:hover:not(:disabled) {
+  background: #1b3b48;
+}

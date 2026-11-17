@@ -1,0 +1,36 @@
+@if (multiline) {
+  <textarea
+    [rows]="rows"
+    [value]="value"
+    [placeholder]="placeholder"
+    [attr.aria-label]="label || null"
+    autocomplete="off"
+    (input)="type($any($event.target).value)"
+    (focus)="open = true"
+    (click)="open = true"
+    (blur)="open = false"
+    (keydown.tab)="onTab($event)"
+  ></textarea>
+} @else {
+  <input
+    [value]="value"
+    [placeholder]="placeholder"
+    [attr.aria-label]="label || null"
+    autocomplete="off"
+    (input)="type($any($event.target).value)"
+    (focus)="open = true"
+    (click)="open = true"
+    (blur)="open = false"
+    (keydown.tab)="onTab($event)"
+  />
+}
+
+@if (open && matches.length) {
+  <div class="menu">
+    @for (option of matches; track option) {
+      <button type="button" (mousedown)="$event.preventDefault()" (click)="pick(option)">
+        {{ option }}
+      </button>
+    }
+  </div>
+}

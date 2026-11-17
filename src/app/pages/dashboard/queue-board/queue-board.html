@@ -1,0 +1,105 @@
+<section class="grid" [class.single]="showAll">
+  @for (panel of panels; track panel.key) {
+    <article
+      class="panel"
+      [attr.data-tone]="panel.key"
+      [class.has-selection]="store.selectedQueuePanel === panel.key && store.selectedQueueVisit"
+    >
+      <!-- Click the heading to close / open the panel -->
+      <div
+        class="head"
+        role="button"
+        tabindex="0"
+        [attr.aria-expanded]="!isFolded(panel.key)"
+        (click)="toggleFolded(panel.key)"
+        (keydown.enter)="toggleFolded(panel.key)"
+      >
+        <span class="label">
+          <span class="arrow" [class.closed]="isFolded(panel.key)">▾</span>
+          <i></i>
+          {{ panel.label }}
+          @if (isFolded(panel.key)) {
+            <b class="folded-count">{{ panel.visits.length }}</b>
+          }
+        </span>
+        <em>{{ isFolded(panel.key) ? 'click to open' : panel.note }}</em>
+      </div>
+
+      @if (!isFolded(panel.key)) {
+        <div class="big">{{ panel.visits.length }}</div>
+
+        <div class="rows" [class.scroll]="showAll || isExpanded(panel.key)">
+          @for (visit of rows(panel); track visit._id ?? $index) {
+            <div
+              class="row"
+              role="button"
+              tabindex="0"
+              [class.selected]="store.selectedQueueVisit?._id === visit._id"
+              [attr.aria-label]="'Open queue details for ' + visit.patientName"
+              (click)="select(visit, panel.key)"
+              (keydown.enter)="select(visit, panel.key)"
+            >
+              <div class="row-main">
+                <div class="row-title">
+                  <span class="name">{{ visit.patientName }}</span>
+
+                  @if (visit.labReady && visit.status !== 'Completed') {
+                    <span class="badge ready">🧪 Reports ready</span>
+                  }
+                  <!-- Booked on WhatsApp: has the patient reached the clinic yet? -->
+                  @if (visit.source === 'WhatsApp' && visit.status === 'Waiting') {
+                    <span class="badge whatsapp" [class.waiting]="!visit.arrivedAt">
+                      {{ visit.arrivedAt ? '💬 Arrived' : '💬 Not arrived yet' }}
+                    </span>
+                  }
+
+                  <span class="age-sex">{{ ageSex(visit) }}</span>
+                </div>
+                <div class="row-meta">{{ store.rowMeta(panel.key, visit) }}</div>
+              </div>
+
+              <div class="row-side">
+                <span class="pid">{{ visit.patientId || 'No ID' }}</span>
+
+                <div class="actions" (click)="$event.stopPropagation()">
+                  @switch (panel.key) {
+                    @case ('waiting') {
+                      <button (click)="store.setStatus(visit, 'In consultation')">Start →</button>
+                      <button title="Patient did not come" (click)="store.setStatus(visit, 'No show')">
+                        No show
+                      </button>
+                    }
+                    @case ('consult') {
+                      <button (click)="store.editVisit(visit)">Notes</button>
+                      <button (click)="store.setStatus(visit, 'Completed')">Complete ✓</button>
+                    }
+                    @case ('lab') {
+                      <button title="Print the tests for the patient" (click)="store.print(visit)">
+                        Print ▤
+                      </button>
+                    }
+                    @case ('followup') {
+                      <button (click)="store.openNewVisit(visit)">New visit →</button>
+                    }
+                    @case ('done') {
+                      <button title="Edit this visit" (click)="store.editVisit(visit)">Edit ✎</button>
+                      <button title="Print prescription" (click)="store.print(visit)">Print ▤</button>
+                    }
+                  }
+                </div>
+              </div>
+            </div>
+          } @empty {
+            <p class="empty">{{ panel.empty }}</p>
+          }
+        </div>
+
+        @if (hiddenCount(panel) > 0) {
+          <button class="more" (click)="toggleExpanded(panel.key)">
+            {{ isExpanded(panel.key) ? 'Show less' : '+' + hiddenCount(panel) + ' more' }}
+          </button>
+        }
+      }
+    </article>
+  }
+</section>

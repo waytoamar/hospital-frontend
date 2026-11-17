@@ -1,4 +1,4 @@
-import { API_BASE } from '../api';
+import { API_BASE } from './api';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 

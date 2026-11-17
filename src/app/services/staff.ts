@@ -1,4 +1,4 @@
-import { API_BASE } from '../api';
+import { API_BASE } from './api';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { LabResult, Visit, VisitStatus } from './visit';
@@ -127,7 +127,7 @@ export class PharmacyService {
   }
 }
 
-// 2. ఫైల్ చివరన LabService చేర్చబడింది
+// ---- Lab ----
 @Injectable({ providedIn: 'root' })
 export class LabService {
   constructor(private http: HttpClient) {}

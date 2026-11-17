@@ -1,0 +1,92 @@
+<app-site-layout>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="glow glow-left"></div>
+    <div class="glow glow-right"></div>
+
+    <div class="wrap hero-grid">
+      <div class="hero-text">
+        <p class="tag">Pulmonologist · {{ clinic.city }}</p>
+        <h1>Breathe easier, <span class="gold">live better.</span></h1>
+        <p class="lead">
+          {{ clinic.doctor }} — {{ clinic.degree }}. Specialist care for asthma, allergy, COPD, TB,
+          sleep and ICU.
+        </p>
+
+        <div class="book">
+          <p class="book-label">📞 Call to book</p>
+          <div class="actions">
+            @for (phone of clinic.phones; track phone) {
+              <a class="btn gold-btn" [href]="'tel:' + phone">{{ phone }}</a>
+            }
+            <a class="btn line-btn" routerLink="/about">About the doctor</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="photo-box">
+        <div class="photo-ring"></div>
+        <div class="photo-frame">
+          <img
+            class="photo"
+            src="doctor-photo.jpg"
+            [alt]="clinic.doctor + ', Pulmonologist'"
+            width="800"
+            height="800"
+          />
+        </div>
+
+        <div class="name-card">
+          <p class="name">{{ clinic.doctor }}</p>
+          <p class="role">Chest &amp; Allergy Specialist</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Curved bottom edge -->
+    <svg class="wave" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,40 C240,90 480,0 720,30 C960,60 1200,10 1440,40 L1440,80 L0,80 Z"></path>
+    </svg>
+  </section>
+
+  <!-- Credentials strip -->
+  <section class="creds">
+    <div class="wrap creds-grid">
+      @for (c of credentials; track c.top) {
+        <div class="cred">
+          <p class="cred-top">{{ c.top }}</p>
+          <p class="cred-sub">{{ c.sub }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- What we treat -->
+  <section class="wrap treat">
+    <p class="eyebrow">Specialities</p>
+    <h2>What we treat</h2>
+    <div class="services">
+      @for (s of services; track s.title) {
+        <div class="service">
+          <span class="service-icon">{{ s.icon }}</span>
+          <h3>{{ s.title }}</h3>
+          <p>{{ s.text }}</p>
+          <a class="service-cta" [href]="'tel:' + clinic.phones[0]">Call to book →</a>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Staff -->
+  <section class="staff">
+    <div class="wrap staff-row">
+      <div>
+        <h2>Clinic staff?</h2>
+        <p>Doctor, receptionist, pharmacist and lab can sign in here.</p>
+      </div>
+      <a class="btn primary-btn" routerLink="/welcome">Staff Login →</a>
+    </div>
+  </section>
+  <!-- Phones: call button always at the bottom -->
+  <a class="call-bar" [href]="'tel:' + clinic.phones[0]">📞 Call to book · {{ clinic.phones[0] }}</a>
+</app-site-layout>

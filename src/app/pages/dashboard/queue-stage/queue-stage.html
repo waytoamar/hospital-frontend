@@ -1,0 +1,42 @@
+@if (store.selectedQueueVisit; as selected) {
+  <section class="stage" [attr.data-tone]="store.selectedQueuePanel" aria-live="polite">
+    <button class="close" aria-label="Close patient queue" (click)="store.closeQueue()">×</button>
+
+    <div class="current">
+      <small>{{ store.selectedQueuePanel === 'followup' ? 'FOLLOW-UP PATIENT' : 'NOW CALLING' }}</small>
+      <strong>{{ store.tokenOf(selected) || selected.patientId || '—' }}</strong>
+      <h2>{{ selected.patientName }}</h2>
+      <p>
+        {{ selected.disease || selected.diagnosis || 'General consultation' }} · {{ ageSex(selected) }}
+        @if (store.selectedQueuePanel === 'waiting') {
+          · {{ store.rowMeta('waiting', selected) }}
+        }
+        @if (store.selectedQueuePanel === 'followup' && selected.followUpDate) {
+          · Due {{ selected.followUpDate | date: 'dd MMM' }}
+        }
+      </p>
+
+      <button class="primary" [disabled]="store.queueBusy" (click)="store.advanceQueue()">
+        {{ store.queueBusy ? 'Updating…' : actionLabel }}
+      </button>
+    </div>
+
+    @if (store.selectedQueuePanel !== 'followup') {
+      <div class="next">
+        <div class="next-head">
+          <span>UP NEXT</span>
+          <small>{{ store.upNextVisits.length }} waiting</small>
+        </div>
+
+        @for (visit of store.upNextVisits; track visit._id; let i = $index) {
+          <button (click)="store.selectQueue(visit, 'waiting')">
+            <span><b>{{ i + 1 }}</b>{{ visit.patientName }}</span>
+            <em>{{ store.tokenOf(visit) }} · {{ store.rowMeta('waiting', visit) }}</em>
+          </button>
+        } @empty {
+          <p class="empty">No more patients waiting.</p>
+        }
+      </div>
+    }
+  </section>
+}

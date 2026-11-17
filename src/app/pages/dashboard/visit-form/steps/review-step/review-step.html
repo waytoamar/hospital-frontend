@@ -1,0 +1,54 @@
+<div class="summary">
+  <h3>{{ form.patientName }}</h3>
+  <p>
+    {{ form.patientId || nextPatientId || 'New patient' }} · {{ form.age }} · {{ form.gender }} ·
+    {{ form.phone }}
+  </p>
+
+  <dl>
+    <div>
+      <dt>Diagnosis</dt>
+      <dd>{{ form.diagnosis || '-' }}</dd>
+    </div>
+    <div>
+      <dt>Vitals</dt>
+      <dd>{{ vitalsSummary(form.vitals) }}</dd>
+    </div>
+    <div>
+      <dt>Drug allergy</dt>
+      <dd>{{ allergy }}</dd>
+    </div>
+    <div>
+      <dt>Medicines</dt>
+      <dd>{{ form.medicines.length }}</dd>
+    </div>
+  </dl>
+</div>
+
+<div class="grid">
+  <label>
+    Follow-up date
+    <input type="date" [(ngModel)]="form.followUpDate" (ngModelChange)="changed.emit()" />
+  </label>
+
+  <label>
+    Visit status
+    <select [(ngModel)]="form.status" (ngModelChange)="changed.emit()">
+      @for (status of statuses; track status) {
+        <option>{{ status }}</option>
+      }
+    </select>
+  </label>
+</div>
+
+<label>
+  Comments / advice
+  <app-suggest-field
+    multiline
+    [rows]="3"
+    acceptOnTab
+    [(value)]="form.comments"
+    [options]="store.pastValues('comments')"
+    (picked)="changed.emit()"
+  ></app-suggest-field>
+</label>

@@ -1,0 +1,21 @@
+/* Patient ID, phone and "Find patient" on one line */
+.lookup {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: start;
+  gap: 14px;
+}
+
+.find {
+  margin-top: 24px;
+}
+
+@media (max-width: 720px) {
+  .lookup {
+    grid-template-columns: 1fr;
+  }
+
+  .find {
+    margin-top: 0;
+  }
+}

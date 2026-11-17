@@ -1,0 +1,25 @@
+<div class="toolbar">
+  <div class="search">
+    <span>⌕</span>
+    <input [(ngModel)]="store.searchTerm" [placeholder]="placeholder" />
+  </div>
+
+  @if (store.activeView === 'board') {
+    <div class="chips">
+      @for (chip of chips; track chip.key) {
+        <button
+          class="chip"
+          [class.active]="store.boardFilter === chip.key"
+          (click)="store.boardFilter = chip.key"
+        >
+          {{ chip.label }}
+          @if (chip.count !== undefined) {
+            <b [attr.data-tone]="chip.key">{{ chip.count }}</b>
+          }
+        </button>
+      }
+    </div>
+  }
+
+  <button class="primary-btn new-visit" (click)="store.openNewVisit()">＋ New visit</button>
+</div>
