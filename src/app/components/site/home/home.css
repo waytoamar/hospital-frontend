@@ -662,3 +662,15 @@ h1 {
   }
 }
 
+
+/* Fit the photo and the "Dr. Mahesh" card on one laptop screen (100% zoom) */
+.hero-grid {
+  padding-top: 44px;
+  padding-bottom: 130px;
+}
+.photo-box {
+  max-width: 340px;
+}
+.name-card {
+  bottom: -70px;
+}

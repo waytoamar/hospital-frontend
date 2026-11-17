@@ -2,7 +2,7 @@
 .about {
   max-width: 896px;
   margin: 0 auto;
-  padding: 80px 20px;
+  padding: 24px 20px 56px;
 }
 h1,
 h2 {
@@ -21,15 +21,15 @@ h1 {
   font-size: 48px;
 }
 .lead {
-  margin: 20px 0 0;
+  margin: 12px 0 0;
   font-size: 18px;
   line-height: 1.6;
   color: var(--muted);
 }
 
 .card {
-  margin-top: 40px;
-  padding: 32px;
+  margin-top: 24px;
+  padding: 26px 32px;
   border: 1px solid var(--line);
   border-radius: 20px;
   background: var(--card);
@@ -74,7 +74,7 @@ li {
 
 @media (max-width: 760px) {
   .about {
-    padding: 48px 20px;
+    padding: 20px 20px 40px;
   }
   h1 {
     font-size: 36px;
@@ -85,4 +85,26 @@ li {
   .card {
     padding: 24px;
   }
+}
+
+/* Compact: whole list fits on one laptop screen at 100% zoom */
+h1 {
+  font-size: 42px;
+}
+.lead {
+  font-size: 17px;
+  line-height: 1.55;
+}
+.card {
+  padding: 22px 32px 16px;
+}
+.card h2 {
+  font-size: 22px;
+}
+ul {
+  margin-top: 14px;
+}
+li {
+  margin-bottom: 4px;
+  line-height: 1.45;
 }
