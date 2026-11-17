@@ -25,19 +25,28 @@
       </div>
 
       <div class="photo-box">
-        <img
-          class="photo"
-          src="dr-mahesh.jpg"
-          [alt]="clinic.doctor + ', Pulmonologist'"
-          width="896"
-          height="1024"
-        />
+        <div class="photo-ring"></div>
+        <div class="photo-frame">
+          <img
+            class="photo"
+            src="doctor-photo.jpg"
+            [alt]="clinic.doctor + ', Pulmonologist'"
+            width="896"
+            height="1024"
+          />
+        </div>
+
         <div class="name-card">
           <p class="name">{{ clinic.doctor }}</p>
           <p class="role">Chest &amp; Allergy Specialist</p>
         </div>
       </div>
     </div>
+
+    <!-- Curved bottom edge -->
+    <svg class="wave" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,40 C240,90 480,0 720,30 C960,60 1200,10 1440,40 L1440,80 L0,80 Z"></path>
+    </svg>
   </section>
 
   <!-- Credentials strip -->
@@ -78,4 +87,6 @@
       <a class="btn primary-btn" routerLink="/welcome">Staff Login →</a>
     </div>
   </section>
+  <!-- Phones: call button always at the bottom -->
+  <a class="call-bar" [href]="'tel:' + clinic.phones[0]">📞 Call to book · {{ clinic.phones[0] }}</a>
 </app-site-shell>

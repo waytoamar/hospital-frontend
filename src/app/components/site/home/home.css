@@ -490,3 +490,175 @@ h1 {
     animation: none;
   }
 }
+
+/* ===== Hero v2: round photo with a turning ring, floating cards, curved edge ===== */
+.hero {
+  padding-bottom: 40px;
+}
+.photo-box {
+  overflow: visible;
+  max-width: 400px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+.photo-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--gold), transparent 30%, oklch(0.75 0.1 180), transparent 70%, var(--gold));
+  animation: ringspin 12s linear infinite;
+}
+.photo-frame {
+  position: relative;
+  width: calc(100% - 20px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 6px solid oklch(0.3 0.07 175);
+  box-shadow: var(--shadow);
+}
+.photo-frame .photo {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 0;
+  box-shadow: none;
+  transition: transform 0.8s ease;
+}
+.photo-box:hover .photo-frame .photo {
+  transform: scale(1.05);
+}
+.photo-box:hover .photo {
+  transform: none;
+}
+.photo-box:hover .photo-frame .photo {
+  transform: scale(1.05);
+}
+.name-card {
+  bottom: -14px;
+  z-index: 2;
+}
+
+.float {
+  position: absolute;
+  z-index: 2;
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: rgb(255 255 255 / 0.95);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-decoration: none;
+  box-shadow: 0 14px 30px -14px rgb(0 0 0 / 0.45);
+  animation: bob 4s ease-in-out infinite;
+}
+.f1 { top: 8%; left: -12%; }
+.f2 { top: 40%; right: -14%; animation-delay: 1.3s; }
+.f3 { bottom: 18%; left: -16%; animation-delay: 2.6s; color: var(--primary); }
+.f3:hover { background: var(--gold); color: var(--ink); }
+
+.wave {
+  display: block;
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 70px;
+}
+.wave path {
+  fill: var(--card);
+}
+
+/* "What we treat": a different soft colour for each icon */
+.services .service:nth-child(6n + 1) .service-icon { background: #e3f0ff; }
+.services .service:nth-child(6n + 2) .service-icon { background: #e6f4ec; }
+.services .service:nth-child(6n + 3) .service-icon { background: #f1ebff; }
+.services .service:nth-child(6n + 4) .service-icon { background: #fff3dc; }
+.services .service:nth-child(6n + 5) .service-icon { background: #ffe9e4; }
+.services .service:nth-child(6n + 6) .service-icon { background: #dff6f6; }
+
+/* Phones: call bar at the bottom */
+.call-bar {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .hero-grid > .photo-box {
+    order: -1;
+    max-width: 290px;
+  }
+  .float {
+    font-size: 11px;
+    padding: 7px 11px;
+  }
+  .f1 { left: -6%; }
+  .f2 { right: -8%; }
+  .f3 { left: -8%; }
+  .wave { height: 40px; }
+  .call-bar {
+    display: block;
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 30;
+    padding: 14px;
+    border-radius: 999px;
+    background: var(--gold);
+    color: var(--on-gold, #123f3a);
+    font-weight: 800;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: 0 14px 30px -10px rgb(0 0 0 / 0.5);
+  }
+  .staff {
+    padding-bottom: 72px;
+  }
+}
+
+@keyframes ringspin {
+  to { transform: rotate(360deg); }
+}
+@keyframes bob {
+  50% { transform: translateY(-10px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .photo-ring,
+  .float {
+    animation: none;
+  }
+}
+
+/* Name card sits just below the round photo (does not hide the face / stethoscope) */
+.photo-frame .photo {
+  object-position: center;
+}
+.name-card {
+  bottom: -38px;
+}
+.hero-grid {
+  padding-bottom: 120px;
+}
+@media (max-width: 760px) {
+  .hero-grid {
+    padding-bottom: 96px;
+  }
+}
+
+/* Name card fully below the photo, so the stethoscope is not hidden */
+.name-card {
+  bottom: -84px;
+}
+.hero-grid {
+  padding-bottom: 150px;
+}
+@media (max-width: 760px) {
+  .hero-grid > .photo-box {
+    margin-bottom: 70px;
+  }
+}
+

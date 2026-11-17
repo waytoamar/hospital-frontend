@@ -1,21 +1,62 @@
 <div class="app-shell">
-  <header class="navbar">
-    <div class="navbar-brand">
-      <strong>Chest & Allergy Clinic</strong>
-      <small>VISIT CONSOLE · DAILY BOARD</small>
+  <!-- Left menu (on phones it slides in from the ☰ button) -->
+  <div class="side-backdrop" *ngIf="sideOpen" (click)="sideOpen = false"></div>
+  <aside class="side" [class.collapsed]="sideCollapsed" [class.open]="sideOpen">
+    <div class="side-brand">
+      <img src="lungs.jpg" alt="" />
+      <div class="side-brand-text">
+        <strong>Chest &amp; Allergy</strong>
+        <small>Doctor console</small>
+      </div>
     </div>
 
-    <nav class="navbar-tabs">
-      <button [class.active]="activeView === 'board'" (click)="switchView('board')">Board</button>
-
-      <button [class.active]="activeView === 'patients'" (click)="switchView('patients')">
-        Patients
+    <nav class="side-nav">
+      <p class="side-label">Clinic</p>
+      <button [class.active]="activeView === 'board'" (click)="goTo('board')" title="Today">
+        <span class="side-ico">▣</span><span class="side-text">Today</span>
+        <b class="side-count">{{ boardWaiting.length + boardConsulting.length }}</b>
+      </button>
+      <button [class.active]="activeView === 'patients'" (click)="goTo('patients')" title="Patients">
+        <span class="side-ico">👥</span><span class="side-text">Patients</span>
+      </button>
+      <button [class.active]="activeView === 'records'" (click)="goTo('records')" title="Records">
+        <span class="side-ico">📋</span><span class="side-text">Records</span>
+      </button>
+      <button [class.active]="activeView === 'holidays'" (click)="goTo('holidays')" title="Closed days">
+        <span class="side-ico">📅</span><span class="side-text">Closed days</span>
       </button>
 
-      <button [class.active]="activeView === 'records'" (click)="switchView('records')">
-        Records
+      <p class="side-label">Admin</p>
+      <button (click)="openStaff()" title="Manage staff">
+        <span class="side-ico">🧑‍⚕️</span><span class="side-text">Staff</span>
+      </button>
+      <button
+        (click)="downloadBackup()"
+        [disabled]="backupBusy"
+        title="Download backup of all patient data (do this once a week)"
+      >
+        <span class="side-ico">💾</span
+        ><span class="side-text">{{ backupBusy ? 'Downloading…' : 'Backup' }}</span>
       </button>
     </nav>
+
+    <div class="side-foot">
+      <button class="side-collapse" (click)="toggleSide()" [title]="sideCollapsed ? 'Open menu' : 'Close menu'">
+        <span class="side-ico">{{ sideCollapsed ? '»' : '«' }}</span><span class="side-text">Collapse</span>
+      </button>
+      <button class="side-logout" (click)="logout()" title="Logout">
+        <span class="side-ico">↪</span><span class="side-text">Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-col">
+  <header class="navbar">
+    <button class="menu-btn" (click)="sideOpen = true" aria-label="Open menu">☰</button>
+    <div class="navbar-title">
+      <strong>{{ viewTitle }}</strong>
+      <small>{{ now | date: 'EEEE, d MMMM' }}</small>
+    </div>
 
     <div class="navbar-right">
       <label
@@ -42,16 +83,6 @@
       </div>
 
       <div class="hdr-avatar" [title]="username">{{ initial }}</div>
-      <button
-        class="icon-btn"
-        (click)="downloadBackup()"
-        [disabled]="backupBusy"
-        title="Download backup of all patient data (do this once a week)"
-      >
-        {{ backupBusy ? '…' : '💾' }}
-      </button>
-      <button class="icon-btn" (click)="openStaff()" title="Manage staff">👥</button>
-      <button class="icon-btn" (click)="logout()" title="Logout">↪</button>
     </div>
   </header>
 
@@ -372,7 +403,10 @@
         </div>
       </section>
 
-      <!-- Clinic closed days (holidays): reception and doctor can add them -->
+    </ng-container>
+
+    <!-- Clinic closed days (holidays): reception and doctor can add them -->
+    <ng-container *ngIf="activeView === 'holidays'">
       <app-holidays></app-holidays>
     </ng-container>
 
@@ -531,6 +565,7 @@
       </section>
     </ng-container>
   </main>
+  </div>
 
   <div class="overlay" *ngIf="formOpen" (click)="closeForm()"></div>
 

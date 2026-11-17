@@ -61,7 +61,7 @@ interface Summary {
   services: Record<string, Money>;
 }
 
-type View = 'board' | 'patients' | 'records';
+type View = 'board' | 'patients' | 'records' | 'holidays';
 type FormStep = 1 | 2 | 3 | 4;
 type BoardFilter = 'all' | 'waiting' | 'consult' | 'lab' | 'followup' | 'done';
 type PanelKey = Exclude<BoardFilter, 'all'>;
@@ -897,6 +897,41 @@ readonly timingOptions = [
   switchView(view: View): void {
     this.activeView = view;
     this.selectedPatientKey = '';
+  }
+
+  // ---- Left menu ----
+  sideOpen = false; // phones: menu slid in
+  sideCollapsed = this.readSideCollapsed(); // desktop: icons only
+
+  get viewTitle(): string {
+    return {
+      board: "Today's board",
+      patients: 'Patients',
+      records: 'Records',
+      holidays: 'Clinic closed days',
+    }[this.activeView];
+  }
+
+  goTo(view: View): void {
+    this.switchView(view);
+    this.sideOpen = false;
+  }
+
+  toggleSide(): void {
+    this.sideCollapsed = !this.sideCollapsed;
+    try {
+      localStorage.setItem('doctorSideCollapsed', this.sideCollapsed ? '1' : '0');
+    } catch {
+      // storage not available: only this visit remembers it
+    }
+  }
+
+  private readSideCollapsed(): boolean {
+    try {
+      return localStorage.getItem('doctorSideCollapsed') === '1';
+    } catch {
+      return false;
+    }
   }
 
   openStaff(): void {
